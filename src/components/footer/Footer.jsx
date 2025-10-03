@@ -18,7 +18,11 @@ const Footer = () => {
     { name: "About SGS", path: "/About-SGS" },
     { name: "About Exam", path: "/About-Exam" },
     { name: "About Development", path: "/AboutDevelopmet" },
-     { name: "Our Members", path: "/OurMembers"},
+    { name: "Our Members", path: "/OurMembers"},
+    { name: "Our Commuinity", path: "/OurCommunity"},
+
+
+     
 
     
   ];

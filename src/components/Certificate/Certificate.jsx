@@ -6,6 +6,7 @@ import LG from "../../Assictes/LG.png";
 import SK from "../../Assictes/SK.png";
 import Cer from "../../Assictes/Certificate.png"
 import company from "../../Assictes/23.png"
+import msme from "../../Assictes/msme.png"
 const Certificate = ({
   name = "Livesh Garg ",
   rollNumber = "250001 ",
@@ -14,6 +15,7 @@ const Certificate = ({
   language = "English",
   score = "80",
   Que = "100",
+  certificateNo = "SGSCIF0001"
 }) => {
   const printRef = useRef();
 
@@ -102,29 +104,26 @@ const Certificate = ({
         </button>
       </div>
 
+     
       {/* Certificate Preview Area */}
       <div className="overflow-scroll w-screen md:w-full">
         <div
           ref={printRef}
           className="relative w-[1123px] h-[794px] bg-no-repeat bg-cover bg-center" style={{ backgroundImage: `url(${Cer})` }}>
           <div className="  certificate relative w-full h-full  text-black  p-12 sm:p-16 rounded-lg ">
-            {/* Header */}
-            <div className="absolute  bottom-8 right-12 text-center mb-4 mt-4">
-             <div className="flex flex-row items-center justify-center">
-             <img
-                src={company}
-                alt="Soft Game Studio"
-                className="h-10 rounded-full mr-3"
-              />
-              <strong className="font-bold font-serif">SOFT GAME STUDIO</strong>
-             </div>
-             
-             
-            </div>
+           <div className="absolute bottom-8 right-8 w-32 h-auto">
+        <img src={msme} alt="" />
+      </div>
+
+
 
 
             {/* Certificate Text */}
             <div className="text-center px-4 sm:px-20">
+            <div className="flex flex-col text-center items-center justify-center">
+             
+              <strong className="font-bold text-2xl font-serif text-gray-900">SOFT GAME STUDIO</strong>
+             </div>
               <h1 className="text-4xl sm:text-5xl font-extrabold text-black mb-2">
                 CERTIFICATE
               </h1>
@@ -139,8 +138,13 @@ const Certificate = ({
                 {name}
               </h3>
               <div className="mt-2 space-y-2">
-        <p><strong>Roll No.:</strong> {rollNumber}</p>
+                <div className="flex justify-evenly text-center">
+ <p><strong>Roll No.:</strong> {rollNumber}</p>
+        <p><strong>Certificate No.:</strong> {certificateNo}</p>
         <p><strong>Grade:</strong> {score}/{Que} ({percentage}%)</p>
+       
+                </div>
+        <br />
       </div>
 
       <p className="mt-2 ml-32 mr-32">
@@ -151,7 +155,7 @@ const Certificate = ({
       </p>
 
       
-      <p className="mt-2 ml-32 mr-32">
+      <p className="mt-2 ml-28 mr-28">
         Your achievement highlights not only your strong grasp of the subject matter but also your outstanding dedication, focus, and perseverance.
         We commend your hard work, resilience, and passion for continuous learning. This accomplishment stands as a testament to your commitment
         to excellence and your determination to succeed.
@@ -162,28 +166,27 @@ const Certificate = ({
             </div>
 
             {/* Signatures */}
-            <div className="flex justify-evenly mt-8 text-center items-end flex-wrap mb-8 ">
+            <div className="flex justify-center space-x-16 mt-16 text-center items-end flex-wrap mb-8 ">
               <div>
                 <img src={LG} alt={LG} className="h-12 mx-auto m-2" />
                 <p className="font-medium">Livesh Garg</p>
-                <p className="text-sm text-gray-900">Director of Education</p>
+                <p className="text-sm font-bold text-gray-900">Founder, COO, CTO</p>
               </div>
               <div>
                 <img src={JD} alt={JD} className="h-12 mx-auto m-2 " />
                 <p className="font-medium">Jatin Dua</p>
-                <p className="text-sm text-gray-900">Exam Conductor</p>
+                <p className="text-sm font-bold text-gray-900">Co-Founder, CFO</p>
               </div>
               <div>
                 <img src={SK} alt={SK} className="h-12 mx-auto m-2 " />
                 <p className="font-medium">Sharik Hasan</p>
-                <p className="text-sm text-gray-900">Exam Head</p>
+                <p className="text-sm font-bold text-gray-900">Co-Founder, CEO, CMO</p>
               </div>
             </div>
 
             {/* Footer */}
             <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 text-sm text-black">
               Date of Completion: {date}
-              
             </div>
             <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-sm text-gray-500">
               <strong className="text-xs text-black">License No.: UDYAM-PB-06-0032977/85499</strong>

@@ -103,12 +103,7 @@ const QuizList = () => {
   };
 
   const handleSeeResults = (type) => {
-    if (!isLoggedIn) {
-      navigate('/login');
-      return;
-    }
-    
-    navigate(`/${type}-Results`);
+    navigate(`/SGS-Quiz-${type}-Result`);
   };
 
   const QuizCard = ({ quiz, type }) => {

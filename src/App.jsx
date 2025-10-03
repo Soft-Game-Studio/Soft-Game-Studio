@@ -95,6 +95,10 @@ import WeeklyQuizDetails from "./Exams/DailyQuiz/Exam Control/DailyQuizDetaisl.j
 import QuizList from "./Exams/Quiz.jsx";
 import DailyResultsPage from "./Exams/Result/DailyResult.jsx";
 import ResultsPage from "./Exams/Result/Result.jsx";
+import CommunityMembers from "./components/Members/CommunityMembers.jsx";
+import AdminCommunityMembers from "./pages/Admin/DashBoards/Members/AdminCommunityMembers.jsx";
+
+
 
 
 
@@ -128,6 +132,7 @@ function App() {
           <Route path="/FAQs" element={<FAQItem />} />
           <Route path="/CookiesPolicy" element={<CookiesPolicy />} />
           <Route path="/OurMembers" element={<OurMembers />} />
+          <Route path="/OurCommunity" element={<CommunityMembers/>} />
           <Route path="/AboutDevelopmet" element={<DevelopmentPage />} />
           <Route path="/SuportUS" element={<SupportUs />} />
 
@@ -177,13 +182,13 @@ function App() {
           <Route path="/SGS-Quiz-Weekly" element={<WeeklyQuizList/>} />
           <Route path="/SGS-Quiz-Weekly/:id" element={<WeeklyQuiz/>} />
           <Route path="/SGS-Details-Weekly/:id" element={<WeeklyQuizDetails/>} />
-          <Route path="/SGS-Quiz-Weekly-Result" element={<DailyResultsPage/>} />
+          <Route path="/Weekly-Results" element={<DailyResultsPage/>} />
 
            {/* SGS Exams official */}
           <Route path="/SGS-Quiz-Official" element={<OfficialQuizList/>} />
           <Route path="/SGS-Quiz-Official/:id" element={<OfficialQuizExam/>} />
           <Route path="/SGS-Details-Official/:id" element={<OfficialQuizDetails/>} />
-          <Route path="/SGS-Quiz-Offucicial-Result" element={<ResultsPage/>} />
+          <Route path="/Official-Results" element={<ResultsPage/>} />
 
           {/* SGS Exams official */}
           <Route path="/SGS-Exam-Official" element={<FreeQuizList/>} />
@@ -461,6 +466,15 @@ function App() {
                 <AdminAddMember />
               </ProtectedRouteForAdmin>
             }
+          />
+          {/*  Admin Add Member */}
+          <Route
+            path="/Admin-Community-Member"
+            element={
+              <ProtectedRouteForAdmin>
+                <AdminCommunityMembers />
+              </ProtectedRouteForAdmin>
+            }  
           />
         </Routes>
         <ToastContainer />

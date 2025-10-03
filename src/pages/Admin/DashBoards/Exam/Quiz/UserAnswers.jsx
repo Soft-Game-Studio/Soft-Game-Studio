@@ -10,10 +10,11 @@ import {
   where,
   writeBatch
 } from "firebase/firestore";
-import { FaEdit, FaTrash, FaTrophy, FaLanguage } from "react-icons/fa";
+import { FaEdit, FaTrash, FaTrophy, FaLanguage, FaDownload, FaCertificate } from "react-icons/fa";
 import { toast } from "react-toastify";
 import Layout from "../../../../../components/layout/Layout";
 import { fireDB } from "../../../../../DataBase/firebaseConfig";
+import Certificate from "../../../../../components/Certificate/Certificate";
 
 const UserAnswers = () => {
   const [userAnswers, setUserAnswers] = useState([]);
@@ -33,7 +34,7 @@ const UserAnswers = () => {
   // Fetch user answers
   const fetchUserAnswers = async () => {
     try {
-      const snapshot = await getDocs(collection(fireDB, "user_Quiz"));
+      const snapshot = await getDocs(collection(fireDB, "user_Quiz_Answers"));
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setUserAnswers(data.filter(user => !user.disqualified));
     } catch (error) {
@@ -101,7 +102,9 @@ const UserAnswers = () => {
           id: user.id,
           name: user.name,
           rollNumber: user.rollNumber,
-          score: user.score
+          score: user.score,
+          certificateNo: user.certificateNo,
+          date: user.date
         };
       });
 
@@ -223,12 +226,12 @@ const UserAnswers = () => {
       
       // Delete user answers for the selected language
       const userAnswersQuery = query(
-        collection(fireDB, "user_Quiz"), 
+        collection(fireDB, "user_Quiz_Answers"), 
         where("language", "==", selectedLanguage)
       );
       const userAnswersSnapshot = await getDocs(userAnswersQuery);
       userAnswersSnapshot.forEach((document) => {
-        batch.delete(doc(fireDB, "user_Quiz", document.id));
+        batch.delete(doc(fireDB, "user_Quiz_Answers", document.id));
       });
       
       // Delete results for the selected language
@@ -255,6 +258,63 @@ const UserAnswers = () => {
     } finally {
       setDeletingLanguage(false);
     }
+  };
+
+const [open, setOpen] = useState(false);
+const [selectedUserForCertificate, setSelectedUserForCertificate] = useState(null);
+
+  // Generate certificate for a user
+const generateCertificate = (user) => {
+  setSelectedUserForCertificate(user);
+  if (open === true) {
+    setOpen(false);
+  }
+  else {
+    setOpen(true);
+  }
+};
+
+  // Export data to CSV
+  const exportToCSV = () => {
+    const headers = ["Rank", "Name", "Roll Number", "Language", "Score", "Exam Name", "Certificate No", "Date"];
+    
+    const csvData = filteredUserAnswers
+      .sort((a, b) => (b.score || 0) - (a.score || 0))
+      .map((user, index) => {
+        // Calculate rank with tie handling
+        const sameScoreUsers = filteredUserAnswers.filter(u => u.score === user.score);
+        const minRank = sameScoreUsers.reduce((min, u) => {
+          const userIndex = filteredUserAnswers.findIndex(ua => ua.id === u.id);
+          return userIndex < min ? userIndex : min;
+        }, index) + 1;
+        
+        return [
+          minRank + (sameScoreUsers.length > 1 ? " (tied)" : ""),
+          user.name,
+          user.rollNumber,
+          user.language,
+          user.score || 0,
+          user.examName || "N/A",
+          user.certificateNo || "N/A",
+          user.date || "N/A"
+        ];
+      });
+
+    const csvContent = [headers, ...csvData]
+      .map(row => row.map(field => `"${field}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `quiz-results-${selectedLanguage}-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    toast.success("Data exported to CSV successfully");
   };
 
   if (loading) {
@@ -312,6 +372,13 @@ const UserAnswers = () => {
                 >
                   <FaLanguage /> 
                   {deletingLanguage ? "Deleting..." : `Delete ${selectedLanguage} Data`}
+                </button>
+                
+                <button
+                  onClick={exportToCSV}
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2"
+                >
+                  <FaDownload /> Export CSV
                 </button>
                 
                 <button
@@ -403,7 +470,7 @@ const UserAnswers = () => {
                                   {index + 1}. {winner.name} ({winner.rollNumber})
                                 </div>
                                 <div className="text-sm text-purple-600 dark:text-purple-300">
-                                  Score: {winner.score || 0}
+                                  Score: {winner.score || 0} | Cert: {winner.certificateNo || "N/A"}
                                 </div>
                               </div>
                               <span className="bg-purple-500 text-white px-2 py-1 rounded text-xs font-bold">
@@ -526,6 +593,7 @@ const UserAnswers = () => {
                             {result.winners.slice(0, 3).map((winner, index) => (
                               <li key={winner.id}>
                                 {index + 1}. {winner.name} ({winner.rollNumber}) - {winner.score}
+                                {winner.certificateNo && ` - Cert: ${winner.certificateNo}`}
                               </li>
                             ))}
                             {result.winners.length > 3 && (
@@ -584,12 +652,22 @@ const UserAnswers = () => {
           {/* User Submissions Section */}
           <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-lg overflow-hidden transition-colors duration-300">
             <div className="p-6 border-b border-purple-200 dark:border-neutral-700">
-              <h2 className="text-2xl font-bold text-purple-800 dark:text-purple-100">
-                User Submissions
-              </h2>
-              <p className="text-sm text-purple-600 dark:text-purple-300 mt-1">
-                {filteredUserAnswers.length} valid submissions found
-              </p>
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-purple-800 dark:text-purple-100">
+                    User Submissions
+                  </h2>
+                  <p className="text-sm text-purple-600 dark:text-purple-300 mt-1">
+                    {filteredUserAnswers.length} valid submissions found
+                  </p>
+                </div>
+                <button
+                  onClick={exportToCSV}
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2"
+                >
+                  <FaDownload /> Export CSV
+                </button>
+              </div>
             </div>
 
             {filteredUserAnswers.length === 0 ? (
@@ -618,6 +696,18 @@ const UserAnswers = () => {
                       <th className="px-6 py-3 text-left text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wider">
                         Score
                       </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wider">
+                        Exam Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wider">
+                        Certificate No
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wider">
+                        Date
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-neutral-900 divide-y divide-purple-100 dark:divide-neutral-700">
@@ -636,7 +726,8 @@ const UserAnswers = () => {
                         }, index) + 1;
                         
                         return (
-                          <tr key={ua.id} className="hover:bg-purple-50 dark:hover:bg-neutral-800 transition-colors duration-150">
+                        
+                          <tr key={ua.id}  className="hover:bg-purple-50 dark:hover:bg-neutral-800 transition-colors duration-150">
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-purple-900 dark:text-purple-100">
                               {minRank}
                               {sameScoreUsers.length > 1 && (
@@ -657,11 +748,45 @@ const UserAnswers = () => {
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-purple-800 dark:text-purple-200 font-bold">
                               {ua.score || 0}
                             </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-purple-800 dark:text-purple-200">
+                              {ua.examName || "N/A"}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-purple-800 dark:text-purple-200 font-mono">
+                              {ua.certificateNo || "N/A"}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-purple-800 dark:text-purple-200">
+                              {ua.date || "N/A"}
+                            </td>
+                           <td className="px-6 py-4 whitespace-nowrap text-sm">
+  <button
+    onClick={() => generateCertificate(ua)}
+    className="p-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded"
+    title="Generate Certificate"
+  >
+    <FaCertificate />
+  </button>
+</td>
                           </tr>
+                          
+                        
+                          
                         );
                       })}
                   </tbody>
                 </table>
+                {open && selectedUserForCertificate && (
+  <Certificate
+    name={selectedUserForCertificate.name}
+    rollNumber={selectedUserForCertificate.rollNumber}
+    examName={selectedUserForCertificate.examName || "N/A"}
+    date={selectedUserForCertificate.date || "N/A"}
+    certificateNo={selectedUserForCertificate.certificateNo || "N/A"}
+    language={selectedUserForCertificate.language}
+    score={selectedUserForCertificate.score}
+    Que={selectedUserForCertificate.NoQuestion}
+    onClose={() => setOpen(false)}
+  />
+)}
               </div>
             )}
           </div>

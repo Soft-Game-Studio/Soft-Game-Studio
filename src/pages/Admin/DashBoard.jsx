@@ -81,6 +81,19 @@ import Layout from '../../components/layout/Layout';
       ],
       link: "/Admin-AddMembr"
     },
+    {
+      title: "SGS Community Members", 
+      details: [
+        "Add SGS Community Membres",
+        "Ediet SGS Community Members"
+      ],
+      link: "/Admin-Community-Member"
+    },
+
+
+
+
+    
 
 
 
