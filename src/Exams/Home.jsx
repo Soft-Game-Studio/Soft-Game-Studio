@@ -26,6 +26,8 @@ const HomePage = () => {
   const [totalQuizzes, setTotalQuizzes] = useState(0);
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [totalUser, setTotalUser] = useState(0);
+  const [accessGranted, setAccessGranted] = useState(false);
+  const [passkeyInput, setPasskeyInput] = useState('');
 
   // Fetch free quizzes (top 4)
   useEffect(() => {
@@ -251,173 +253,442 @@ const HomePage = () => {
     );
   };
 
-  return (
-    <Layout>
-      <div className="min-h-screen pb-16 transition-colors duration-300 bg-purple-50 text-gray-800 dark:bg-neutral-950 dark:text-white">
-        {/* Hero Section */}
-        <div className="relative text-white py-12 px-4 rounded-b-3xl shadow-lg bg-gradient-to-r from-purple-500 to-indigo-600 dark:from-purple-900 dark:to-indigo-900">
-          <div className="max-w-md mx-auto text-center">
-            <div className="flex justify-center mb-4">
-              <div className="bg-white/20 w-20 overflow-hidden rounded-full dark:bg-white/10">
-                <img src="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/App%2Fsplash.png?alt=media&token=c839a793-40d5-4cab-b5e1-d2215493de83" className='w-20' alt="SGS Quiz" />
-              </div>
-            </div>
-            <h1 className="text-4xl font-bold mb-3">SGS QUIZ</h1>
-            <p className="text-lg mb-6 opacity-90">Test your knowledge, challenge friends, and become a trivia master!</p>
-           
-            <button 
-              onClick={() => {navigate('/DailyQuiz')}} 
-              className="font-bold py-3 px-8 rounded-full shadow-lg transition-all transform hover:scale-105 bg-white text-purple-700 hover:bg-purple-100 dark:bg-purple-700 dark:text-white dark:hover:bg-purple-600"
+  const handlePasskeySubmit = () => {
+    if (passkeyInput === 'sgs0612') {
+      setAccessGranted(true);
+    } else {
+      alert('Incorrect Passkey. Please try again.');
+      setPasskeyInput('');
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handlePasskeySubmit();
+    }
+  };
+
+  if (!accessGranted) {
+    return (
+      <Layout>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-neutral-950">
+          <div className="bg-white dark:bg-neutral-900 p-8 rounded-xl shadow-lg max-w-md w-full">
+            <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white text-center">Enter Passkey to Access Home Page</h2>
+            <input
+              type="password"
+              className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white"
+              placeholder="Enter Passkey"
+              value={passkeyInput}
+              onChange={(e) => setPasskeyInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+            />
+            <button
+              onClick={handlePasskeySubmit}
+              className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors"
             >
-              <FaPlay className="inline-block mr-2" /> Play Weekly Quiz
+              Submit
             </button>
           </div>
-          
-          {/* Floating elements for visual interest */}
-          <div className="absolute top-4 left-4 w-4 h-4 rounded-full bg-yellow-300 animate-pulse"></div>
-          <div className="absolute top-10 right-8 w-6 h-6 rounded-full bg-pink-300 opacity-70"></div>
-          <div className="absolute bottom-8 left-10 w-5 h-5 rounded-full bg-white opacity-30 dark:bg-white dark:opacity-20"></div>
         </div>
-        
-        {/* Image Slider */}
-        <div className="max-w-lg mx-auto mt-8 px-4 relative">
-          <div className="relative h-56 overflow-hidden rounded-2xl shadow-xl">
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+  <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 dark:from-neutral-950 dark:to-purple-900/20 transition-colors duration-300">
+    {/* Enhanced Hero Section */}
+    <section className="relative overflow-hidden bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 dark:from-purple-900 dark:via-indigo-900 dark:to-blue-900">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0">
+        <div className="absolute top-10 left-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
+        <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-500"></div>
+      </div>
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+        <div className="text-center">
+          {/* Logo and Branding */}
+          <div className="flex justify-center mb-6">
+            <div className="relative">
+              <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-2xl border border-white/30">
+                <img 
+                  src="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/App%2Fsplash.png?alt=media&token=c839a793-40d5-4cab-b5e1-d2215493de83" 
+                  className="w-16 h-16 rounded-lg"
+                  alt="SGS Quiz"
+                />
+              </div>
+              <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full animate-bounce"></div>
+            </div>
+          </div>
+
+          {/* Main Heading */}
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+            SGS <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-200">QUIZ</span>
+          </h1>
+          
+          {/* Subtitle */}
+          <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed">
+            Test your knowledge, challenge friends, and become a trivia master in our interactive learning platform!
+          </p>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+            <button 
+              onClick={() => navigate('/DailyQuiz')}
+              className="group relative bg-white text-purple-600 font-semibold py-4 px-8 rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1"
+            >
+              <div className="flex items-center space-x-3">
+                <FaPlay className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                <span className="text-lg">Play Weekly Quiz</span>
+              </div>
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white to-gray-100 opacity-0 group-hover:opacity-100 transition-opacity -z-10"></div>
+            </button>
+            
+            <button 
+              onClick={() => navigate('/SGS-Quiz')}
+              className="group border-2 border-white/30 text-white font-semibold py-4 px-8 rounded-2xl backdrop-blur-sm hover:bg-white/10 transition-all duration-300 transform hover:scale-105"
+            >
+              Explore All Quizzes
+            </button>
+          </div>
+
+          {/* Stats Preview */}
+          <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
+            <div className="text-center">
+              <div className="text-2xl md:text-3xl font-bold text-white">{totalUser}+</div>
+              <div className="text-white/70 text-sm">Active Players</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl md:text-3xl font-bold text-white">{totalQuizzes}+</div>
+              <div className="text-white/70 text-sm">Quizzes</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl md:text-3xl font-bold text-white">{totalQuestions}+</div>
+              <div className="text-white/70 text-sm">Questions</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Wave Divider */}
+      <div className="absolute bottom-0 left-0 right-0">
+        <svg className="w-full h-12 text-gray-50 dark:text-neutral-950" viewBox="0 0 1200 120" preserveAspectRatio="none">
+          <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="currentColor"></path>
+          <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="currentColor"></path>
+          <path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="currentColor"></path>
+        </svg>
+      </div>
+    </section>
+
+    {/* Modern Image Slider */}
+    <section className="py-16 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="relative bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl overflow-hidden">
+          <div className="relative h-80 md:h-96">
             {slides.map((slide, index) => (
-              <div 
+              <div
                 key={slide.id}
-                className="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center p-6 transition-opacity duration-500"
-                style={{
-                  background: index === 0 
-                    ? 'linear-gradient(135deg, #8B5CF6, #7C3AED)' 
-                    : index === 1 
-                    ? 'linear-gradient(135deg, #6366F1, #7C3AED)' 
-                    : 'linear-gradient(135deg, #EC4899, #7C3AED)',
-                  opacity: currentSlide === index ? 1 : 0
-                }}
+                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                  currentSlide === index ? 'opacity-100' : 'opacity-0'
+                }`}
               >
-                <h3 className="text-2xl font-bold text-white mb-2">{slide.title}</h3>
-                <p className="text-white/90 text-center">{slide.description}</p>
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-800 dark:to-indigo-800"></div>
+                <div className="relative h-full flex items-center justify-center text-center px-8">
+                  <div className="max-w-2xl">
+                    <h3 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                      {slide.title}
+                    </h3>
+                    <p className="text-xl text-white/90">
+                      {slide.description}
+                    </p>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
           
-          {/* Slider Indicators */}
-          <div className="flex justify-center mt-4 space-x-2">
+          {/* Enhanced Slider Controls */}
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3">
             {slides.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
-                className="w-3 h-3 rounded-full bg-purple-300 dark:bg-purple-800 data-[active=true]:bg-purple-600 data-[active=true]:dark:bg-purple-500"
-                data-active={currentSlide === index}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  currentSlide === index 
+                    ? 'bg-white scale-125' 
+                    : 'bg-white/50 hover:bg-white/70'
+                }`}
                 aria-label={`Go to slide ${index + 1}`}
               />
             ))}
           </div>
-        </div>
-        
-        {/* Quiz Sections */}
-        <div className="mt-12 px-4 max-w-6xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-8 text-gray-800 dark:text-white">Our Quiz Categories</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Free Quizzes Section */}
-            <QuizSection 
-              title="Free Quizzes" 
-              quizzes={freeQuizzes} 
-              type="Free" 
-              icon={<FaQuestionCircle className="text-blue-500" />}
-            />
-            
-            {/* Official Quizzes Section */}
-            {user ? (
-              <QuizSection 
-                title="Official Quizzes" 
-                quizzes={officialQuizzes} 
-                type="Official" 
-                icon={<FaCrown className="text-amber-500" />}
-              />
-            ) : (
-              <div className="bg-white rounded-xl shadow-md p-6 dark:bg-neutral-900">
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center mb-4">
-                  <FaCrown className="text-amber-500" /> <span className="ml-2">Official Quizzes</span>
-                </h2>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">Login to access premium official quizzes</p>
-                <button 
-                  onClick={() => navigate('/login')}
-                  className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors"
-                >
-                  Login Now
-                </button>
-              </div>
-            )}
-            
-            {/* Weekly Quizzes Section */}
-            {user ? (
-              <QuizSection 
-                title="Weekly Quizzes" 
-                quizzes={weeklyQuizzes} 
-                type="Weekly" 
-                icon={<FaTrophy className="text-purple-500" />}
-              />
-            ) : (
-              <div className="bg-white rounded-xl shadow-md p-6 dark:bg-neutral-900">
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center mb-4">
-                  <FaTrophy className="text-purple-500" /> <span className="ml-2">Weekly Quizzes</span>
-                </h2>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">Login to participate in weekly challenges</p>
-                <button 
-                  onClick={() => navigate('/login')}
-                  className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors"
-                >
-                  Login Now
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-        
-        {/* Stats Section */}
-        <div className="mt-12 rounded-3xl mx-4 p-6 shadow-inner bg-purple-100 dark:bg-neutral-900">
-          <h2 className="text-2xl font-bold text-center mb-6 text-gray-800 dark:text-white">Quiz Community</h2>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="p-4 rounded-xl shadow bg-white dark:bg-neutral-800">
-              <div className="text-xl font-bold text-purple-600 dark:text-purple-400">{totalUser}</div>
-              <div className="text-sm mt-1 text-gray-600 dark:text-gray-300 flex items-center justify-center">
-                <FaUsers className="mr-1" /> Players
-              </div>
-            </div>
-            
-            <div className="p-4 rounded-xl shadow bg-white dark:bg-neutral-800">
-              <div className="text-xl font-bold text-purple-600 dark:text-purple-400">{totalQuizzes}</div>
-              <div className="text-sm mt-1 text-gray-600 dark:text-gray-300 flex items-center justify-center">
-                <FaCrown className="mr-1" /> Quizzes
-              </div>
-            </div>
-            
-            <div className="p-4 rounded-xl shadow bg-white dark:bg-neutral-800">
-              <div className="text-xl font-bold text-purple-600 dark:text-purple-400">{totalQuestions}</div>
-              <div className="text-sm mt-1 text-gray-600 dark:text-gray-300 flex items-center justify-center">
-                <FaQuestionCircle className="mr-1" /> Questions
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* CTA Section */}
-        <div className="mt-12 text-center px-4">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Ready to Challenge Yourself?</h2>
-          <p className="mb-6 max-w-md mx-auto text-gray-600 dark:text-gray-300">
-            Join millions of players worldwide in the ultimate trivia experience!
-          </p>
-          <button 
-            onClick={() => navigate('/SGS-Quiz')}
-            className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-bold py-4 px-10 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+
+          {/* Navigation Arrows */}
+          <button
+            onClick={() => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)}
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all"
           >
-            Explore All Quizzes
+            ←
+          </button>
+          <button
+            onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all"
+          >
+            →
           </button>
         </div>
       </div>
-    </Layout>
+    </section>
+
+    {/* Enhanced Quiz Sections */}
+    <section className="py-16 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+            Discover Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">Quiz Categories</span>
+          </h2>
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+            Choose from a variety of quiz types designed to challenge and entertain players of all levels
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Free Quizzes Card */}
+          <div className="group bg-white dark:bg-neutral-900 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 dark:border-neutral-800">
+            <div className="p-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center">
+                  <FaQuestionCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                </div>
+                <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm font-medium rounded-full">
+                  Free
+                </span>
+              </div>
+              
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                Free Quizzes
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Access our collection of free quizzes covering various topics and difficulty levels
+              </p>
+
+              <QuizSection 
+                title="" 
+                quizzes={freeQuizzes} 
+                type="Free" 
+                icon={null}
+              />
+            </div>
+          </div>
+
+          {/* Official Quizzes Card */}
+          {user ? (
+            <div className="group bg-white dark:bg-neutral-900 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 dark:border-neutral-800">
+              <div className="p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center">
+                    <FaCrown className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <span className="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-sm font-medium rounded-full">
+                    Premium
+                  </span>
+                </div>
+                
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                  Official Quizzes
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  Premium curated quizzes with expert-level questions and detailed analytics
+                </p>
+
+                <QuizSection 
+                  title="" 
+                  quizzes={officialQuizzes} 
+                  type="Official" 
+                  icon={null}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="group bg-gradient-to-br from-amber-500 to-orange-500 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+              <div className="p-8 h-full flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+                      <FaCrown className="w-6 h-6 text-white" />
+                    </div>
+                    <span className="px-3 py-1 bg-white/20 text-white text-sm font-medium rounded-full">
+                      Premium
+                    </span>
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold text-white mb-3">
+                    Official Quizzes
+                  </h3>
+                  <p className="text-white/90 mb-6">
+                    Unlock premium features and exclusive content by creating an account
+                  </p>
+                </div>
+                
+                <button 
+                  onClick={() => navigate('/login')}
+                  className="w-full bg-white text-amber-600 font-semibold py-4 px-6 rounded-2xl hover:bg-gray-100 transition-all duration-300 transform hover:scale-105"
+                >
+                  Sign In to Access
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Weekly Quizzes Card */}
+          {user ? (
+            <div className="group bg-white dark:bg-neutral-900 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 dark:border-neutral-800">
+              <div className="p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center">
+                    <FaTrophy className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-sm font-medium rounded-full">
+                    Weekly
+                  </span>
+                </div>
+                
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                  Weekly Challenges
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  Compete in time-limited challenges and climb the global leaderboard
+                </p>
+
+                <QuizSection 
+                  title="" 
+                  quizzes={weeklyQuizzes} 
+                  type="Weekly" 
+                  icon={null}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="group bg-gradient-to-br from-purple-500 to-indigo-500 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+              <div className="p-8 h-full flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+                      <FaTrophy className="w-6 h-6 text-white" />
+                    </div>
+                    <span className="px-3 py-1 bg-white/20 text-white text-sm font-medium rounded-full">
+                      Weekly
+                    </span>
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold text-white mb-3">
+                    Weekly Challenges
+                  </h3>
+                  <p className="text-white/90 mb-6">
+                    Join weekly competitions and showcase your skills against players worldwide
+                  </p>
+                </div>
+                
+                <button 
+                  onClick={() => navigate('/login')}
+                  className="w-full bg-white text-purple-600 font-semibold py-4 px-6 rounded-2xl hover:bg-gray-100 transition-all duration-300 transform hover:scale-105"
+                >
+                  Sign In to Compete
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+
+    {/* Enhanced Stats Section */}
+    <section className="py-16 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-800 dark:to-indigo-800 rounded-3xl shadow-2xl overflow-hidden">
+          <div className="px-8 py-12 md:py-16">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                Join Our Growing Community
+              </h2>
+              <p className="text-xl text-white/80 max-w-2xl mx-auto">
+                Be part of thousands of players who are already enjoying our quiz platform
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center group">
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 transform hover:scale-105">
+                  <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <FaUsers className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="text-4xl md:text-5xl font-bold text-white mb-2">{totalUser}</div>
+                  <div className="text-white/80 font-medium">Active Players</div>
+                </div>
+              </div>
+              
+              <div className="text-center group">
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 transform hover:scale-105">
+                  <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <FaCrown className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="text-4xl md:text-5xl font-bold text-white mb-2">{totalQuizzes}</div>
+                  <div className="text-white/80 font-medium">Available Quizzes</div>
+                </div>
+              </div>
+              
+              <div className="text-center group">
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 transform hover:scale-105">
+                  <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <FaQuestionCircle className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="text-4xl md:text-5xl font-bold text-white mb-2">{totalQuestions}</div>
+                  <div className="text-white/80 font-medium">Total Questions</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* Enhanced CTA Section */}
+    <section className="py-16 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto text-center">
+        <div className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl p-12 md:p-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
+            Ready to Start Your Quiz Journey?
+          </h2>
+          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+            Join millions of players worldwide in the ultimate trivia experience. Challenge yourself, learn something new, and have fun!
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button 
+              onClick={() => navigate('/SGS-Quiz')}
+              className="group bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1"
+            >
+              <span className="flex items-center justify-center space-x-3">
+                <span>Explore All Quizzes</span>
+                <FaPlay className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </span>
+            </button>
+            
+            {!user && (
+              <button 
+                onClick={() => navigate('/register')}
+                className="group border-2 border-purple-600 text-purple-600 dark:text-purple-400 dark:border-purple-400 font-semibold py-4 px-8 rounded-2xl hover:bg-purple-600 hover:text-white dark:hover:bg-purple-400 dark:hover:text-white transition-all duration-300"
+              >
+                Create Free Account
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</Layout>
   );
 };
 

@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 // ✅ Email/password login
 const handleLogin = async (email, password, navigate) => {
   try {
-    const result = await signInWithEmailAndPassword(auth, email, password);
+    const result = await signInWithEmailAndPassword(auth, email.toLowerCase(), password);
 
     if (result) {
       toast.success("Login successful", {

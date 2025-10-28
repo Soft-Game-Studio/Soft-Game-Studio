@@ -128,7 +128,7 @@ const Certificate = ({
                 CERTIFICATE
               </h1>
               <h2 className="text-xl sm:text-2xl text-black tracking-widest mb-4">
-                OF APPRECIATION
+                OF PARTICIPATION
               </h2>
              
               <p className="uppercase tracking-wider text-sm text-black mt-4">

@@ -99,9 +99,16 @@ const OfficialQuizList = () => {
               <h1 className="text-lg font-semibold text-gray-800 mb-4">
                 {quiz.name}
               </h1>
-              <p className="text-xs text-gray-600 mb-4">
+              <div className="flex justify-between items-center">
+<p className="text-xs text-gray-600 mb-4">
                 Language: {quiz.language}
               </p>
+              <p className="text-xs text-gray-600 mb-4">
+                Questions : {quiz.questions?.length || 0}
+              </p>
+              </div>
+              
+              
 
               {/* Countdown or Start Button */}
               <div className="text-center mb-4">

@@ -63,7 +63,7 @@ const [formData, setFormData] = useState({
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
-        formData.email,
+        formData.email.toLowerCase(),
         formData.password
       );
       await addUserToFirestore(userCredential.user, formData);
