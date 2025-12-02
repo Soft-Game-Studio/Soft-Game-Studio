@@ -319,7 +319,7 @@ const MemberModal = ({ member, isOpen, onClose }) => {
                   </h3>
                   <div className="space-y-3">
                     <p className="text-gray-600 dark:text-gray-300">
-                      {member.email || "Not specified"}
+                      {"team.softgamestudio@gmail.com"}
                     </p>
                     <div className="flex gap-3">
                       {member.social &&

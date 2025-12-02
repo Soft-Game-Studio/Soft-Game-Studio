@@ -135,40 +135,28 @@ const HomePage = () => {
   const examPic = [
     {
       id: 1,
-      img: "https://lh3.googleusercontent.com/geougc/AF1QipN1tr0TGUCpZgn2iSxgL1OmfApsjRHkpmFX5ChF=w573-h573-p-no",
+      img: "https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Our%20Social%20Work%2F2025-04-30.jpg?alt=media&token=82cdbc13-0dee-4850-b26e-4264030fbc8f",
       title: "Code Vortex - SGS",
       description: "🎉 Soft Game Studio successfully hosted CODE VORTEX — a thrilling coding competition at MIMIT College for BCA students, featuring tracks in C, C++, Python, and Web Dev. With full participation, live challenges, and immense enthusiasm, it was a celebration of tech, teamwork, and innovation. 🙌💻",
     },
     {
       id: 2,
-      img: "https://lh3.googleusercontent.com/geougc/AF1QipMB4Bw7gOhIz4SFVKf4iy2i0Stj7LL9ByXS02_s=w573-h573-p-no",
+      img: "https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Our%20Social%20Work%2FIMG-20250319-WA0005.jpg?alt=media&token=1be384ea-b1c2-4728-a2cd-e26752f0c14e",
       title: "Code Vortex - SGS",
       description: "🎉 Soft Game Studio successfully hosted CODE VORTEX — a thrilling coding competition at MIMIT College for BCA students, featuring tracks in C, C++, Python, and Web Dev. With full participation, live challenges, and immense enthusiasm, it was a celebration of tech, teamwork, and innovation. 🙌💻",
     },
-  ];
-
-  const Projects = [ 
-    { 
-      title: "SGS Quiz App", 
-      link: "https://github.com/SOFTGAMESTUDIO/sgs-quiz-app", 
-      description: "Easy And Attractive Interface Quiz App", 
-      img: "https://firebasestorage.googleapis.com/v0/b/webjl26.appspot.com/o/SGS%20Projects%2FUntitled%20design%20(1).png?alt=media&token=7f45671d-5c45-458e-98ef-ad66b9a00786", 
-      view: "https://github.com/SOFTGAMESTUDIO/SGS-QUIZ-APP/releases/SGS-QUIZ-APP/" 
+     {
+      id: 3,
+      img: "https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Our%20Social%20Work%2FWhatsApp%20Image%202025-10-29%20at%202.41.56%20PM%20(1).jpeg?alt=media&token=8fc352cd-c64f-448b-9bc3-7f30249907d3",
+      title: "Code Clash - SGS",
+      description: "🎉 Soft Game Studio successfully hosted CODE CLASH — an exciting and competitive coding event at MIMIT College for BCA students!The competition featured diverse tracks including C, C++, Python, Java, SQL, PHP, and Web Development.With energetic participation, real-time challenges, and incredible enthusiasm from all students, the event became a true celebration of technology, skills, creativity, and problem-solving. 🙌💻",
     },
-    { 
-      title: "CU STUDY HUB", 
-      link: "https://github.com/SOFTGAMESTUDIO/CU-Notes-HUB-SGS", 
-      description: "Free Notes Sharing and access", 
-      img: "https://firebasestorage.googleapis.com/v0/b/webjl26.appspot.com/o/CU-STUDY-HUB-Soft-Game-Studio-07-18-2025_07_45_PM.png?alt=media&token=caea8d02-76e5-4997-bd8e-d4481571e299",
-      view: "https://custudyhub.web.app/"
+     {
+      id: 4,
+      img: "https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Our%20Social%20Work%2FWhatsApp%20Image%202025-10-29%20at%202.41.56%20PM%20(2).jpeg?alt=media&token=f748965f-07dc-4881-9946-6f0c32e18a2c",
+      title: "Code Clash - SGS",
+      description: "🎉 Soft Game Studio successfully hosted CODE CLASH — an exciting and competitive coding event at MIMIT College for BCA students!The competition featured diverse tracks including C, C++, Python, Java, SQL, PHP, and Web Development.With energetic participation, real-time challenges, and incredible enthusiasm from all students, the event became a true celebration of technology, skills, creativity, and problem-solving. 🙌💻",
     },
-    { 
-      title: "Coming Soon", 
-      link: "#", 
-      description: "Coming Soon",  
-      img: "", 
-      view: "/" 
-    }
   ];
 
   return (

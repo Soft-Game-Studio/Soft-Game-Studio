@@ -5,11 +5,9 @@ import { auth } from "./DataBase/firebaseConfig";
 
 const AuthContext = createContext();
 
-const ADMIN_EMAIL = import.meta.env.VITE__ADMIN_EMAIL_SGS;
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true); // ✅ loading state
 
   useEffect(() => {
@@ -17,10 +15,8 @@ export const AuthProvider = ({ children }) => {
       if (firebaseUser) {
         const currentEmail = firebaseUser.email;
         setUser(firebaseUser);
-        setIsAdmin(currentEmail === ADMIN_EMAIL);
       } else {
         setUser(null);
-        setIsAdmin(false);
       }
       setLoading(false); // ✅ finished loading
     });
@@ -29,7 +25,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isAdmin, loading }}>
+    <AuthContext.Provider value={{ user, loading }}>
       {children}
     </AuthContext.Provider>
   );

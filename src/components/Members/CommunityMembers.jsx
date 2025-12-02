@@ -27,11 +27,8 @@ import {
   FiGithub,
   FiInstagram,
   FiSearch,
-  FiArrowUp,
-  FiMail,
+  FiArrowUp, 
   FiX,
-  FiFilter,
-  FiChevronDown,
   FiExternalLink,
   FiUserPlus,
   FiCheckCircle,
@@ -39,40 +36,14 @@ import {
   FiEdit,
   FiUser,
   FiSave,
-  FiTrash2,
   FiMonitor,
   FiSmartphone
 } from "react-icons/fi";
 
-// Device and browser detection function
-
-
 // Function to generate sequential community IDs
-const generateCommunityId = async () => {
-  try {
-    const querySnapshot = await getDocs(collection(fireDB, "communityMembers"));
-    const members = querySnapshot.docs.map(doc => doc.data());
-    
-    // Find the highest existing community ID
-    const communityIds = members
-      .map(member => member.communityId)
-      .filter(id => id && id.startsWith('SGSCOM'))
-      .map(id => {
-        const num = id.replace('SGSCOM', '');
-        return parseInt(num) || 0;
-      });
-    
-    const highestId = communityIds.length > 0 ? Math.max(...communityIds) : 0;
-    const nextId = highestId + 1;
-    
-    // Format with leading zeros
-    return `SGSCOM${nextId.toString().padStart(3, '0')}`;
-  } catch (error) {
-    console.error("Error generating community ID:", error);
-    // Fallback to timestamp-based ID
-    return `SGSCOM${Date.now().toString().slice(-6)}`;
-  }
-};
+
+
+
 
 const SocialIcon = ({ platform, url }) => {
   const icons = {
@@ -407,13 +378,7 @@ const MemberModal = ({ member, isOpen, onClose, onEditClick, isCurrentUser = fal
                     )
                 )}
               </div>
-              {member.contactInfo && (
-                <div className="mt-4">
-                  <p className="text-gray-600 dark:text-gray-300">
-                    <strong>Contact:</strong> {member.contactInfo}
-                  </p>
-                </div>
-              )}
+              
             </div>
 
             <div className="mt-6 flex justify-end">
@@ -424,299 +389,6 @@ const MemberModal = ({ member, isOpen, onClose, onEditClick, isCurrentUser = fal
                 Close
               </button>
             </div>
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  );
-};
-
-const ApplicationModal = ({ isOpen, onClose, onSubmit, userData }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    skills: '',
-    bio: '',
-    contactInfo: '',
-    socialLinks: {
-      linkedin: '',
-      github: '',
-      instagram: ''
-    }
-  });
-  const [photo, setPhoto] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ text: '', type: '' });
-
-  useEffect(() => {
-    if (userData && isOpen) {
-      setFormData({
-        name: userData.name || '',
-        skills: userData.skills || '',
-        bio: userData.bio || '',
-        contactInfo: userData.phone || userData.contactInfo || '',
-        socialLinks: {
-          linkedin: userData.socialLinks?.linkedin || '',
-          github: userData.socialLinks?.github || '',
-          instagram: userData.socialLinks?.instagram || ''
-        }
-      });
-      
-      if (userData.photoUrl) {
-        setPreviewUrl(userData.photoUrl);
-      }
-    }
-  }, [userData, isOpen]);
-
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSocialLinkChange = (platform, url) => {
-    setFormData({
-      ...formData,
-      socialLinks: {
-        ...formData.socialLinks,
-        [platform]: url
-      }
-    });
-  };
-
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setPhoto(file);
-      const reader = new FileReader();
-      reader.onload = () => setPreviewUrl(reader.result);
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const removePhoto = () => {
-    setPhoto(null);
-    setPreviewUrl('');
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage({ text: '', type: '' });
-
-    try {
-      let photoUrl = '';
-
-      if (photo) {
-        const storageRef = ref(storage, `community-members/${Date.now()}_${photo.name}`);
-        const snapshot = await uploadBytes(storageRef, photo);
-        photoUrl = await getDownloadURL(snapshot.ref);
-      }
-
-      // Generate sequential community ID
-      const communityId = await generateCommunityId();
-      
-      // Get device and browser info
-      
-
-      await addDoc(collection(fireDB, 'communityMembers'), {
-        ...formData,
-        photoUrl,
-        communityId,
-        status: 'pending',
-        appliedAt: serverTimestamp(),
-        userId: userData?.id
-      });
-
-      localStorage.setItem('currentUserMemberId', communityId);
-      setMessage({ text: 'Application submitted successfully!', type: 'success' });
-      
-      setTimeout(() => {
-        onSubmit();
-        onClose();
-      }, 2000);
-    } catch (error) {
-      console.error('Error submitting application:', error);
-      setMessage({ text: 'Error submitting application. Please try again.', type: 'error' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-                Join Our Community
-              </h2>
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
-              >
-                <FiX className="w-5 h-5" />
-              </button>
-            </div>
-
-            {userData && (
-              <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <p className="text-blue-600 dark:text-blue-400 text-sm">
-                  <strong>Auto-fill enabled:</strong> Your profile information has been pre-filled.
-                </p>
-              </div>
-            )}
-
-            {message.text && (
-              <div className={`p-3 rounded-lg mb-4 ${
-                message.type === 'success' 
-                  ? 'bg-green-100 text-green-700' 
-                  : 'bg-red-100 text-red-700'
-              }`}>
-                {message.text}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Skills (comma separated) *
-                </label>
-                <input
-                  type="text"
-                  name="skills"
-                  value={formData.skills}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="e.g., React, JavaScript, UI/UX Design"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  About Yourself *
-                </label>
-                <textarea
-                  name="bio"
-                  value={formData.bio}
-                  onChange={handleInputChange}
-                  required
-                  rows={3}
-                  placeholder="Tell us about yourself..."
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Contact Info (Optional)
-                </label>
-                <input
-                  type="text"
-                  name="contactInfo"
-                  value={formData.contactInfo}
-                  onChange={handleInputChange}
-                  placeholder="Email or phone number"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Social Links (Optional)
-                </label>
-                <div className="space-y-2">
-                  {Object.entries(formData.socialLinks).map(([platform, url]) => (
-                    <div key={platform} className="flex items-center gap-2">
-                      <SocialIcon platform={platform} url="#" />
-                      <input
-                        type="url"
-                        placeholder={`${platform.charAt(0).toUpperCase() + platform.slice(1)} URL`}
-                        value={url}
-                        onChange={(e) => handleSocialLinkChange(platform, e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Profile Photo
-                </label>
-                <div className="flex items-center space-x-4">
-                  <div className="flex-1">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoChange}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-                    />
-                  </div>
-                  {previewUrl && (
-                    <div className="relative">
-                      <img src={previewUrl} alt="Preview" className="w-16 h-16 rounded-full object-cover border border-gray-300" />
-                      <button
-                        type="button"
-                        onClick={removePhoto}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                      >
-                        <FiX className="w-3 h-3" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {loading ? 'Submitting...' : (
-                    <>
-                      <FiUserPlus /> Apply Now
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
           </div>
         </motion.div>
       </motion.div>
@@ -924,15 +596,16 @@ const ProfileUpdateModal = ({ isOpen, onClose, memberData, onUpdate }) => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Contact Info (Optional)
+                  Contact Info *
                 </label>
                 <input
                   type="text"
                   name="contactInfo"
                   value={formData.contactInfo}
                   onChange={handleInputChange}
-                  placeholder="Email or phone number"
+                  placeholder="phone number"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                  required
                 />
               </div>
 
@@ -1012,6 +685,39 @@ const ProfileUpdateModal = ({ isOpen, onClose, memberData, onUpdate }) => {
   );
 };
 
+
+
+
+
+
+
+
+const generateCommunityId = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(fireDB, "communityMembers"));
+    const members = querySnapshot.docs.map(doc => doc.data());
+    
+    // Find the highest existing community ID
+    const communityIds = members
+      .map(member => member.communityId)
+      .filter(id => id && id.startsWith('SGSCOM'))
+      .map(id => {
+        const num = id.replace('SGSCOM', '');
+        return parseInt(num) || 0;
+      });
+    
+    const highestId = communityIds.length > 0 ? Math.max(...communityIds) : 0;
+    const nextId = highestId + 1;
+    
+    // Format with leading zeros
+    return `SGSCOM${nextId.toString().padStart(3, '0')}`;
+  } catch (error) {
+    console.error("Error generating community ID:", error);
+    // Fallback to timestamp-based ID
+    return `SGSCOM${Date.now().toString().slice(-6)}`;
+  }
+};
+
 function CommunityMembers() {
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: containerRef });
@@ -1026,7 +732,7 @@ function CommunityMembers() {
   const [applicationModalOpen, setApplicationModalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [currentUserMemberId, setCurrentUserMemberId] = useState(null);
+  const [currentUserMember, setCurrentUserMember] = useState(null);
   const [userData, setUserData] = useState(null);
   const [userLoading, setUserLoading] = useState(true);
   
@@ -1078,9 +784,12 @@ function CommunityMembers() {
       
       setCommunityMembers(sortedMembers);
       
-      const storedMemberId = localStorage.getItem('currentUserMemberId');
-      if (storedMemberId) {
-        setCurrentUserMemberId(storedMemberId);
+      // Find current user's member profile by matching Firebase UID
+      if (user) {
+        const currentUserMemberProfile = membersData.find(member => 
+          member.userId === user.uid
+        );
+        setCurrentUserMember(currentUserMemberProfile);
       }
     } catch (error) {
       console.error("Error fetching community members:", error);
@@ -1090,7 +799,7 @@ function CommunityMembers() {
 
   useEffect(() => {
     fetchCommunityMembers();
-  }, []);
+  }, [user]); // Add user as dependency
 
   useEffect(() => {
     const handleScroll = () => {
@@ -1107,12 +816,8 @@ function CommunityMembers() {
     return matchesSearch;
   });
 
-  const currentUserApplication = currentUserMemberId 
-    ? communityMembers.find(member => member.communityId === currentUserMemberId)
-    : null;
-
   const displayMembers = filteredMembers.filter(member => 
-    member.status === 'accepted' || member.communityId === currentUserMemberId
+    member.status === 'accepted' || member.userId === user?.uid
   );
 
   const indexOfLastMember = currentPage * membersPerPage;
@@ -1130,7 +835,7 @@ function CommunityMembers() {
   };
 
   const handleEditClick = (member) => {
-    if (member.communityId === currentUserMemberId) {
+    if (member.userId === user?.uid) {
       setSelectedMember(member);
       setProfileModalOpen(true);
     }
@@ -1140,12 +845,310 @@ function CommunityMembers() {
     setCommunityMembers(prev => prev.map(member => 
       member.id === updatedMember.id ? { ...member, ...updatedMember } : member
     ));
+    // Also update currentUserMember if it's the same member
+    if (currentUserMember && currentUserMember.id === updatedMember.id) {
+      setCurrentUserMember(updatedMember);
+    }
     setProfileModalOpen(false);
   };
 
   const handleApplicationSubmit = () => {
     fetchCommunityMembers();
     setApplicationModalOpen(false);
+  };
+
+  // Update ApplicationModal to include userId
+  const ApplicationModal = ({ isOpen, onClose, onSubmit, userData }) => {
+    const [formData, setFormData] = useState({
+      name: '',
+      skills: '',
+      bio: '',
+      contactInfo: '',
+      socialLinks: {
+        linkedin: '',
+        github: '',
+        instagram: ''
+      }
+    });
+    const [photo, setPhoto] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState({ text: '', type: '' });
+
+    useEffect(() => {
+      if (userData && isOpen) {
+        setFormData({
+          name: userData.name || '',
+          skills: userData.skills || '',
+          bio: userData.bio || '',
+          contactInfo: userData.phone || userData.contactInfo || '',
+          socialLinks: {
+            linkedin: userData.socialLinks?.linkedin || '',
+            github: userData.socialLinks?.github || '',
+            instagram: userData.socialLinks?.instagram || ''
+          }
+        });
+        
+        if (userData.photoUrl) {
+          setPreviewUrl(userData.photoUrl);
+        }
+      }
+    }, [userData, isOpen]);
+
+    const handleInputChange = (e) => {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSocialLinkChange = (platform, url) => {
+      setFormData({
+        ...formData,
+        socialLinks: {
+          ...formData.socialLinks,
+          [platform]: url
+        }
+      });
+    };
+
+    const handlePhotoChange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        setPhoto(file);
+        const reader = new FileReader();
+        reader.onload = () => setPreviewUrl(reader.result);
+        reader.readAsDataURL(file);
+      }
+    };
+
+    const removePhoto = () => {
+      setPhoto(null);
+      setPreviewUrl('');
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      setLoading(true);
+      setMessage({ text: '', type: '' });
+
+      try {
+        let photoUrl = '';
+
+        if (photo) {
+          const storageRef = ref(storage, `community-members/${Date.now()}_${photo.name}`);
+          const snapshot = await uploadBytes(storageRef, photo);
+          photoUrl = await getDownloadURL(snapshot.ref);
+        }
+
+        // Generate sequential community ID
+        const communityId = await generateCommunityId();
+        
+        await addDoc(collection(fireDB, 'communityMembers'), {
+          ...formData,
+          photoUrl,
+          communityId,
+          status: 'pending',
+          appliedAt: serverTimestamp(),
+          userId: user?.uid, // Store Firebase UID instead of user document ID
+          userEmail: user?.email // Also store email for reference
+        });
+
+        setMessage({ text: 'Application submitted successfully!', type: 'success' });
+        
+        setTimeout(() => {
+          onSubmit();
+          onClose();
+        }, 2000);
+      } catch (error) {
+        console.error('Error submitting application:', error);
+        setMessage({ text: 'Error submitting application. Please try again.', type: 'error' });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        >
+          {/* ... (keep the rest of your ApplicationModal JSX the same) */}
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+                  Join Our Community
+                </h2>
+                <button
+                  onClick={onClose}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                >
+                  <FiX className="w-5 h-5" />
+                </button>
+              </div>
+
+              {userData && (
+                <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <p className="text-blue-600 dark:text-blue-400 text-sm">
+                    <strong>Auto-fill enabled:</strong> Your profile information has been pre-filled.
+                  </p>
+                </div>
+              )}
+
+              {message.text && (
+                <div className={`p-3 rounded-lg mb-4 ${
+                  message.type === 'success' 
+                    ? 'bg-green-100 text-green-700' 
+                    : 'bg-red-100 text-red-700'
+                }`}>
+                  {message.text}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* ... (keep the rest of your form fields the same) */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Skills (comma separated) *
+                  </label>
+                  <input
+                    type="text"
+                    name="skills"
+                    value={formData.skills}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="e.g., React, JavaScript, UI/UX Design"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    About Yourself *
+                  </label>
+                  <textarea
+                    name="bio"
+                    value={formData.bio}
+                    onChange={handleInputChange}
+                    required
+                    rows={3}
+                    placeholder="Tell us about yourself..."
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Contact Info *
+                  </label>
+                  <input
+                    type="text"
+                    name="contactInfo"
+                    value={formData.contactInfo}
+                    onChange={handleInputChange}
+                    placeholder="phone number"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Social Links (Optional)
+                  </label>
+                  <div className="space-y-2">
+                    {Object.entries(formData.socialLinks).map(([platform, url]) => (
+                      <div key={platform} className="flex items-center gap-2">
+                        <SocialIcon platform={platform} url="#" />
+                        <input
+                          type="url"
+                          placeholder={`${platform.charAt(0).toUpperCase() + platform.slice(1)} URL`}
+                          value={url}
+                          onChange={(e) => handleSocialLinkChange(platform, e.target.value)}
+                          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Profile Photo
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-1">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoChange}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                      />
+                    </div>
+                    {previewUrl && (
+                      <div className="relative">
+                        <img src={previewUrl} alt="Preview" className="w-16 h-16 rounded-full object-cover border border-gray-300" />
+                        <button
+                          type="button"
+                          onClick={removePhoto}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                        >
+                          <FiX className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {loading ? 'Submitting...' : (
+                      <>
+                        <FiUserPlus /> Apply Now
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </motion.div>
+        </motion.div>
+      </AnimatePresence>
+    );
   };
 
   return (
@@ -1209,9 +1212,9 @@ function CommunityMembers() {
               </motion.p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-                {user && currentUserApplication && (
+                {user && currentUserMember && (
                   <motion.button
-                    onClick={() => handleEditClick(currentUserApplication)}
+                    onClick={() => handleEditClick(currentUserMember)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className="px-6 py-3 bg-green-600 text-white rounded-full font-semibold shadow-lg hover:bg-green-700 transition-colors flex items-center gap-2"
@@ -1221,7 +1224,7 @@ function CommunityMembers() {
                   </motion.button>
                 )}
                 
-                {user && !currentUserApplication && (
+                {user && !currentUserMember && (
                   <motion.button
                     onClick={() => setApplicationModalOpen(true)}
                     whileHover={{ scale: 1.05 }}
@@ -1249,7 +1252,7 @@ function CommunityMembers() {
           </div>
         </section>
 
-        {currentUserApplication && currentUserApplication.status === 'pending' && (
+        {currentUserMember && currentUserMember.status === 'pending' && (
           <section className="py-8 px-4 relative z-10 bg-yellow-50 dark:bg-yellow-900/20">
             <div className="max-w-7xl mx-auto">
               <motion.div
@@ -1268,7 +1271,7 @@ function CommunityMembers() {
               
               <div className="max-w-2xl mx-auto">
                 <MemberCard
-                  member={currentUserApplication}
+                  member={currentUserMember}
                   layoutType="list"
                   onMemberClick={handleMemberClick}
                   onEditClick={handleEditClick}
@@ -1383,7 +1386,7 @@ function CommunityMembers() {
                       layoutType={layoutType}
                       onMemberClick={handleMemberClick}
                       onEditClick={handleEditClick}
-                      isCurrentUser={member.communityId === currentUserMemberId}
+                      isCurrentUser={member.userId === user?.uid}
                     />
                   ))}
                 </div>
@@ -1445,7 +1448,7 @@ function CommunityMembers() {
           isOpen={modalOpen}
           onClose={() => setModalOpen(false)}
           onEditClick={handleEditClick}
-          isCurrentUser={selectedMember?.communityId === currentUserMemberId}
+          isCurrentUser={selectedMember?.userId === user?.uid}
         />
 
         {showScrollTop && (

@@ -26,7 +26,7 @@ import { useCart } from "../../Modules/Cart/CartContext";
 const navItems = [
   { name: "Home", link: "/" },
   { name: "Notes", link: "/Notes&Books" },
-  { name: "Exam", link: "/SGS-Exam-Home"},
+  { name: "Course", link: "/OurCourse"},
   { name: "E-Books", link: "/E-Books" },
 ];
 
@@ -35,7 +35,7 @@ export function NavbarMenu() {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const { user, isAdmin} = useAuth()
+  const { user} = useAuth()
   const {cartItems} = useCart()
 
   const logout = () => {
@@ -109,15 +109,6 @@ export function NavbarMenu() {
                   <ImExit className="w-4 h-4 mr-2" />
                   Logout
                 </button>
-                { isAdmin  && (
-                  <Link
-                    to="/Admin"
-                    className="flex items-center px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-neutral-900 rounded-full"
-                  >
-                    <RiAdminFill className="w-4 h-4 mr-2" />
-                    Admin
-                  </Link>
-                )}
               </div>
             )}
           </div>
@@ -194,18 +185,6 @@ export function NavbarMenu() {
                 <ImExit className="w-6 h-6 mr-2" />
                 Logout
               </NavbarButton>
-              {isAdmin && (
-                <NavbarButton
-                  onClick={() => {
-                    navigate("/Admin");
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="flex w-full bg-cyan-400 dark:bg-cyan-600 justify-center items-center"
-                >
-                  <RiAdminFill className="w-6 h-6 mr-2" />
-                  Admin
-                </NavbarButton>
-              )}
             </div>
           )}
         </MobileNavMenu>
