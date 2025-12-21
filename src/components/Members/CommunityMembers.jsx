@@ -644,7 +644,7 @@ const ProfileUpdateModal = ({ isOpen, onClose, memberData, onUpdate }) => {
                   </div>
                   {previewUrl && (
                     <div className="relative">
-                      <img src={previewUrl} alt="Preview" className="w-16 h-16 rounded-full object-cover border border-gray-300" />
+                      <img loading="lazy" src={previewUrl} alt="Preview" className="w-16 h-16 rounded-full object-cover border border-gray-300" />
                       <button
                         type="button"
                         onClick={removePhoto}
@@ -1110,7 +1110,7 @@ function CommunityMembers() {
                     </div>
                     {previewUrl && (
                       <div className="relative">
-                        <img src={previewUrl} alt="Preview" className="w-16 h-16 rounded-full object-cover border border-gray-300" />
+                        <img loading="lazy" src={previewUrl} alt="Preview" className="w-16 h-16 rounded-full object-cover border border-gray-300" />
                         <button
                           type="button"
                           onClick={removePhoto}

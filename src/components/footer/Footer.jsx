@@ -100,7 +100,8 @@ const Footer = () => {
             className="md:w-1/4"
           >
             <div className="flex items-center space-x-3 mb-4">
-              <img
+              <img loading="lazy" 
+               
                 src="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media"
                 className="w-10 h-10 rounded-full"
                 alt="SOFT GAME STUDIO"

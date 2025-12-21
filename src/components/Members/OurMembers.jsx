@@ -50,16 +50,11 @@ const SocialIcon = ({ platform, url }) => {
 
 const DepartmentBadge = ({ department }) => {
   const departmentColors = {
-    Development:
-      "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-    Developement:
-      "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-    Design:
-      "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-    Marketing:
-      "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-    Management:
-      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+    Development: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+    Developement: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+    Design: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+    Marketing: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+    Management: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
     HR: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
     Default: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200",
   };
@@ -67,9 +62,7 @@ const DepartmentBadge = ({ department }) => {
   const colorClass = departmentColors[department] || departmentColors.Default;
 
   return (
-    <span
-      className={`px-3 py-1 rounded-full text-xs font-medium ${colorClass}`}
-    >
+    <span className={`px-3 py-1 rounded-full text-xs font-medium ${colorClass}`}>
       {department}
     </span>
   );
@@ -90,16 +83,16 @@ const MemberCard = ({ member, layoutType, onMemberClick }) => {
           <motion.div className="relative mb-6" whileHover={{ scale: 1.03 }}>
             <div className="relative">
               {member.photoUrl ? (
-                              <img
+                <img
                   alt={member.name}
                   className="w-32 h-32 object-cover rounded-full border-4 border-white dark:border-gray-800 shadow-lg"
                   src={member.image || member.photoUrl}
                 />
-                            ) : (
-                              <div className="w-32 h-32 text-4xl rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold">
-                                {member.name.charAt(0)}
-                              </div>
-                            )}
+              ) : (
+                <div className="w-32 h-32 text-4xl rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold">
+                  {member.name.charAt(0)}
+                </div>
+              )}
               <motion.div
                 className={`absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-16 h-1 rounded-full ${
                   member.accentColor || "bg-indigo-500"
@@ -151,17 +144,17 @@ const MemberCard = ({ member, layoutType, onMemberClick }) => {
         <div className="flex flex-col md:flex-row gap-6">
           <div className="flex-shrink-0">
             <div className="relative">
-             {member.photoUrl ? (
-                              <img
+              {member.photoUrl ? (
+                <img
                   alt={member.name}
                   className="w-24 h-24 object-cover rounded-full border-4 border-white dark:border-gray-800 shadow-lg"
                   src={member.image || member.photoUrl}
                 />
-                            ) : (
-                              <div className="w-32 h-32 text-4xl rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold">
-                                {member.name.charAt(0)}
-                              </div>
-                            )}
+              ) : (
+                <div className="w-24 h-24 text-3xl rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold">
+                  {member.name.charAt(0)}
+                </div>
+              )}
               <motion.div
                 className={`absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 rounded-full ${
                   member.accentColor || "bg-indigo-500"
@@ -251,18 +244,17 @@ const MemberModal = ({ member, isOpen, onClose }) => {
 
             <div className="px-8 pb-8 -mt-16">
               <div className="flex flex-col items-center text-center mb-6">
-                 {member.photoUrl ? (
-                              <img
-                  alt={member.name}
-                  className="w-32 h-32 object-cover rounded-full border-4 border-white dark:border-gray-800 shadow-lg"
-                  src={member.image || member.photoUrl}
-                />
-                            ) : (
-                              <div className="w-32 h-32 text-4xl rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold">
-                                {member.name.charAt(0)}
-                              </div>
-                            )}
-                
+                {member.photoUrl ? (
+                  <img
+                    alt={member.name}
+                    className="w-32 h-32 object-cover rounded-full border-4 border-white dark:border-gray-800 shadow-lg"
+                    src={member.image || member.photoUrl}
+                  />
+                ) : (
+                  <div className="w-32 h-32 text-4xl rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold">
+                    {member.name.charAt(0)}
+                  </div>
+                )}
 
                 <div className="mt-6">
                   <DepartmentBadge department={member.department} />
@@ -319,7 +311,8 @@ const MemberModal = ({ member, isOpen, onClose }) => {
                   </h3>
                   <div className="space-y-3">
                     <p className="text-gray-600 dark:text-gray-300">
-                      {"team.softgamestudio@gmail.com"}
+                      team.softgamestudio@gmail.com <br />
+                      9914267704/ 6283400770
                     </p>
                     <div className="flex gap-3">
                       {member.social &&
@@ -383,7 +376,6 @@ function OurMembers() {
         const teamMembersData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-          // Map Firestore fields to your component's expected structure
           image: doc.data().photoUrl || "",
           bio: doc.data().bio || `${doc.data().role} at Soft Game Studio`,
           accentColor: doc.data().accentColor || "bg-indigo-500",
@@ -431,14 +423,31 @@ function OurMembers() {
     ...new Set(allMembers.map((member) => member.department).filter(Boolean)),
   ];
 
+
+  // Define permission priority order
+const priorityOrder = {
+  Admin: 1,
+  Authority: 2,
+  Manager: 3,
+  Teacher: 4,
+  Member: 5,
+};
+
+// Sort members by pp value in ascending order (1, 2, 3, ...)
+// Sort members by permission priority
+const sortedMembers = [...filteredMembers].sort((a, b) => {
+  const priorityA = priorityOrder[a.permission] || 999;
+  const priorityB = priorityOrder[b.permission] || 999;
+  return priorityA - priorityB;
+});
+
+
+
   // Pagination logic
+  const totalPages = Math.ceil(sortedMembers.length / membersPerPage);
   const indexOfLastMember = currentPage * membersPerPage;
   const indexOfFirstMember = indexOfLastMember - membersPerPage;
-  const currentMembers = filteredMembers.slice(
-    indexOfFirstMember,
-    indexOfLastMember
-  );
-  const totalPages = Math.ceil(filteredMembers.length / membersPerPage);
+  const currentMembers = sortedMembers.slice(indexOfFirstMember, indexOfLastMember);
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -460,6 +469,7 @@ function OurMembers() {
   const clearFilters = () => {
     setFilters({ department: "all" });
     setSearchTerm("");
+    setCurrentPage(1);
   };
 
   return (
@@ -589,8 +599,8 @@ function OurMembers() {
                     Our Team Members
                   </h2>
                   <p className="text-gray-600 dark:text-gray-400 mt-1">
-                    {filteredMembers.length} member
-                    {filteredMembers.length !== 1 ? "s" : ""} found
+                    {sortedMembers.length} member
+                    {sortedMembers.length !== 1 ? "s" : ""} found
                   </p>
                 </div>
 
@@ -723,7 +733,7 @@ function OurMembers() {
               >
                 <div className="w-12 h-12 rounded-full border-4 border-indigo-500 border-t-transparent"></div>
               </motion.div>
-            ) : filteredMembers.length === 0 ? (
+            ) : sortedMembers.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -733,14 +743,12 @@ function OurMembers() {
                 <div className="bg-gray-200 dark:bg-gray-700 border-2 border-dashed rounded-xl w-16 h-16 mx-auto" />
                 <p className="text-gray-500 dark:text-gray-400 mt-4 mb-6">
                   {searchTerm ||
-                  filters.department !== "all" ||
-                  filters.skills !== "all"
+                  filters.department !== "all"
                     ? "No matching team members found."
                     : "No team members found. Check back later!"}
                 </p>
                 {(searchTerm ||
-                  filters.department !== "all" ||
-                  filters.skills !== "all") && (
+                  filters.department !== "all") && (
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -760,9 +768,9 @@ function OurMembers() {
                       : "flex flex-col gap-4"
                   }
                 >
-                  {currentMembers.map((member, index) => (
+                  {currentMembers.map((member) => (
                     <MemberCard
-                      key={member.id || index}
+                      key={member.id}
                       member={member}
                       layoutType={layoutType}
                       onMemberClick={handleMemberClick}

@@ -117,7 +117,7 @@ const PlayListCourse = () => {
                 <div className="absolute inset-0 bg-purple-500 rounded-2xl transform rotate-3"></div>
                 <div className="relative bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl overflow-hidden">
                   {course.thumbnail ? (
-                    <img 
+                    <img loading="lazy" 
                       src={course.thumbnail} 
                       alt={course.title} 
                       className="w-full h-64 object-cover"

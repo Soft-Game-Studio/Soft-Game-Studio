@@ -1,7 +1,6 @@
-// src/pages/ProfilePage.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   collection, query, where, getDocs, doc, updateDoc 
 } from 'firebase/firestore';
@@ -11,44 +10,51 @@ import {
   FaSave,
   FaTimes,
   FaUser,
-  FaPhone,
-  FaHome,
   FaMapMarkerAlt,
-  FaShoppingBag,
   FaUsers,
-  FaIdCard,
   FaShieldAlt,
   FaAward,
   FaClock,
-  FaHandshake,
   FaRocket,
   FaCalendarAlt,
   FaLinkedinIn,
   FaGithub,
-  FaInstagram
+  FaInstagram,
+  FaGamepad,
+  FaPalette,
+  FaCode,
+  FaStar,
+  FaCrown,
+  FaGem,
+  FaChevronRight
 } from "react-icons/fa";
-
-import { Helmet } from 'react-helmet';
 import { useAuth } from '../../AuthProvide';
 import Layout from '../../components/layout/Layout';
+import { Helmet } from 'react-helmet';
 
 const ProfilePage = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({});
-  const [orders, setOrders] = useState([]);
-  const [loadingOrders, setLoadingOrders] = useState(true);
   const [activeTab, setActiveTab] = useState('profile');
   const [communityData, setCommunityData] = useState(null);
   const [loadingCommunity, setLoadingCommunity] = useState(true);
   const navigate = useNavigate();
 
-  // Background images for different sections
-  const bgPattern = "url('https://www.transparenttextures.com/patterns/45-degree-fabric-light.png')";
-  const profileBg = "url('https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80')";
-
   const { user } = useAuth();
+
+  // Color theme for soft game studio
+  const theme = {
+    primary: 'rgb(139, 92, 246)',
+    primaryLight: 'rgb(167, 139, 250)',
+    secondary: 'rgb(59, 130, 246)',
+    accent: 'rgb(236, 72, 153)',
+    gradient: 'linear-gradient(135deg, rgb(139, 92, 246) 0%, rgb(59, 130, 246) 100%)',
+    glass: 'rgba(255, 255, 255, 0.08)',
+    glassBorder: 'rgba(255, 255, 255, 0.18)',
+    darkGlass: 'rgba(15, 23, 42, 0.7)'
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -103,7 +109,6 @@ const ProfilePage = () => {
           setCommunityData({
             id: doc.id,
             ...docData,
-            // Keep timestamps as Firestore timestamps for consistency
             acceptedAt: docData.acceptedAt,
             appliedAt: docData.appliedAt,
             updatedAt: docData.updatedAt
@@ -123,34 +128,6 @@ const ProfilePage = () => {
       fetchCommunityData();
     }
   }, [user]);
-
-  useEffect(() => {
-    const fetchOrders = async () => {
-      if (!userData?.email) return;
-      
-      try {
-        setLoadingOrders(true);
-        const ordersRef = collection(fireDB, "orders");
-        const q = query(ordersRef, where("email", "==", userData.email));
-        const querySnapshot = await getDocs(q);
-        
-        const ordersArray = [];
-        querySnapshot.forEach((doc) => {
-          ordersArray.push({ id: doc.id, ...doc.data() });
-        });
-        
-        setOrders(ordersArray);
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-      } finally {
-        setLoadingOrders(false);
-      }
-    };
-
-    if (userData?.email) {
-      fetchOrders();
-    }
-  }, [userData]);
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
@@ -178,7 +155,6 @@ const ProfilePage = () => {
       const userDoc = doc(fireDB, 'users', userData.id);
       await updateDoc(userDoc, editedData);
       
-      // Update local data
       setUserData(prev => ({
         ...prev,
         ...editedData
@@ -193,54 +169,75 @@ const ProfilePage = () => {
   const getStatusBadge = (status) => {
     const statusConfig = {
       pending: { 
-        color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200', 
-        text: 'Under Review',
+        color: 'bg-amber-500/20 text-amber-100 border border-amber-500/30',
+        glow: 'shadow-[0_0_20px_rgba(245,158,11,0.3)]',
         icon: '⏳'
       },
       accepted: { 
-        color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200', 
-        text: 'Active Member',
-        icon: '✅'
+        color: 'bg-emerald-500/20 text-emerald-100 border border-emerald-500/30',
+        glow: 'shadow-[0_0_20px_rgba(16,185,129,0.3)]',
+        icon: '✨'
       },
       rejected: { 
-        color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200', 
-        text: 'Application Rejected',
-        icon: '❌'
+        color: 'bg-rose-500/20 text-rose-100 border border-rose-500/30',
+        glow: 'shadow-[0_0_20px_rgba(244,63,94,0.3)]',
+        icon: '🔄'
       }
     };
     
     const config = statusConfig[status] || statusConfig.pending;
     return (
-      <span className={`px-3 py-1 ${config.color} text-sm rounded-full flex items-center gap-2 w-fit`}>
-        <span>{config.icon}</span>
-        {config.text}
-      </span>
+      <div className={`px-4 py-2 rounded-full backdrop-blur-sm ${config.color} ${config.glow} flex items-center gap-2 w-fit`}>
+        <span className="text-sm">{config.icon}</span>
+        <span className="text-sm font-medium">
+          {config.text || status.charAt(0).toUpperCase() + status.slice(1)}
+        </span>
+      </div>
     );
   };
 
   const formatDate = (timestamp) => {
-    if (!timestamp) return 'N/A';
+    if (!timestamp) return 'Not available';
     
     try {
       const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
       return date.toLocaleDateString('en-US', {
         year: 'numeric',
-        month: 'long',
+        month: 'short',
         day: 'numeric'
       });
     } catch (error) {
-      return 'N/A';
+      return 'Not available';
     }
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-purple-100 dark:bg-neutral-950">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="h-16 w-16 border-t-4 border-b-4 border-purple-500 dark:border-purple-400 rounded-full"
-        />
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="relative">
+          <motion.div
+            animate={{ 
+              rotate: 360,
+              scale: [1, 1.1, 1]
+            }}
+            transition={{ 
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="w-24 h-24 relative"
+          >
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-purple-400 border-r-blue-400 blur-sm"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-purple-400 border-r-blue-400"></div>
+          </motion.div>
+          <motion.p
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="mt-6 text-lg text-white/70 font-light tracking-widest"
+          >
+            LOADING PROFILE
+          </motion.p>
+        </div>
       </div>
     );
   }
@@ -250,399 +247,417 @@ const ProfilePage = () => {
   return (
     <Layout>
       <Helmet>
-        <title>User Profile | Soft Game Studio</title>
+        <title>Player Profile | Soft Game Studios</title>
         <meta 
           name="description" 
-          content="Access and manage your personal profile, exam history, course progress, and certificates on Soft Game Studio. Keep your information secure and up to date." 
+          content="Your personal profile at Soft Game Studios. Manage your information, track community status, and access exclusive member benefits." 
         />
-        <meta 
-          name="keywords" 
-          content="User Profile, Student Dashboard, Exam History, Course Progress, Certification, Soft Game Studio Profile, Account Settings, Personal Information" 
-        />
-        <meta name="author" content="Soft Game Studio" />
-
-        {/* Open Graph / Social Sharing */}
-        <meta property="og:title" content="User Profile | Soft Game Studio" />
-        <meta 
-          property="og:description" 
-          content="Manage your profile, exam records, course enrollments, and personal settings securely on Soft Game Studio." 
-        />
-        <meta property="og:url" content="https://softgamestudios.web.app/profile" />
-        <meta property="og:type" content="website" />
+        <meta name="keywords" content="game studio profile, player dashboard, community member, gaming profile" />
       </Helmet>
 
-      <div 
-        className="min-h-screen bg-purple-100 dark:bg-neutral-950 transition-colors duration-300 relative overflow-hidden"
-        style={{
-          backgroundImage: `linear-gradient(rgba(245, 243, 255, 0.8), ${bgPattern}`,
-          backgroundAttachment: 'fixed'
-        }}
-      >
-        {/* Animated floating elements */}
-        <motion.div 
-          className="absolute top-20 right-10 w-64 h-64 rounded-full bg-purple-300 dark:bg-purple-900 opacity-20 blur-3xl"
-          animate={{ 
-            scale: [1, 1.2, 1],
-            y: [0, -30, 0]
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"></div>
+        <div className={`absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%239C92AC" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]`}>
+        </div>
+        
+        {/* Floating Game Elements */}
+        <motion.div
+          className="absolute top-1/4 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl"
+          animate={{
+            y: [0, -40, 0],
+            x: [0, 30, 0],
+            scale: [1, 1.1, 1]
           }}
-          transition={{ 
+          transition={{
             duration: 8,
             repeat: Infinity,
             ease: "easeInOut"
           }}
         />
-        
-        <motion.div 
-          className="absolute bottom-10 left-10 w-80 h-80 rounded-full bg-indigo-300 dark:bg-indigo-900 opacity-20 blur-3xl"
-          animate={{ 
-            scale: [1, 1.3, 1],
-            x: [0, 40, 0]
+        <motion.div
+          className="absolute bottom-1/4 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"
+          animate={{
+            y: [0, 40, 0],
+            x: [0, -30, 0],
+            scale: [1, 1.2, 1]
           }}
-          transition={{ 
+          transition={{
             duration: 10,
             repeat: Infinity,
             ease: "easeInOut"
           }}
         />
+      </div>
 
-        {/* Parallax Header */}
-        <motion.div 
-          className="h-80 relative overflow-hidden"
-          initial={{ y: -100 }}
-          animate={{ y: 0 }}
-          transition={{ 
-            type: "spring", 
-            stiffness: 100,
-            damping: 15
-          }}
-        >
-          <div 
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ 
-              backgroundImage: profileBg,
-              backgroundAttachment: 'fixed'
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-purple-900/70 to-indigo-900/80 dark:from-black/80 dark:to-neutral-900/90" />
-        </motion.div>
-
-        {/* Profile Card */}
-        <div className="max-w-5xl mx-auto px-4 -mt-40 relative z-10 mb-10">
+      <div className="min-h-screen pt-6 pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden border border-white/30 dark:border-neutral-700"
+            initial={{ y: -30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            className="mb-8"
           >
-            {/* Profile Header */}
-            <div className="p-8 relative">
-              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-purple-500/20 to-indigo-600/20 dark:from-purple-900/30 dark:to-indigo-900/30" />
-              <div className="relative z-10 flex flex-col md:flex-row items-center">
-                <div className="relative">
-                  <div className="bg-gradient-to-br from-purple-400 to-indigo-600 rounded-full p-1 shadow-lg">
-                    <div className="bg-gray-200 border-2 border-dashed rounded-full w-32 h-32 flex items-center justify-center">
-                      <FaUser className="text-5xl text-gray-400" />
-                    </div>
-                  </div>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={handleEditToggle}
-                    className="absolute bottom-2 right-2 bg-purple-500 dark:bg-purple-600 text-white p-2 rounded-full shadow-md"
-                  >
-                    {isEditing ? <FaTimes /> : <FaEdit />}
-                  </motion.button>
-                </div>
-                
-                <motion.div 
-                  className="mt-6 md:mt-0 md:ml-8 text-center md:text-left"
-                  initial={{ x: -20 }}
-                  animate={{ x: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  {isEditing ? (
-                    <div className="mb-4">
-                      <input
-                        type="text"
-                        value={editedData.name}
-                        onChange={(e) => handleChange(e, 'name')}
-                        className="text-3xl font-bold bg-transparent border-b-2 border-purple-500 dark:border-purple-400 focus:outline-none text-center md:text-left w-full"
-                      />
-                    </div>
-                  ) : (
-                    <motion.h1 
-                      className="text-3xl font-bold text-purple-900 dark:text-white"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.4 }}
-                    >
-                      {userData.name}
-                    </motion.h1>
-                  )}
-                  
-                  <div className="flex flex-col sm:flex-row items-center gap-4 mt-3">
-                    <div className="flex items-center text-purple-700 dark:text-purple-300">
-                      <FaPhone className="mr-2" />
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editedData.phone}
-                          onChange={(e) => handleChange(e, 'phone')}
-                          className="bg-transparent border-b border-purple-500 dark:border-purple-400 focus:outline-none w-32"
-                        />
-                      ) : (
-                        <span>{userData.phone}</span>
-                      )}
-                    </div>
-                    <div className="flex items-center text-indigo-700 dark:text-indigo-300">
-                      <FaMapMarkerAlt className="mr-2" />
-                      <span>{userData.address?.city}, {userData.address?.state}</span>
-                    </div>
-                  </div>
-
-                  {/* Community Status Badge */}
-                  {!loadingCommunity && (
-                    <motion.div 
-                      className="mt-4"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5 }}
-                    >
-                      {communityData ? (
-                        <div className="flex items-center gap-3">
-                          {getStatusBadge(communityData.status)}
-                          {communityData.status === 'accepted' && (
-                            <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-lg border border-blue-200 dark:border-blue-800">
-                              <FaIdCard className="text-blue-600 dark:text-blue-400" />
-                              <span className="text-blue-700 dark:text-blue-300 font-mono text-sm">
-                                ID: {communityData.communityId}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                          <FaUsers className="text-purple-500" />
-                          <span>Not a community member yet</span>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </motion.div>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+                  Player <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Profile</span>
+                </h1>
+                <p className="text-slate-300 text-sm sm:text-base">
+                  Manage your account and community status
+                </p>
               </div>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleEditToggle}
+                className="group relative px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600/20 to-blue-600/20 backdrop-blur-sm border border-purple-500/30 hover:border-purple-400/50 transition-all duration-300"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-600/0 via-purple-600/10 to-purple-600/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <span className="relative flex items-center gap-2 text-white font-medium">
+                  {isEditing ? (
+                    <>
+                      <FaTimes className="text-lg" />
+                      Cancel
+                    </>
+                  ) : (
+                    <>
+                      <FaEdit className="text-lg" />
+                      Edit Profile
+                    </>
+                  )}
+                </span>
+              </motion.button>
             </div>
 
-            {/* Profile Details */}
-            <div className="p-6 md:p-8">
-              <div className="flex border-b border-gray-200 dark:border-neutral-700 mb-6 overflow-x-auto">
-                <button
-                  className={`py-2 px-4 font-medium text-sm whitespace-nowrap ${activeTab === 'profile' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}`}
-                  onClick={() => setActiveTab('profile')}
-                >
-                  Profile Information
-                </button>
-                <button
-                  className={`py-2 px-4 font-medium text-sm whitespace-nowrap ${activeTab === 'orders' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}`}
-                  onClick={() => setActiveTab('orders')}
-                >
-                  My Orders ({orders.length})
-                </button>
-                <button
-                  className={`py-2 px-4 font-medium text-sm whitespace-nowrap ${activeTab === 'community' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}`}
-                  onClick={() => setActiveTab('community')}
-                >
-                  Community Status
-                </button>
+            {/* Stats Bar */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+              <div className="bg-slate-800/40 backdrop-blur-sm rounded-xl p-5 border border-slate-700/50 hover:border-purple-500/30 transition-all duration-300">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-purple-500/20">
+                    <FaGamepad className="text-purple-400 text-xl" />
+                  </div>
+                  <div>
+                    <p className="text-slate-400 text-sm">Games Played</p>
+                    <p className="text-white text-2xl font-bold">24</p>
+                  </div>
+                </div>
               </div>
-
-              {activeTab === 'profile' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Personal Info */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    <div className="flex items-center mb-6 pb-2 border-b border-purple-200 dark:border-neutral-700">
-                      <FaUser className="text-purple-600 dark:text-purple-400 mr-3 text-xl" />
-                      <h2 className="text-xl font-semibold text-purple-700 dark:text-purple-400">
-                        Personal Information
-                      </h2>
-                    </div>
-                    <div className="space-y-4">
-                      <InfoItem 
-                        label="Email" 
-                        value={userData.email} 
-                        icon="email"
-                        isEditing={false}
-                      />
-                      <InfoItem 
-                        label="Roll Number" 
-                        value={userData.rollNumber} 
-                        icon="badge"
-                        isEditing={false}
-                      />
-                      <InfoItem 
-                        label="Member Since" 
-                        value={formatDate(userData.time)} 
-                        icon="calendar"
-                        isEditing={false}
-                      />
-                    </div>
-                  </motion.div>
-
-                  {/* Address */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    <div className="flex items-center mb-6 pb-2 border-b border-purple-200 dark:border-neutral-700">
-                      <FaHome className="text-purple-600 dark:text-purple-400 mr-3 text-xl" />
-                      <h2 className="text-xl font-semibold text-purple-700 dark:text-purple-400">
-                        Address
-                      </h2>
-                    </div>
-                    <div className="space-y-4">
-                      <InfoItem 
-                        label="House No" 
-                        value={isEditing ? editedData.address?.houseno : userData.address?.houseno} 
-                        isEditing={isEditing}
-                        onChange={(e) => handleChange(e, 'address', 'houseno')}
-                      />
-                      <InfoItem 
-                        label="Street No" 
-                        value={isEditing ? editedData.address?.streetno : userData.address?.streetno} 
-                        isEditing={isEditing}
-                        onChange={(e) => handleChange(e, 'address', 'streetno')}
-                      />
-                      <InfoItem 
-                        label="Area" 
-                        value={isEditing ? editedData.address?.area : userData.address?.area} 
-                        isEditing={isEditing}
-                        onChange={(e) => handleChange(e, 'address', 'area')}
-                      />
-                      <InfoItem 
-                        label="City" 
-                        value={isEditing ? editedData.address?.city : userData.address?.city} 
-                        isEditing={isEditing}
-                        onChange={(e) => handleChange(e, 'address', 'city')}
-                      />
-                      <InfoItem 
-                        label="State" 
-                        value={isEditing ? editedData.address?.state : userData.address?.state} 
-                        isEditing={isEditing}
-                        onChange={(e) => handleChange(e, 'address', 'state')}
-                      />
-                      <InfoItem 
-                        label="Pincode" 
-                        value={isEditing ? editedData.address?.pincode : userData.address?.pincode} 
-                        isEditing={isEditing}
-                        onChange={(e) => handleChange(e, 'address', 'pincode')}
-                      />
-                    </div>
-                  </motion.div>
+              
+              <div className="bg-slate-800/40 backdrop-blur-sm rounded-xl p-5 border border-slate-700/50 hover:border-blue-500/30 transition-all duration-300">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-blue-500/20">
+                    <FaAward className="text-blue-400 text-xl" />
+                  </div>
+                  <div>
+                    <p className="text-slate-400 text-sm">Achievements</p>
+                    <p className="text-white text-2xl font-bold">12</p>
+                  </div>
                 </div>
-              ) : activeTab === 'orders' ? (
-                <div className="mt-4">
-                  {loadingOrders ? (
-                    <div className="flex justify-center items-center py-12">
-                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-                    </div>
-                  ) : orders.length === 0 ? (
-                    <div className="text-center py-12">
-                      <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mx-auto flex items-center justify-center mb-4">
-                        <FaShoppingBag className="text-gray-500 text-2xl" />
-                      </div>
-                      <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No Orders Yet</h3>
-                      <p className="text-gray-500 dark:text-gray-400">You haven't placed any orders yet. Start exploring our products!</p>
-                      <button 
-                        onClick={() => navigate('/')}
-                        className="mt-4 bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
-                      >
-                        Browse Products
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
-                      {orders.map((order) => (
-                        <motion.div 
-                          key={order.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow"
-                        >
-                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div className="flex items-start gap-4">
-                              {order.imageUrl ? (
-                                <img 
-                                  src={order.imageUrl} 
-                                  alt={order.title} 
-                                  className="w-20 h-20 object-cover rounded-lg"
-                                />
-                              ) : (
-                                <div className="bg-gray-200 border-2 border-dashed rounded-xl w-20 h-20 flex items-center justify-center">
-                                  <FaShoppingBag className="text-gray-400" />
-                                </div>
-                              )}
-                              <div>
-                                <h3 className="font-semibold text-lg text-gray-900 dark:text-white">{order.title}</h3>
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                  <span className="bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300 text-xs font-medium px-2.5 py-0.5 rounded">
-                                    Order ID: {order.id.substring(0, 8)}
-                                  </span>
-                                  <span className="bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 text-xs font-medium px-2.5 py-0.5 rounded">
-                                    {order.price === 0 ? "Free" : `₹${order.price}`}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex flex-col items-end gap-2">
-                              {order.location && (
-                                <a 
-                                  href={order.location}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-sm font-medium bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
-                                >
-                                  Access Now
-                                </a>
-                              )}
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
+              </div>
+              
+              <div className="bg-slate-800/40 backdrop-blur-sm rounded-xl p-5 border border-slate-700/50 hover:border-pink-500/30 transition-all duration-300">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-pink-500/20">
+                    <FaUsers className="text-pink-400 text-xl" />
+                  </div>
+                  <div>
+                    <p className="text-slate-400 text-sm">Friends</p>
+                    <p className="text-white text-2xl font-bold">47</p>
+                  </div>
                 </div>
-              ) : (
-                <CommunityStatusTab 
-                  communityData={communityData} 
-                  loadingCommunity={loadingCommunity}
-                  userData={userData}
-                  formatDate={formatDate}
-                />
-              )}
-
-              {activeTab === 'profile' && isEditing && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-8 flex justify-end"
-                >
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleSave}
-                    className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2 px-6 rounded-full flex items-center shadow-lg"
-                  >
-                    <FaSave className="mr-2" /> Save Changes
-                  </motion.button>
-                </motion.div>
-              )}
+              </div>
             </div>
           </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column - Profile Card */}
+            <motion.div
+              initial={{ x: -30, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="lg:col-span-2"
+            >
+              <div className="bg-slate-800/40 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden">
+                {/* Tabs */}
+                <div className="flex border-b border-slate-700/50">
+                  <button
+                    onClick={() => setActiveTab('profile')}
+                    className={`flex-1 py-4 px-6 text-center font-medium transition-all duration-300 relative ${activeTab === 'profile' 
+                      ? 'text-white' 
+                      : 'text-slate-400 hover:text-white'}`}
+                  >
+                    <span className="relative">
+                      Profile Info
+                      {activeTab === 'profile' && (
+                        <motion.div
+                          layoutId="activeTab"
+                          className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500"
+                        />
+                      )}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('community')}
+                    className={`flex-1 py-4 px-6 text-center font-medium transition-all duration-300 relative ${activeTab === 'community' 
+                      ? 'text-white' 
+                      : 'text-slate-400 hover:text-white'}`}
+                  >
+                    <span className="relative">
+                      Community
+                      {activeTab === 'community' && (
+                        <motion.div
+                          layoutId="activeTab"
+                          className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500"
+                        />
+                      )}
+                    </span>
+                  </button>
+                </div>
+
+                {/* Tab Content */}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeTab}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="p-6 sm:p-8"
+                  >
+                    {activeTab === 'profile' ? (
+                      <div className="space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          {/* Personal Info */}
+                          <div>
+                            <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+                              <div className="p-2 rounded-lg bg-purple-500/20">
+                                <FaUser className="text-purple-400" />
+                              </div>
+                              Personal Information
+                            </h3>
+                            <div className="space-y-4">
+                              <InfoItem 
+                                label="Full Name" 
+                                value={isEditing ? editedData.name : userData.name} 
+                                isEditing={isEditing}
+                                onChange={(e) => handleChange(e, 'name')}
+                                icon="👤"
+                              />
+                              <InfoItem 
+                                label="Email Address" 
+                                value={userData.email} 
+                                icon="✉️"
+                                isEditing={false}
+                              />
+                              <InfoItem 
+                                label="Phone" 
+                                value={isEditing ? editedData.phone : userData.phone} 
+                                isEditing={isEditing}
+                                onChange={(e) => handleChange(e, 'phone')}
+                                icon="📱"
+                              />
+                              <InfoItem 
+                                label="Member Since" 
+                                value={formatDate(userData.time)} 
+                                icon="📅"
+                                isEditing={false}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Address */}
+                          <div>
+                            <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+                              <div className="p-2 rounded-lg bg-blue-500/20">
+                                <FaMapMarkerAlt className="text-blue-400" />
+                              </div>
+                              Location
+                            </h3>
+                            <div className="space-y-4">
+                              <InfoItem 
+                                label="Street Address" 
+                                value={isEditing ? editedData.address?.streetno : userData.address?.streetno} 
+                                isEditing={isEditing}
+                                onChange={(e) => handleChange(e, 'address', 'streetno')}
+                                icon="📍"
+                              />
+                              <InfoItem 
+                                label="Area" 
+                                value={isEditing ? editedData.address?.area : userData.address?.area} 
+                                isEditing={isEditing}
+                                onChange={(e) => handleChange(e, 'address', 'area')}
+                                icon="🏘️"
+                              />
+                              <InfoItem 
+                                label="City" 
+                                value={isEditing ? editedData.address?.city : userData.address?.city} 
+                                isEditing={isEditing}
+                                onChange={(e) => handleChange(e, 'address', 'city')}
+                                icon="🏙️"
+                              />
+                              <InfoItem 
+                                label="State" 
+                                value={isEditing ? editedData.address?.state : userData.address?.state} 
+                                isEditing={isEditing}
+                                onChange={(e) => handleChange(e, 'address', 'state')}
+                                icon="🗺️"
+                              />
+                              <InfoItem 
+                                label="Pincode" 
+                                value={isEditing ? editedData.address?.pincode : userData.address?.pincode} 
+                                isEditing={isEditing}
+                                onChange={(e) => handleChange(e, 'address', 'pincode')}
+                                icon="📮"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {isEditing && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex justify-end"
+                          >
+                            <button
+                              onClick={handleSave}
+                              className="group relative px-8 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 transition-all duration-300 shadow-lg shadow-purple-500/25"
+                            >
+                              <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 rounded-xl transition-opacity duration-300"></div>
+                              <span className="relative flex items-center gap-2 text-white font-semibold">
+                                <FaSave />
+                                Save Changes
+                              </span>
+                            </button>
+                          </motion.div>
+                        )}
+                      </div>
+                    ) : (
+                      <CommunityStatusTab 
+                        communityData={communityData} 
+                        loadingCommunity={loadingCommunity}
+                        userData={userData}
+                        formatDate={formatDate}
+                        navigate={navigate}
+                      />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </motion.div>
+
+            {/* Right Column - User Card & Quick Links */}
+            <motion.div
+              initial={{ x: 30, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="space-y-6"
+            >
+              {/* User Card */}
+              <div className="bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <div className="flex flex-col items-center text-center mb-6">
+                  <div className="relative mb-4">
+                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 p-1">
+                      <div className="w-full h-full rounded-full bg-slate-800 flex items-center justify-center">
+                        <FaUser className="text-5xl text-slate-300" />
+                      </div>
+                    </div>
+                    <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center border-4 border-slate-800">
+                      <FaCrown className="text-white text-sm" />
+                    </div>
+                  </div>
+                  
+                  <h2 className="text-2xl font-bold text-white mb-2">
+                    {userData.name}
+                  </h2>
+                  <div className="flex items-center gap-2 text-slate-300 mb-4">
+                    <FaMapMarkerAlt className="text-sm" />
+                    <span>{userData.address?.city}, {userData.address?.state}</span>
+                  </div>
+
+                  {/* Community Status */}
+                  {!loadingCommunity && communityData && (
+                    <div className="mb-6">
+                      {getStatusBadge(communityData.status)}
+                    </div>
+                  )}
+
+                  <div className="flex gap-3">
+                    <button className="p-3 rounded-xl bg-slate-700/50 hover:bg-slate-700/70 transition-colors">
+                      <FaGithub className="text-xl text-slate-300" />
+                    </button>
+                    <button className="p-3 rounded-xl bg-slate-700/50 hover:bg-slate-700/70 transition-colors">
+                      <FaLinkedinIn className="text-xl text-slate-300" />
+                    </button>
+                    <button className="p-3 rounded-xl bg-slate-700/50 hover:bg-slate-700/70 transition-colors">
+                      <FaInstagram className="text-xl text-slate-300" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-400">Profile Completion</span>
+                    <span className="text-white font-medium">85%</span>
+                  </div>
+                  <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: '85%' }}
+                      transition={{ duration: 1, delay: 0.5 }}
+                      className="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Links */}
+              <div className="bg-slate-800/40 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">Quick Links</h3>
+                <div className="space-y-2">
+                  {[
+                    { icon: FaGamepad, label: 'My Games', color: 'text-purple-400' },
+                    { icon: FaAward, label: 'Achievements', color: 'text-yellow-400' },
+                    { icon: FaUsers, label: 'Friends', color: 'text-blue-400' },
+                    { icon: FaPalette, label: 'Customization', color: 'text-pink-400' },
+                    { icon: FaCode, label: 'Developer Tools', color: 'text-emerald-400' }
+                  ].map((item, index) => (
+                    <motion.button
+                      key={index}
+                      whileHover={{ x: 5 }}
+                      className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-700/30 transition-colors group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`${item.color} text-lg`}>
+                          <item.icon />
+                        </div>
+                        <span className="text-slate-300 group-hover:text-white">
+                          {item.label}
+                        </span>
+                      </div>
+                      <FaChevronRight className="text-slate-500 group-hover:text-slate-300" />
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Premium Badge */}
+              <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-sm rounded-2xl border border-purple-500/30 p-6 text-center">
+                <div className="mb-3 inline-flex p-3 rounded-xl bg-purple-500/20">
+                  <FaGem className="text-2xl text-purple-300" />
+                </div>
+                <h4 className="text-white font-semibold mb-2">Upgrade to Premium</h4>
+                <p className="text-slate-300 text-sm mb-4">
+                  Unlock exclusive features and early access
+                </p>
+                <button className="w-full py-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium hover:opacity-90 transition-opacity">
+                  Upgrade Now
+                </button>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </div>
     </Layout>
@@ -650,344 +665,226 @@ const ProfilePage = () => {
 };
 
 // Community Status Tab Component
-const CommunityStatusTab = ({ communityData, loadingCommunity, userData, formatDate }) => {
-  const navigate = useNavigate();
-
-  // Loader
+const CommunityStatusTab = ({ communityData, loadingCommunity, userData, formatDate, navigate }) => {
   if (loadingCommunity) {
     return (
-      <div className="flex justify-center items-center py-12">
+      <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
       </div>
     );
   }
 
-  // If user is a community member
   if (communityData) {
     return (
       <div className="space-y-6">
-        {/* Community Member Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-purple-200 dark:border-purple-800"
-        >
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
-            {/* Left Section */}
-            <div className="flex items-center gap-3">
-              <div className="bg-purple-100 dark:bg-purple-800 p-3 rounded-full">
-                <FaUsers className="text-purple-600 dark:text-purple-400 text-xl" />
-              </div>
-
-              <div>
-                <h3 className="text-xl font-bold text-purple-900 dark:text-white">
-                  Community Membership
-                </h3>
-                <p className="text-purple-700 dark:text-purple-300">
-                  Welcome to Soft Game Studio Community!
-                </p>
-              </div>
-            </div>
-
-            {/* Right Section */}
-            <div className="text-right">
-              <div className="bg-white dark:bg-neutral-800 px-4 py-2 rounded-lg border border-purple-200 dark:border-purple-700">
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Community ID
-                </div>
-                <div className="font-mono font-bold text-purple-600 dark:text-purple-400">
-                  {communityData.communityId}
-                </div>
-              </div>
-            </div>
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h3 className="text-2xl font-bold text-white mb-2">
+              Community <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Membership</span>
+            </h3>
+            <p className="text-slate-300">Welcome to our exclusive gaming community</p>
           </div>
+          {communityData.communityId && (
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl px-4 py-3 border border-slate-700/50">
+              <div className="text-slate-400 text-sm">Community ID</div>
+              <div className="text-white font-mono font-bold">{communityData.communityId}</div>
+            </div>
+          )}
+        </div>
 
-          {/* Member Info Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            
-            {/* Status */}
-            <div className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-purple-100 dark:border-purple-800">
+        {/* Status Card */}
+        <div className="bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50">
               <div className="flex items-center gap-3">
-                <FaShieldAlt className="text-green-500 text-xl" />
+                <div className="p-2 rounded-lg bg-emerald-500/20">
+                  <FaShieldAlt className="text-emerald-400" />
+                </div>
                 <div>
-                  <div className="font-semibold text-gray-900 dark:text-white">
-                    Status
-                  </div>
-                  <div className={`text-sm ${
-                    communityData.status === "accepted" ? "text-green-600 dark:text-green-400" :
-                    communityData.status === "pending" ? "text-yellow-600 dark:text-yellow-400" :
-                    "text-red-600 dark:text-red-400"
-                  }`}>
-                    {communityData.status === "accepted" ? "Active Member" :
-                     communityData.status === "pending" ? "Under Review" :
-                     "Application Rejected"}
+                  <div className="text-slate-400 text-sm">Status</div>
+                  <div className="text-white font-semibold">
+                    {communityData.status === 'accepted' ? 'Active Member' :
+                     communityData.status === 'pending' ? 'Under Review' :
+                     'Not Accepted'}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Role */}
-            <div className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-purple-100 dark:border-purple-800">
+            <div className="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50">
               <div className="flex items-center gap-3">
-                <FaAward className="text-blue-500 text-xl" />
+                <div className="p-2 rounded-lg bg-blue-500/20">
+                  <FaAward className="text-blue-400" />
+                </div>
                 <div>
-                  <div className="font-semibold text-gray-900 dark:text-white">
-                    Role
-                  </div>
-                  <div className="text-sm text-blue-600 dark:text-blue-400">
-                    {communityData.role || "Community Member"}
+                  <div className="text-slate-400 text-sm">Role</div>
+                  <div className="text-white font-semibold">
+                    {communityData.role || 'Member'}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Member Since */}
-            <div className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-purple-100 dark:border-purple-800">
+            <div className="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50">
               <div className="flex items-center gap-3">
-                <FaClock className="text-purple-500 text-xl" />
+                <div className="p-2 rounded-lg bg-purple-500/20">
+                  <FaClock className="text-purple-400" />
+                </div>
                 <div>
-                  <div className="font-semibold text-gray-900 dark:text-white">
-                    Member Since
-                  </div>
-                  <div className="text-sm text-purple-600 dark:text-purple-400">
-                    {communityData.acceptedAt ? formatDate(communityData.acceptedAt) : "Pending Approval"}
+                  <div className="text-slate-400 text-sm">Member Since</div>
+                  <div className="text-white font-semibold">
+                    {formatDate(communityData.acceptedAt)}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Applied On */}
-            <div className="bg-white dark:bg-neutral-800 p-4 rounded-lg border border-purple-100 dark:border-purple-800">
+            <div className="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50">
               <div className="flex items-center gap-3">
-                <FaCalendarAlt className="text-orange-500 text-xl" />
+                <div className="p-2 rounded-lg bg-amber-500/20">
+                  <FaCalendarAlt className="text-amber-400" />
+                </div>
                 <div>
-                  <div className="font-semibold text-gray-900 dark:text-white">
-                    Applied On
-                  </div>
-                  <div className="text-sm text-orange-600 dark:text-orange-400">
+                  <div className="text-slate-400 text-sm">Applied On</div>
+                  <div className="text-white font-semibold">
                     {formatDate(communityData.appliedAt)}
                   </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Skills Section */}
-          {communityData.skills && (
-            <div className="mb-6">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Skills & Expertise</h4>
-              <div className="flex flex-wrap gap-2">
-                {communityData.skills.split(',').map((skill, index) => (
-                  <span key={index} className="px-3 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full text-sm">
-                    {skill.trim()}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Bio Section */}
-          {communityData.bio && (
-            <div className="mb-6">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-3">About</h4>
-              <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
-                {communityData.bio}
-              </p>
-            </div>
-          )}
-
-          {/* Social Links */}
-          {communityData.socialLinks && (
-            <div className="mb-6">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Social Links</h4>
-              <div className="flex flex-wrap gap-3">
-                {communityData.socialLinks.linkedin && (
-                  <a href={communityData.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-sm hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
-                    <FaLinkedinIn className="text-blue-600" />
-                    LinkedIn
-                  </a>
-                )}
-                {communityData.socialLinks.github && (
-                  <a href={communityData.socialLinks.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-900/50 transition-colors">
-                    <FaGithub />
-                    GitHub
-                  </a>
-                )}
-                {communityData.socialLinks.instagram && (
-                  <a href={communityData.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 bg-pink-50 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 rounded-lg text-sm hover:bg-pink-100 dark:hover:bg-pink-900/50 transition-colors">
-                    <FaInstagram className="text-pink-600" />
-                    Instagram
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Status Messages */}
-          {communityData.status === "accepted" && (
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <FaHandshake className="text-green-500 text-xl" />
-                <div>
-                  <h4 className="font-semibold text-green-800 dark:text-green-300">
-                    Welcome to the Community!
-                  </h4>
-                  <p className="text-green-700 dark:text-green-400 text-sm">
-                    You now have access to exclusive community features, events, and resources.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {communityData.status === "pending" && (
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <FaClock className="text-yellow-500 text-xl" />
-                <div>
-                  <h4 className="font-semibold text-yellow-800 dark:text-yellow-300">
-                    Application Under Review
-                  </h4>
-                  <p className="text-yellow-700 dark:text-yellow-400 text-sm">
-                    Your community application is being reviewed. We'll notify you once it's processed.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </motion.div>
-
-        {/* Community Benefits */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white dark:bg-neutral-800 rounded-2xl p-6 border border-gray-200 dark:border-neutral-700"
-        >
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-            Community Benefits
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-              <FaRocket className="text-purple-500 text-xl" />
-              <span className="text-purple-700 dark:text-purple-300">
-                Exclusive Events
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-              <FaUsers className="text-blue-500 text-xl" />
-              <span className="text-blue-700 dark:text-blue-300">
-                Networking Opportunities
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <FaAward className="text-green-500 text-xl" />
-              <span className="text-green-700 dark:text-green-300">
-                Early Access to Content
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-              <FaHandshake className="text-orange-500 text-xl" />
-              <span className="text-orange-700 dark:text-orange-300">
-                Collaboration Projects
-              </span>
+        {/* Skills Section */}
+        {communityData.skills && (
+          <div className="bg-slate-800/40 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6 mb-6">
+            <h4 className="text-lg font-semibold text-white mb-4">Skills & Expertise</h4>
+            <div className="flex flex-wrap gap-2">
+              {communityData.skills.split(',').map((skill, index) => (
+                <span 
+                  key={index}
+                  className="px-4 py-2 bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-100 rounded-full text-sm border border-purple-500/30"
+                >
+                  {skill.trim()}
+                </span>
+              ))}
             </div>
           </div>
-        </motion.div>
+        )}
+
+        {/* Bio Section */}
+        {communityData.bio && (
+          <div className="bg-slate-800/40 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6 mb-6">
+            <h4 className="text-lg font-semibold text-white mb-4">About Me</h4>
+            <p className="text-slate-300 leading-relaxed">
+              {communityData.bio}
+            </p>
+          </div>
+        )}
+
+        {/* Benefits */}
+        <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 backdrop-blur-sm rounded-2xl border border-purple-500/30 p-6">
+          <h4 className="text-lg font-semibold text-white mb-4">Community Benefits</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[
+              { icon: FaRocket, text: 'Early game access', color: 'from-purple-500/20 to-purple-600/20' },
+              { icon: FaUsers, text: 'Exclusive events', color: 'from-blue-500/20 to-blue-600/20' },
+              { icon: FaAward, text: 'Special badges', color: 'from-amber-500/20 to-amber-600/20' },
+              { icon: FaStar, text: 'Premium support', color: 'from-emerald-500/20 to-emerald-600/20' }
+            ].map((benefit, index) => (
+              <div 
+                key={index}
+                className={`bg-gradient-to-r ${benefit.color} backdrop-blur-sm rounded-xl p-4 border border-slate-700/50`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-white/10">
+                    <benefit.icon className="text-white text-lg" />
+                  </div>
+                  <span className="text-white font-medium">{benefit.text}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
-  // If not a member - Join Community
+  // Not a member - Join Community
   return (
-    <div className="text-center py-12">
+    <div className="text-center py-8">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         className="max-w-md mx-auto"
       >
-        <div className="bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-2xl p-8 border-2 border-dashed border-purple-300 dark:border-purple-700 mb-6">
+        <div className="relative bg-gradient-to-br from-purple-500/10 to-blue-500/10 backdrop-blur-sm rounded-2xl p-8 border-2 border-dashed border-purple-500/30 mb-6 overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(139,92,246,0.1),transparent_50%)]"></div>
           
-          <div className="w-20 h-20 mx-auto mb-4 bg-purple-500 rounded-full flex items-center justify-center">
-            <FaUsers className="text-white text-2xl" />
+          <div className="relative mb-6">
+            <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 p-1">
+              <div className="w-full h-full rounded-full bg-slate-800 flex items-center justify-center">
+                <FaUsers className="text-4xl text-white" />
+              </div>
+            </div>
+            
+            <h3 className="text-2xl font-bold text-white mb-3">
+              Join Our Gaming Community
+            </h3>
+            
+            <p className="text-slate-300 mb-6">
+              Connect with fellow gamers, get early access to new releases, and participate in exclusive events.
+            </p>
+
+            <div className="space-y-3 mb-6">
+              {[
+                'Exclusive beta testing access',
+                'Monthly gaming tournaments',
+                'Developer Q&A sessions',
+                'Early game discounts'
+              ].map((feature, index) => (
+                <div key={index} className="flex items-center gap-3 text-left">
+                  <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                  <span className="text-slate-300 text-sm">{feature}</span>
+                </div>
+              ))}
+            </div>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate("/OurCommunity")}
+              className="relative px-8 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300"
+            >
+              Join Community
+            </motion.button>
           </div>
-
-          <h3 className="text-2xl font-bold text-purple-900 dark:text-white mb-2">
-            Join Our Community
-          </h3>
-
-          <p className="text-purple-700 dark:text-purple-300 mb-6">
-            Become part of the Soft Game Studio community and unlock exclusive
-            benefits, connect with like-minded individuals, and access premium
-            resources.
-          </p>
-
-          <div className="space-y-4 mb-6">
-            <div className="flex items-center gap-3 text-left">
-              <FaRocket className="text-green-500 flex-shrink-0" />
-              <span className="text-gray-700 dark:text-gray-300">
-                Exclusive events and workshops
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 text-left">
-              <FaUsers className="text-blue-500 flex-shrink-0" />
-              <span className="text-gray-700 dark:text-gray-300">
-                Network with professionals
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 text-left">
-              <FaAward className="text-yellow-500 flex-shrink-0" />
-              <span className="text-gray-700 dark:text-gray-300">
-                Early access to new content
-              </span>
-            </div>
-          </div>
-
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigate("/OurCommunity")}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            Join Community Now
-          </motion.button>
         </div>
-
-        <p className="text-gray-600 dark:text-gray-400 text-sm">
-          Already applied? Your application might be under review. Check back
-          later for updates.
-        </p>
       </motion.div>
     </div>
   );
 };
 
-// Enhanced InfoItem Component
+// InfoItem Component
 const InfoItem = ({ label, value, isEditing, onChange, icon }) => (
-  <div className="flex flex-col md:flex-row md:items-center py-2 border-b border-purple-100 dark:border-neutral-700">
-    <span className="font-medium text-purple-900 dark:text-neutral-300 md:w-2/5 flex items-center">
-      {icon === 'email' && <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>}
-      {icon === 'badge' && <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>}
-      {icon === 'calendar' && <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"/></svg>}
-      {label}
-    </span>
+  <div className="flex items-center justify-between py-3 border-b border-slate-700/50 last:border-0">
+    <div className="flex items-center gap-3">
+      <span className="text-lg">{icon}</span>
+      <span className="text-slate-400 font-medium">{label}</span>
+    </div>
     
     {isEditing ? (
       <input
         type="text"
-        value={value}
+        value={value || ''}
         onChange={onChange}
-        className="bg-transparent border-b border-purple-500 dark:border-purple-400 focus:outline-none py-1 md:ml-4 flex-grow"
+        className="bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 text-white w-48 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+        placeholder={`Enter ${label.toLowerCase()}`}
       />
     ) : (
-      <span className="text-purple-700 dark:text-neutral-200 font-medium mt-1 md:mt-0">
-        {value || 'N/A'}
+      <span className="text-white font-medium truncate max-w-[200px]">
+        {value || 'Not set'}
       </span>
     )}
   </div>

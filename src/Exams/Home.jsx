@@ -312,7 +312,7 @@ const HomePage = () => {
           <div className="flex justify-center mb-6">
             <div className="relative">
               <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-2xl border border-white/30">
-                <img 
+                <img loading="lazy" 
                   src="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/App%2Fsplash.png?alt=media&token=c839a793-40d5-4cab-b5e1-d2215493de83" 
                   className="w-16 h-16 rounded-lg"
                   alt="SGS Quiz"

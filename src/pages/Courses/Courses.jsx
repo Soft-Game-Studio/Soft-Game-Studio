@@ -90,7 +90,7 @@ const DisplayCourses = () => {
               >
                 <div className="relative pb-48 overflow-hidden">
                   {course.thumbnail ? (
-                    <img 
+                    <img loading="lazy" 
                       src={course.thumbnail} 
                       alt={course.title} 
                       className="absolute inset-0 h-full w-full object-cover"

@@ -285,7 +285,7 @@ const EbookCatalog = () => {
                   <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg overflow-hidden transition-all duration-300 group-hover:shadow-2xl h-full flex flex-col">
                     <div className="h-56 overflow-hidden relative">
                       {ebook.coverImageURL ? (
-                        <img 
+                        <img loading="lazy" 
                           src={ebook.coverImageURL} 
                           alt={ebook.title} 
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"

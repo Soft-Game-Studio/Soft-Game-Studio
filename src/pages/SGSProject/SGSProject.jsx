@@ -32,7 +32,7 @@ export default function SGSProject() {
   const renderImagePreview = (url) => (
     <div className="relative h-48 overflow-hidden rounded-t-xl">
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
-      <img 
+      <img loading="lazy" 
         src={url} 
         alt="Project preview" 
         className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"

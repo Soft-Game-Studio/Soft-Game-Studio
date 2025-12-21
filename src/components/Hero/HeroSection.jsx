@@ -43,7 +43,7 @@ const HomePage = () => {
           }, []);
   
       const renderImagePreview = (url, className = '') => (
-      <img 
+      <img loading="lazy" 
         src={url} 
         alt="Project preview" 
         className={`w-full h-full object-cover ${className}`}
@@ -356,7 +356,7 @@ const HomePage = () => {
                               </div>
                             </div>
                             <h3 className="text-2xl font-bold mb-2">{project.name}</h3>
-                            <p className="text-purple-700 dark:text-purple-300 mb-4">{project.description}</p>
+                            <p className="text-purple-700 dark:text-purple-300 line-clamp-3 min-h-[72px] mb-4">{project.description}</p>
                             <div className="flex flex-col sm:flex-row gap-4">
                               {project.sourceCode && 
                               (<Link 
@@ -552,7 +552,7 @@ const HomePage = () => {
                             className="rounded-2xl overflow-hidden shadow-lg"
                           >
                             <div className="h-64 flex items-center justify-center bg-gray-200">
-                              <img 
+                              <img loading="lazy" 
                                 src={item.img} 
                                 alt={item.title} 
                                 className="w-full h-full object-cover"
