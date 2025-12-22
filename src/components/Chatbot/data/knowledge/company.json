@@ -1,0 +1,85 @@
+{
+  "list": {
+    "leadership": {
+      "founder": "Livesh",
+      "coFounder": "Sharik",
+      "summary": "Leadership team with strong technical and business expertise."
+    },
+
+    "location": {
+      "address": {
+        "flat": "Flat No. 574",
+        "street": "Street No. 5",
+        "area": "Nai Abadi",
+        "city": "Abohar",
+        "district": "Fazilka",
+        "state": "Punjab",
+        "pincode": "152116",
+        "country": "India"
+      },
+      "presence": {
+        "headquarters": "Abohar, Punjab",
+        "serviceCoverage": "PAN India",
+        "digitalReach": "Global"
+      }
+    },
+
+    "mission": {
+      "statement": "To democratize programming education by making it accessible, practical, and inspiring.",
+      "focus": [
+        "Accessibility",
+        "Practical learning",
+        "Community building"
+      ],
+      "goals": [
+        "Reach 100,000+ learners by 2026",
+        "Launch 500+ practical projects",
+        "Build 50+ educational partnerships"
+      ]
+    },
+
+    "vision": {
+      "statement": "To become a global catalyst in programming education.",
+      "pillars": [
+        "Educational democratization",
+        "Global reach",
+        "Industry alignment"
+      ],
+      "futureInitiatives": [
+        "AI-powered personalized learning",
+        "International certifications",
+        "Global coding competitions"
+      ]
+    },
+
+    "incorporation": {
+      "incorporatedOn": "2025-01-01",
+      "udyamRegisteredOn": "2025-01-21",
+      "status": "Active"
+    },
+
+    "businessType": {
+      "enterpriseType": "Micro Enterprise (2024–25)",
+      "industry": "Information Technology",
+      "model": ["B2B", "B2C"]
+    },
+
+    "businessActivities": {
+      "primary": [
+        "Computer programming",
+        "Web design and development",
+        "IT services and consulting"
+      ],
+      "secondary": [
+        "Web hosting",
+        "Educational services",
+        "Digital content creation"
+      ],
+      "industryFocus": [
+        "Technology",
+        "Education",
+        "Digital Services"
+      ]
+    }
+  }
+}

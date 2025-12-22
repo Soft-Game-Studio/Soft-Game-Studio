@@ -1,0 +1,80 @@
+{
+    "list": {
+        "portfolio": [
+            {
+                "category": "Development Services",
+                "items": [
+                    "Web Application Development",
+                    "Mobile App Development (iOS/Android)",
+                    "Custom Software Solutions",
+                    "Game Development",
+                    "UI/UX Design"
+                ]
+            },
+            {
+                "category": "Education Resources",
+                "items": [
+                    "Programming Language Notes",
+                    "Online Courses & Tutorials",
+                    "E-books & Study Materials",
+                    "Video Lectures",
+                    "Source Code Examples"
+                ]
+            },
+            {
+                "category": "Exam Platform",
+                "items": [
+                    "Online Assessment System",
+                    "AI-Powered Proctoring",
+                    "Custom Test Creation",
+                    "Result Analytics",
+                    "Certification Generation"
+                ]
+            },
+            {
+                "category": "Programming Solutions",
+                "items": [
+                    "Tutorial Projects",
+                    "Code Review Services",
+                    "Programming Competitions",
+                    "Technical Workshops",
+                    "Mentorship Programs"
+                ]
+            }
+        ],
+        "packages": [
+            {
+                "name": "Basic Package",
+                "idealFor": "Small projects, startups",
+                "features": "Basic functionality, standard design",
+                "support": "Email support",
+                "delivery": "2-4 weeks",
+                "bestFor": "MVP development"
+            },
+            {
+                "name": "Startup Package",
+                "idealFor": "Growing businesses",
+                "features": "Enhanced functionality, custom design",
+                "support": "Email + chat support",
+                "delivery": "4-6 weeks",
+                "bestFor": "Market-ready products"
+            },
+            {
+                "name": "Professional Package",
+                "idealFor": "Established businesses",
+                "features": "Advanced features, premium design",
+                "support": "Priority support + 1-month free maintenance",
+                "delivery": "6-8 weeks",
+                "bestFor": "Scaling solutions"
+            },
+            {
+                "name": "Enterprise Package",
+                "idealFor": "Large organizations",
+                "features": "Enterprise-grade solutions, full customization",
+                "support": "Dedicated account manager + 3-month maintenance",
+                "delivery": "8-12 weeks",
+                "bestFor": "Complex enterprise systems"
+            }
+        ]
+    }
+}

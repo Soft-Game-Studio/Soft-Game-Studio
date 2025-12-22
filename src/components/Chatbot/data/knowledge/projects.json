@@ -1,0 +1,133 @@
+{
+  "list": {
+    "webDevelopment": [
+      {
+        "name": "Dazylook Photography",
+        "type": "Website",
+        "category": "Portfolio",
+        "description": "Professional photography portfolio website.",
+        "technology": ["HTML", "CSS", "JavaScript", "React"],
+        "status": "Completed"
+      },
+      {
+        "name": "Hare Ka Sahara NGO",
+        "type": "Website",
+        "category": "Non-Profit",
+        "description": "Website for a non-profit organization.",
+        "technology": ["React", "Firebase"],
+        "status": "Live"
+      },
+      {
+        "name": "CU Study Hub",
+        "type": "Web Platform",
+        "category": "Education",
+        "description": "Educational platform for students.",
+        "technology": ["React", "Node.js", "Firebase"],
+        "status": "Active"
+      },
+      {
+        "name": "AnonChat",
+        "type": "Web Application",
+        "category": "Real-time Communication",
+        "description": "Anonymous real-time chat application.",
+        "technology": ["React", "WebSocket", "Node.js"],
+        "status": "Live"
+      }
+    ],
+
+    "mobileApplications": [
+      {
+        "name": "Weather Forecast Pro",
+        "type": "Mobile App",
+        "category": "Utility",
+        "description": "Real-time weather forecasting application.",
+        "technology": ["React Native", "API Integration"],
+        "status": "Completed"
+      },
+      {
+        "name": "SGS Quiz App",
+        "type": "Mobile App",
+        "category": "Education",
+        "description": "Interactive quiz and learning application.",
+        "technology": ["React Native", "Firebase"],
+        "status": "Active"
+      },
+      {
+        "name": "Attendance System",
+        "type": "Mobile App",
+        "category": "Management",
+        "description": "Digital attendance management system.",
+        "technology": ["Android", "Firebase"],
+        "status": "Completed"
+      }
+    ],
+
+    "innovativeSolutions": [
+      {
+        "name": "Suprisehub",
+        "type": "Web Platform",
+        "category": "Event Management",
+        "description": "Event planning and management platform.",
+        "technology": ["React", "Node.js", "MongoDB"],
+        "status": "Live"
+      },
+      {
+        "name": "AI-powered Face Detection",
+        "type": "AI Solution",
+        "category": "Computer Vision",
+        "description": "Real-time face detection and monitoring system.",
+        "technology": ["Python", "TensorFlow", "OpenCV"],
+        "status": "Completed"
+      },
+      {
+        "name": "E-commerce Solutions",
+        "type": "Web Platform",
+        "category": "Retail",
+        "description": "Multiple scalable e-commerce platforms.",
+        "technology": ["React", "Node.js", "MongoDB", "AWS"],
+        "status": "Live"
+      }
+    ],
+
+    "educationalTools": [
+      {
+        "name": "Programming Practice Platform",
+        "category": "Education",
+        "description": "Hands-on coding practice environment.",
+        "technology": ["React", "Firebase"],
+        "status": "Active"
+      },
+      {
+        "name": "Code Review System",
+        "category": "Developer Tools",
+        "description": "Automated and manual code review platform.",
+        "technology": ["Node.js", "MongoDB"],
+        "status": "Active"
+      },
+      {
+        "name": "Learning Management System",
+        "category": "Education",
+        "description": "Complete LMS for students and educators.",
+        "technology": ["React", "Node.js", "Firebase"],
+        "status": "Active"
+      }
+    ],
+
+    "highlights": {
+      "clientSatisfaction": "100%",
+      "delivery": "On-time",
+      "architecture": "Scalable & Secure",
+      "support": "Ongoing Maintenance"
+    },
+
+    "commonTechnologyStack": [
+      "React",
+      "Node.js",
+      "Python",
+      "Firebase",
+      "MongoDB",
+      "AWS",
+      "TensorFlow"
+    ]
+  }
+}

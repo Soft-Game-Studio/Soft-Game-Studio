@@ -1,0 +1,65 @@
+{
+    "list": {
+        "languages": [
+            "C Programming",
+            "C++",
+            "Java",
+            "Python",
+            "JavaScript",
+            "HTML/CSS",
+            "SQL Databases"
+        ],
+        "resources": [
+            {
+                "type": "Study Materials",
+                "items": [
+                    "Comprehensive notes",
+                    "Cheat sheets",
+                    "Quick reference guides",
+                    "Interview preparation kits"
+                ]
+            },
+            {
+                "type": "Practical Learning",
+                "items": [
+                    "Source code repositories",
+                    "Project templates",
+                    "Video tutorials",
+                    "Live coding sessions"
+                ]
+            },
+            {
+                "type": "Assessment Tools",
+                "items": [
+                    "Practice quizzes",
+                    "Coding challenges",
+                    "Mock tests",
+                    "Progress tracking"
+                ]
+            },
+            {
+                "type": "Advanced Resources",
+                "items": [
+                    "E-books (Beginner to Advanced)",
+                    "Research papers",
+                    "Case studies",
+                    "Industry best practices"
+                ]
+            }
+        ],
+        "learningPathways": [
+            {
+                "track": "Beginner Track",
+                "focus": "Basics to Fundamentals"
+            },
+            {
+                "track": "Intermediate Track",
+                "focus": "Projects & Applications"
+            },
+            {
+                "track": "Advanced Track",
+                "focus": "Specialization & Optimization"
+            }
+        ]
+    }
+}

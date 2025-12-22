@@ -1,0 +1,81 @@
+{
+    "list": {
+        "refundPolicy": {
+            "statement": "Strict No Return and No Refund policy for all products and services.",
+            "nonRefundableItems": [
+                "Digital products (courses, e-books, software)",
+                "Development services (once work begins)",
+                "Custom solutions",
+                "Consultation fees"
+            ],
+            "exceptions": [
+                "Technical defects preventing core functionality",
+                "Service unavailability beyond 48 hours",
+                "Billing errors (contact within 7 days)"
+            ],
+            "contact": "team.softgamestudio@gmail.com"
+        },
+        "cookiePolicy": {
+            "categories": [
+                {
+                    "name": "Essential Cookies",
+                    "examples": [
+                        "termsAccepted",
+                        "firebase-auth",
+                        "sessionId",
+                        "csrfToken"
+                    ]
+                },
+                {
+                    "name": "Analytics Cookies",
+                    "examples": [
+                        "_ga",
+                        "_gid",
+                        "_gat",
+                        "amplitude"
+                    ]
+                },
+                {
+                    "name": "Preference Cookies",
+                    "examples": [
+                        "userProfile",
+                        "cartData",
+                        "theme",
+                        "language"
+                    ]
+                },
+                {
+                    "name": "Third-Party Cookies",
+                    "examples": [
+                        "Stripe",
+                        "Google Maps",
+                        "YouTube"
+                    ]
+                }
+            ],
+            "duration": "Session to 2 years",
+            "compliance": "GDPR, CCPA, Indian IT Act"
+        },
+        "copyright": {
+            "notice": "© 2025 Soft Game Studio. All Rights Reserved.",
+            "protectedAssets": [
+                "Content (text, guides, courses)",
+                "Creative Works (logos, graphics, designs)",
+                "Technology (code, algorithms, APIs)",
+                "Educational Materials (curriculum, videos)"
+            ],
+            "usageRights": {
+                "permitted": [
+                    "Personal learning",
+                    "Reference"
+                ],
+                "prohibited": [
+                    "Commercial redistribution",
+                    "Modification",
+                    "Plagiarism"
+                ]
+            },
+            "registration": "Registered under Indian Copyright Act, 1957"
+        }
+    }
+}

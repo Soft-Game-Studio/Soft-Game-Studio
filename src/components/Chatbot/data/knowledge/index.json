@@ -1,0 +1,272 @@
+[
+  {
+    "question": "Who is founder and co-founder?",
+    "keywords": [
+      "founder",
+      "co-founder",
+      "owner",
+      "ceo",
+      "leadership"
+    ],
+    "intent": "founder",
+    "source": "company.list.leadership"
+  },
+  {
+    "question": "Where is Soft Game Studio located?",
+    "keywords": [
+      "location",
+      "address",
+      "where",
+      "office",
+      "headquarters",
+      "city"
+    ],
+    "intent": "location",
+    "source": "company.list.location"
+  },
+  {
+    "question": "What is Soft Game Studio's mission?",
+    "keywords": [
+      "mission",
+      "purpose",
+      "goal",
+      "aim"
+    ],
+    "intent": "about",
+    "source": "company.list.mission"
+  },
+  {
+    "question": "What is Soft Game Studio's vision?",
+    "keywords": [
+      "vision",
+      "future",
+      "aspiration"
+    ],
+    "intent": "about",
+    "source": "company.list.vision"
+  },
+  {
+    "question": "When was Soft Game Studio incorporated?",
+    "keywords": [
+      "incorporated",
+      "founded",
+      "established",
+      "date",
+      "started",
+      "age"
+    ],
+    "intent": "business",
+    "source": "company.list.incorporation"
+  },
+  {
+    "question": "What type of business is it?",
+    "keywords": [
+      "type",
+      "business",
+      "enterprise",
+      "category",
+      "model"
+    ],
+    "intent": "business",
+    "source": "company.list.businessType"
+  },
+  {
+    "question": "What are your business activities?",
+    "keywords": [
+      "activities",
+      "what do you do",
+      "operations",
+      "services"
+    ],
+    "intent": "business",
+    "source": "company.list.businessActivities"
+  },
+  {
+    "question": "What projects have you developed?",
+    "keywords": [
+      "projects",
+      "portfolio",
+      "work",
+      "examples",
+      "apps",
+      "websites"
+    ],
+    "intent": "projects",
+    "source": "projects.list"
+  },
+  {
+    "question": "What services do you offer?",
+    "keywords": [
+      "services",
+      "offer",
+      "provide",
+      "solutions"
+    ],
+    "intent": "services",
+    "source": "services.list.portfolio"
+  },
+  {
+    "question": "What are your development packages?",
+    "keywords": [
+      "packages",
+      "pricing",
+      "plans",
+      "rates",
+      "cost",
+      "price"
+    ],
+    "intent": "services",
+    "source": "services.list.packages"
+  },
+  {
+    "question": "What are your contact emails?",
+    "keywords": [
+      "email",
+      "mail",
+      "contact",
+      "support"
+    ],
+    "intent": "contact",
+    "source": "contact.list.emails"
+  },
+  {
+    "question": "What are your phone numbers?",
+    "keywords": [
+      "phone",
+      "call",
+      "number",
+      "mobile",
+      "contact"
+    ],
+    "intent": "contact",
+    "source": "contact.list.phones"
+  },
+  {
+    "question": "What are your service hours?",
+    "keywords": [
+      "hours",
+      "time",
+      "open",
+      "available",
+      "when"
+    ],
+    "intent": "contact",
+    "source": "contact.list.hours"
+  },
+  {
+    "question": "How can I give feedback?",
+    "keywords": [
+      "feedback",
+      "review",
+      "complaint",
+      "suggest"
+    ],
+    "intent": "contact",
+    "source": "contact.list.feedback"
+  },
+  {
+    "question": "What educational resources do you provide?",
+    "keywords": [
+      "education",
+      "resources",
+      "learning",
+      "study",
+      "courses",
+      "notes"
+    ],
+    "intent": "education",
+    "source": "education.list"
+  },
+  {
+    "question": "Tell me about the Exam Platform",
+    "keywords": [
+      "exam",
+      "platform",
+      "assessment",
+      "test",
+      "proctoring"
+    ],
+    "intent": "exam",
+    "source": "exam.list.platform"
+  },
+  {
+    "question": "What is your refund policy?",
+    "keywords": [
+      "refund",
+      "return",
+      "policy",
+      "money back",
+      "cancel"
+    ],
+    "intent": "legal",
+    "source": "legal.list.refundPolicy"
+  },
+  {
+    "question": "What is your cookie policy?",
+    "keywords": [
+      "cookies",
+      "tracking",
+      "privacy",
+      "data"
+    ],
+    "intent": "legal",
+    "source": "legal.list.cookiePolicy"
+  },
+  {
+    "question": "Copyright information",
+    "keywords": [
+      "copyright",
+      "intellectual property",
+      "rights",
+      "ownership",
+      "license"
+    ],
+    "intent": "legal",
+    "source": "legal.list.copyright"
+  },
+  {
+    "question": "What technology stack do you use?",
+    "keywords": [
+      "technology",
+      "stack",
+      "tools",
+      "framework",
+      "tech",
+      "software"
+    ],
+    "intent": "technology",
+    "source": "technology.list.stack"
+  },
+  {
+    "question": "Hello",
+    "keywords": [
+      "hello",
+      "hi",
+      "hey",
+      "greetings"
+    ],
+    "intent": "greeting",
+    "source": "communication.list.greeting"
+  },
+  {
+    "question": "Goodbye",
+    "keywords": [
+      "bye",
+      "goodbye",
+      "see you",
+      "exit"
+    ],
+    "intent": "farewell",
+    "source": "communication.list.farewell"
+  },
+  {
+    "question": "Thank you",
+    "keywords": [
+      "thanks",
+      "thank you",
+      "appreciate"
+    ],
+    "intent": "gratitude",
+    "source": "communication.list.gratitude"
+  }
+]

@@ -1,0 +1,48 @@
+{
+    "list": {
+        "platform": {
+            "name": "SGS Exam Platform",
+            "description": "Advanced Assessment System with cutting-edge features",
+            "security": [
+                "AI-Powered Proctoring",
+                "Multi-factor authentication",
+                "Secure browser lockdown",
+                "Real-time activity monitoring",
+                "Plagiarism detection"
+            ],
+            "tools": [
+                "Custom test creation",
+                "Automated grading",
+                "Detailed analytics",
+                "Performance reports",
+                "Skill gap analysis"
+            ],
+            "userExperience": [
+                "Intuitive interface",
+                "Mobile responsive",
+                "Offline capability",
+                "Multi-language support"
+            ],
+            "institutionalFeatures": [
+                "Bulk user management",
+                "Custom branding",
+                "API integration",
+                "Data export"
+            ],
+            "industriesServed": [
+                "Educational Institutions",
+                "Certification Bodies",
+                "Corporate Training",
+                "Recruitment Agencies",
+                "Government Exams"
+            ],
+            "stack": [
+                "React",
+                "Firebase",
+                "Node.js",
+                "MongoDB",
+                "AWS"
+            ]
+        }
+    }
+}

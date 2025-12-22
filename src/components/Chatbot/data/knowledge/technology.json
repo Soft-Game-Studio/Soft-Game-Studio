@@ -1,0 +1,51 @@
+{
+    "list": {
+        "stack": {
+            "frontend": [
+                "React.js",
+                "Tailwind CSS",
+                "Framer Motion",
+                "Redux",
+                "TypeScript"
+            ],
+            "backend": [
+                "Node.js",
+                "Express.js",
+                "Firebase",
+                "MongoDB",
+                "Redis"
+            ],
+            "mobile": [
+                "React Native",
+                "Flutter",
+                "Android Studio",
+                "Xcode"
+            ],
+            "cloud": [
+                "AWS",
+                "Docker",
+                "CI/CD",
+                "GitHub Actions"
+            ],
+            "ai": [
+                "TensorFlow",
+                "OpenCV",
+                "Python",
+                "scikit-learn"
+            ],
+            "database": [
+                "PostgreSQL",
+                "MySQL",
+                "MongoDB",
+                "Firebase Firestore",
+                "Redis"
+            ]
+        },
+        "philosophy": [
+            "Modern, maintainable code",
+            "Scalable architecture",
+            "Security-first approach",
+            "Performance optimization"
+        ]
+    }
+}

@@ -1,0 +1,58 @@
+{
+    "list": {
+        "emails": [
+            {
+                "type": "Primary Email",
+                "address": "team.softgamestudio@gmail.com",
+                "purpose": [
+                    "General inquiries",
+                    "Project discussions",
+                    "Business proposals"
+                ]
+            },
+            {
+                "type": "Official Email",
+                "address": "officialsoftgamestudio@gmail.com",
+                "purpose": [
+                    "Formal communications",
+                    "Documentation",
+                    "Legal matters"
+                ]
+            }
+        ],
+        "phones": [
+            {
+                "supportType": "Hindi Support",
+                "number": "+91 9914267704",
+                "hours": "9 AM - 5 PM (Mon-Sat)"
+            },
+            {
+                "supportType": "English Support",
+                "number": "+91 6283400770",
+                "hours": "9 AM - 5 PM (Mon-Sat)"
+            }
+        ],
+        "hours": {
+            "days": "Monday to Saturday",
+            "time": "9:00 AM to 5:00 PM IST",
+            "timezone": "Indian Standard Time (UTC+5:30)",
+            "availability": {
+                "phone": "Available during business hours",
+                "email": "24/7 reception, response within 24-48h",
+                "digital": "24/7"
+            }
+        },
+        "feedback": {
+            "channels": [
+                "Online Feedback Form",
+                "Direct Email (team.softgamestudio@gmail.com)",
+                "Customer Surveys"
+            ],
+            "commitment": [
+                "Acknowledge within 48 hours",
+                "Review monthly",
+                "Implement valid suggestions"
+            ]
+        }
+    }
+}

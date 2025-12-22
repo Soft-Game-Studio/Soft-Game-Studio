@@ -1,0 +1,29 @@
+{
+    "list": {
+        "greeting": {
+            "message": "Hello! I'm your assistant for Soft Game Studio. How can I help you today?",
+            "quickAccess": [
+                "Company Information",
+                "Our Services & Packages",
+                "Project Portfolio",
+                "Contact Details",
+                "Educational Resources"
+            ]
+        },
+        "farewell": {
+            "message": "Goodbye! Thank you for connecting with Soft Game Studio.",
+            "recap": [
+                "Services: Development, Education, Exams",
+                "Contact: team.softgamestudio@gmail.com"
+            ]
+        },
+        "gratitude": {
+            "message": "You're welcome! We're glad we could assist you.",
+            "nextSteps": [
+                "Browse service catalog",
+                "Check case studies",
+                "Explore educational resources"
+            ]
+        }
+    }
+}
