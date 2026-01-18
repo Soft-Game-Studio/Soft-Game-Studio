@@ -200,7 +200,7 @@ const HomePage = () => {
         </section>
 
         {/* App Feature Section */}
-        {/* <section className="py-20 bg-white dark:bg-neutral-900">
+        <section className="py-20 bg-white dark:bg-neutral-900">
           <div className="container mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -212,59 +212,36 @@ const HomePage = () => {
               <div className="flex flex-col lg:flex-row items-center gap-8">
                 <div className="flex-1">
                   <div className="flex items-center gap-6 mb-6">
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl p-3 shadow-lg">
+                    <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl p-1 shadow-lg">
                       <img
-                        className="w-full h-full rounded-lg object-cover"
-                        src="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/App%2Fsplash.png?alt=media&token=c839a793-40d5-4cab-b5e1-d2215493de83"
-                        alt="SGS Quiz App"
+                        className="w-full h-full rounded-2xl object-cover"
+                        src="https://github.com/Soft-Game-Studio/Boomy-Run/blob/main/game.png?raw=true"
+                        alt="Boom Run Game"
                       />
                     </div>
                     <div>
-                      <h2 className="text-3xl font-bold text-purple-600 dark:text-white mb-2">SGS Quiz App</h2>
+                      <h2 className="text-3xl font-bold text-purple-600 dark:text-white mb-2">Boom Run Game</h2>
                       <p className="text-slate-600 dark:text-slate-300 text-lg">
-                        Professional quiz platform with advanced features
+                       The Ultimate Endless Runner Experience!
                       </p>
                     </div>
                   </div>
 
                   <p className="text-slate-600 dark:text-slate-300 mb-6 text-lg leading-relaxed">
-                    Enhance your coding skills with our professional quiz platform featuring weekly exams,
-                    certificates, and anti-cheating system.
+                   Boomy Run is a free, easy, and mind-relaxing runner game you can play instantly without login.
                   </p>
 
-                  <div className="flex flex-wrap gap-4 mb-8">
-                    {[
-                      { icon: <FaChartLine />, text: "Progress Tracking" },
-                      { icon: <FaTrophy />, text: "Achievements" },
-                      { icon: <FaShieldAlt />, text: "Anti-Cheating" },
-                    ].map((feature, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-2 bg-blue-50 dark:bg-slate-800 px-4 py-2 rounded-full"
-                      >
-                        <span className="text-blue-600 dark:text-blue-400">{feature.icon}</span>
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                          {feature.text}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                 
 
                   <div className="flex flex-col sm:flex-row gap-4">
                     <Link 
-                      to="/SGS-Quiz-App" 
+                      to="/BoomRunGamePage" 
                       className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-full flex items-center justify-center transition-colors"
                     >
                       Explore App
                       <FaArrowRight className="ml-2" />
                     </Link>
-                    <Link 
-                      to="https://github.com/SOFTGAMESTUDIO/SGS-QUIZ-APP/releases/download/SGS-QUIZ-APP/sgs-official-v1.0.0.apk"
-                      className="bg-white dark:bg-slate-800 border border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 px-6 py-3 rounded-full flex items-center justify-center transition-colors"
-                    >
-                      <FaDownload className="mr-2" />
-                      Download Now
-                    </Link>
+                    
                   </div>
                 </div>
               </div>
@@ -272,10 +249,11 @@ const HomePage = () => {
               <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
                   {[
-                    { value: "5K+", label: "Active Users" },
-                    { value: "200+", label: "Weekly Exams" },
-                    { value: "4.8★", label: "User Rating" },
-                    { value: "100%", label: "Secure" },
+                    { value: "5K+", label: "Players Worldwide" },
+{ value: "20+", label: "Challenging Levels" },
+{ value: "4.8★", label: "Player Rating" },
+{ value: "100%", label: "Free to Play" },
+
                   ].map((stat, idx) => (
                     <div key={idx}>
                       <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stat.value}</div>
@@ -286,7 +264,7 @@ const HomePage = () => {
               </div>
             </motion.div>
           </div>
-        </section> */}
+        </section>
 
         {/* Tabbed Section */}
         <section id="tabs-section" className="py-20 bg-white dark:bg-neutral-900">

@@ -46,9 +46,6 @@ import EbookCatalog from "./pages/EBook/DesplayEbboks.jsx";
 import DevelopmentPage from "./pages/CUSTOMER SERVICE/AboutDevelopment.jsx";
 import ProfilePage from "./pages/Profile/Profile.jsx";
 
-
-
-import SGSQuizAppPage from "./pages/App/SGSQUIZAPP.jsx";
 import SupportUs from "./components/Suport US/SuportUS.jsx";
 
 
@@ -73,6 +70,10 @@ import DailyResultsPage from "./Exams/Result/DailyResult.jsx";
 import ResultsPage from "./Exams/Result/Result.jsx";
 import CommunityMembers from "./components/Members/CommunityMembers.jsx";
 import CertificatePage from "./pages/Certiificate/CertificatePage.jsx";
+import BoomRunGamePage from "./pages/App/BoomRunGamePage.jsx";
+import ProjectDetailsPage from "./pages/SGSProject/SGSProjectDetaisl.jsx";
+import GamesListPage from "./pages/App/Gamepage.jsx";
+import GamePage from "./pages/App/GamePageDetais.jsx";
 
 
 
@@ -139,11 +140,15 @@ function App() {
 
           {/* App Page */}
 
-          <Route path="/SGS-Quiz-App" element={<SGSQuizAppPage />} />
+          <Route path="/BoomRunGamePage" element={<BoomRunGamePage />} />
+          <Route path="/game" element={<GamesListPage />} />
+          <Route path="/game/:id" element={<GamePage />} />
+          
 
           {/* SGS PROJECT PAGE */}
 
           <Route path="/SGS-Projects" element={<SGSProject />} />
+           <Route path="/SGS-Projects/:id" element={<ProjectDetailsPage />} />
 
           {/* SGS Exams */}
           <Route path="/SGS-Exam-Home" element={<ExamHomePage/>} />
