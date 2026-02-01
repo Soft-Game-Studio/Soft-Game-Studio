@@ -527,11 +527,11 @@ const GamesListPage = () => {
                 Download any of our games for free and start your gaming adventure today!
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <button className="flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-blue-800 text-white py-3 px-8 rounded-xl hover:opacity-90">
+                <button onClick={() => setSelectedPlatform("windows")} className="flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-blue-800 text-white py-3 px-8 rounded-xl hover:opacity-90">
                   <FaWindows />
                   Browse Windows Games
                 </button>
-                <button className="flex items-center justify-center gap-3 bg-gradient-to-r from-green-600 to-green-800 text-white py-3 px-8 rounded-xl hover:opacity-90">
+                <button onClick={() => setSelectedPlatform("android")} className="flex items-center justify-center gap-3 bg-gradient-to-r from-green-600 to-green-800 text-white py-3 px-8 rounded-xl hover:opacity-90">
                   <FaAndroid />
                   Browse Android Games
                 </button>

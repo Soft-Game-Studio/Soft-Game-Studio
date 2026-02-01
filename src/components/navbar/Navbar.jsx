@@ -25,9 +25,10 @@ import { useCart } from "../../Modules/Cart/CartContext";
 
 const navItems = [
   { name: "Home", link: "/" },
-  { name: "Notes", link: "/Notes&Books" },
+  { name: "Notes", link: "/DownloadNotes" },
   { name: "Course", link: "/OurCourse"},
   { name: "E-Books", link: "/E-Books" },
+   { name: "Games", link: "/game" },
 ];
 
 export function NavbarMenu() {
@@ -54,7 +55,7 @@ export function NavbarMenu() {
         <NavItems items={navItems} />
 
         <div className="flex justify-center items-center gap-2 relative">
-          <NavbarButton
+          {/* <NavbarButton
             onClick={() => navigate("/Cart")}
             className="relative flex items-center justify-center p-2 rounded-full text-neutral-950 dark:text-gray-300 hover:text-cyan-400"
             aria-label="Cart"
@@ -65,7 +66,7 @@ export function NavbarMenu() {
                 {cartItems.length}
               </span>
             )}
-          </NavbarButton>
+          </NavbarButton> */}
 
           <NavbarButton
             onClick={toggleTheme}
@@ -120,7 +121,7 @@ export function NavbarMenu() {
         <MobileNavHeader>
           <NavbarLogo />
           <div className="flex items-center space-x-1">
-            <NavbarButton
+            {/* <NavbarButton
               onClick={() => navigate("/Cart")}
               className="relative p-2 rounded-full text-neutral-950 dark:text-gray-300"
             >
@@ -130,7 +131,7 @@ export function NavbarMenu() {
                   {cartItems.length}
                 </span>
               )}
-            </NavbarButton>
+            </NavbarButton> */}
            <NavbarButton
             onClick={toggleTheme}
             className="p-2 rounded-full text-neutral-950 dark:text-gray-300 "

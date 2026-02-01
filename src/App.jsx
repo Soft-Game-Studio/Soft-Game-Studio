@@ -70,10 +70,12 @@ import DailyResultsPage from "./Exams/Result/DailyResult.jsx";
 import ResultsPage from "./Exams/Result/Result.jsx";
 import CommunityMembers from "./components/Members/CommunityMembers.jsx";
 import CertificatePage from "./pages/Certiificate/CertificatePage.jsx";
-import BoomRunGamePage from "./pages/App/BoomRunGamePage.jsx";
 import ProjectDetailsPage from "./pages/SGSProject/SGSProjectDetaisl.jsx";
 import GamesListPage from "./pages/App/Gamepage.jsx";
 import GamePage from "./pages/App/GamePageDetais.jsx";
+import UploadNotes from "./pages/SGSNotes/Uplode Notes/UplodeNotes.jsx";
+import Notes from "./pages/SGSNotes/Notes/Notes.jsx";
+import NoteDetail from "./pages/SGSNotes/Notes/Notesview.jsx";
 
 
 
@@ -120,8 +122,10 @@ function App() {
         
 
           {/* Notes & Books Routes */}
-
           <Route path="/Notes&Books" element={<FreeNotesAndBooks />} />
+          <Route path="/UplodesNotes" element={<UploadNotes />} />
+          <Route path="/DownloadNotes" element={<Notes />} />
+          <Route path="/DownloadNotes/:id" element={<NoteDetail />} />
 
           {/* Our Corses */}
 
@@ -140,7 +144,6 @@ function App() {
 
           {/* App Page */}
 
-          <Route path="/BoomRunGamePage" element={<BoomRunGamePage />} />
           <Route path="/game" element={<GamesListPage />} />
           <Route path="/game/:id" element={<GamePage />} />
           

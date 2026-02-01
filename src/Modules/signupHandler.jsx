@@ -26,6 +26,8 @@ const generateUniqueRollNo = async () => {
     });
 
     return rollNumber;
+
+    
   } catch (error) {
     console.error("Roll number generation failed:", error);
     throw new Error("Failed to generate roll number");
