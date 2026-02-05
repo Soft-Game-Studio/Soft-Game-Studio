@@ -401,6 +401,23 @@ export default function Notes() {
             </div>
           </div>
         </div>
+        <div className="m-4 text-center">
+              <div className="flex justify-center lg:justify-between flex-wrap items-center  bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
+                <div className="text-left">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Want to share your notes?</h3>
+                  <p className="text-gray-600">
+                    Help other students by uploading your study materials. It's quick and easy!
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate('/UplodesNotes')}
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
+                >
+                  Upload Your Notes
+                  <FaArrowRight />
+                </button>
+              </div>
+            </div>
 
         {/* Search + Filters */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">

@@ -197,8 +197,8 @@ export default function NoteView() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Back Button */}
         <button
-          onClick={() => navigate('/notes')}
-          className="mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          onClick={() => navigate('/DownloadNotes')}
+          className="mb-6 flex items-center gap-2 dark:text-gray-200 dark:hover:text-gray-400 text-gray-600 hover:text-gray-900 transition-colors"
         >
           <FaArrowLeft /> Back to Notes
         </button>
@@ -238,12 +238,12 @@ export default function NoteView() {
                     <FaExternalLinkAlt />
                   </button>
                   <button
-                    onClick={handlePrint}
-                    className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-                    title="Print"
-                  >
-                    <FaPrint />
-                  </button>
+                  onClick={handleShare}
+                  className="w-8 h-8 flex items-center justify-center gap-3 bg-gray-100 text-gray-800 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                >
+                  <FaShareAlt />
+                 
+                </button>
                 </div>
               </div>
               
@@ -317,7 +317,7 @@ export default function NoteView() {
                   <FaUserGraduate className="text-gray-500" />
                   <div>
                     <p className="text-xs text-gray-500">Student</p>
-                    <p className="font-medium truncate">{note.studentName || 'Anonymous'}</p>
+                    <p className="font-medium truncate text-wrap">{note.studentName || 'Anonymous'}</p>
                   </div>
                 </div>
                 
@@ -325,7 +325,7 @@ export default function NoteView() {
                   <FaUniversity className="text-gray-500" />
                   <div>
                     <p className="text-xs text-gray-500">College</p>
-                    <p className="font-medium truncate">{note.college || 'N/A'}</p>
+                    <p className="font-medium truncate text-wrap">{note.college || 'N/A'}</p>
                   </div>
                 </div>
                 
@@ -333,7 +333,7 @@ export default function NoteView() {
                   <FaGraduationCap className="text-gray-500" />
                   <div>
                     <p className="text-xs text-gray-500">Course</p>
-                    <p className="font-medium truncate">{note.course || 'N/A'}</p>
+                    <p className="font-medium truncate text-wrap">{note.course || 'N/A'}</p>
                   </div>
                 </div>
                 
@@ -341,7 +341,7 @@ export default function NoteView() {
                   <FaCodeBranch className="text-gray-500" />
                   <div>
                     <p className="text-xs text-gray-500">Branch</p>
-                    <p className="font-medium truncate">{note.branch || 'N/A'}</p>
+                    <p className="font-medium truncate text-wrap">{note.branch || 'N/A'}</p>
                   </div>
                 </div>
               </div>
@@ -350,12 +350,12 @@ export default function NoteView() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between py-2 border-b">
                   <span className="text-gray-600">Semester</span>
-                  <span className="font-semibold">Semester {note.semester || 'N/A'}</span>
+                  <span className="font-semibold text-wrap">Semester {note.semester || 'N/A'}</span>
                 </div>
                 
                 <div className="flex items-center justify-between py-2 border-b">
                   <span className="text-gray-600">File Size</span>
-                  <span className="font-semibold">{formatFileSize(note.originalSize || 0)}</span>
+                  <span className="font-semibold text-wrap">{formatFileSize(note.originalSize || 0)}</span>
                 </div>
                 
                 {note.compressionRatio > 0 && (
@@ -369,50 +369,10 @@ export default function NoteView() {
                 
                 <div className="flex items-center justify-between py-2">
                   <span className="text-gray-600">Upload Date</span>
-                  <span className="font-semibold">{formatDate(note.createdAt)}</span>
+                  <span className="font-semibold text-wrap">{formatDate(note.createdAt)}</span>
                 </div>
               </div>
             </div>
-
-            {/* Action Buttons */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Actions</h3>
-              <div className="space-y-3">
-                <button
-                  onClick={handleDownload}
-                  className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-medium hover:opacity-90 transition-opacity"
-                >
-                  <FaDownload />
-                  Download PDF ({formatFileSize(note.originalSize || 0)})
-                </button>
-                
-                <button
-                  onClick={handleShare}
-                  className="w-full flex items-center justify-center gap-3 bg-gray-100 text-gray-800 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors"
-                >
-                  <FaShareAlt />
-                  Share with Others
-                </button>
-                
-                <button
-                  onClick={handlePrint}
-                  className="w-full flex items-center justify-center gap-3 bg-gray-100 text-gray-800 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors"
-                >
-                  <FaPrint />
-                  Print / Open in New Tab
-                </button>
-                
-                <a
-                  href={`https://drive.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(note.fileUrl)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full text-center text-blue-600 hover:text-blue-800 py-2"
-                >
-                  View in Google Docs Viewer
-                </a>
-              </div>
-            </div>
-
             {/* Sharing Info */}
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-5 border border-blue-100">
               <h3 className="font-bold text-blue-800 mb-2 flex items-center gap-2">
@@ -429,43 +389,14 @@ export default function NoteView() {
               </div>
             </div>
 
-            {/* Report Issue */}
-            <div className="text-center">
-              <button
-                onClick={() => navigate('/contact')}
-                className="text-sm text-gray-500 hover:text-gray-700"
-              >
-                Report issue with this note
-              </button>
-            </div>
+           
           </div>
         </motion.div>
 
         {/* Related Notes Suggestion */}
         {!isFullscreen && (
           <div className="mt-12">
-            <h2 className="text-xl font-bold mb-6">More Notes You Might Like</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button
-                onClick={() => navigate(`/DownloadNotes?semester=${note.semester}`)}
-                className="p-4 bg-white rounded-xl shadow hover:shadow-md transition-shadow text-left"
-              >
-                <h4 className="font-semibold mb-2">Same Semester Notes</h4>
-                <p className="text-sm text-gray-600">
-                  Browse all Semester {note.semester} notes
-                </p>
-              </button>
-              
-              <button
-                onClick={() => navigate(`/DownloadNotes?subject=${note.subject}`)}
-                className="p-4 bg-white rounded-xl shadow hover:shadow-md transition-shadow text-left"
-              >
-                <h4 className="font-semibold mb-2">Same Subject Notes</h4>
-                <p className="text-sm text-gray-600">
-                  More {note.subject} notes from other students
-                </p>
-              </button>
-              
+            <div className="grid grid-cols-1  gap-4">
               <button
                 onClick={() => navigate('/UplodesNotes')}
                 className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200 hover:border-blue-300 transition-colors text-left"

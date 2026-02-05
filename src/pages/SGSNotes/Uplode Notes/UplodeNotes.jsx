@@ -5,8 +5,9 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { fireDB } from '../../../DataBase/firebaseConfig';
 import Layout from '../../../components/layout/Layout';
 import { PDFDocument } from 'pdf-lib';
-import { FaFilePdf, FaCompressArrowsAlt, FaCloudUploadAlt, FaCheck, FaInfoCircle } from 'react-icons/fa';
+import { FaFilePdf, FaCompressArrowsAlt, FaCloudUploadAlt, FaCheck, FaInfoCircle, FaArrowLeft } from 'react-icons/fa';
 import { Helmet } from 'react-helmet';
+import { useNavigate } from 'react-router-dom';
 
 export default function UploadNotes() {
   const R2_WORKER_URL = import.meta.env.VITE_R2_API;
@@ -30,6 +31,8 @@ export default function UploadNotes() {
   const [fileName, setFileName] = useState('');
   const [previewUrl, setPreviewUrl] = useState(null);
   const fileInputRef = useRef(null);
+
+  const  navigator = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -274,9 +277,16 @@ export default function UploadNotes() {
         />
         <meta property="og:locale" content="en_US" />
       </Helmet>
+     
 
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
         <div className="max-w-4xl mx-auto">
+           <button
+                onClick={() => navigator('/DownloadNotes')}
+                className="mb-6 flex items-center gap-2 dark:text-gray-200 dark:hover:text-gray-400 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <FaArrowLeft /> Back to Notes
+              </button>
           <div className="text-center mb-10">
             <h1 className="text-4xl font-bold text-gray-800 mb-3 flex items-center justify-center">
               <FaFilePdf className="mr-3 text-red-600" />
