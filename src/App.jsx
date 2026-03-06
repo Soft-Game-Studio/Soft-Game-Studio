@@ -76,6 +76,8 @@ import GamePage from "./pages/App/GamePageDetais.jsx";
 import UploadNotes from "./pages/SGSNotes/Uplode Notes/UplodeNotes.jsx";
 import Notes from "./pages/SGSNotes/Notes/Notes.jsx";
 import NoteDetail from "./pages/SGSNotes/Notes/Notesview.jsx";
+import RedirectPage from "./pages/Redirect page/Redirectpage.jsx";
+import NoteQuizExam from "./pages/SGSNotes/Notes/NoteQuizExam.jsx";
 
 
 
@@ -123,9 +125,10 @@ function App() {
 
           {/* Notes & Books Routes */}
           <Route path="/Notes&Books" element={<FreeNotesAndBooks />} />
-          <Route path="/UplodesNotes" element={<UploadNotes />} />
+          <Route path="/UploadNotes" element={<UploadNotes />} />
           <Route path="/DownloadNotes" element={<Notes />} />
           <Route path="/DownloadNotes/:id" element={<NoteDetail />} />
+          <Route path="/NoteQuiz/:id" element={<NoteQuizExam />} />
 
           {/* Our Corses */}
 

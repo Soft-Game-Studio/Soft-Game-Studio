@@ -1,4 +1,4 @@
-// ProjectDetailsPage.js - Professional Modern Design
+// ProjectDetailsPage.js - Premium Modern Redesign
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -37,9 +37,111 @@ import {
   Wrench,
   UserCheck,
   UserPlus,
+  Github,
+  Link2,
+  AlertCircle,
 } from 'lucide-react';
-import { FaGithubSquare, FaUserClock, FaRegCopy, FaWhatsappSquare, FaFacebookSquare, FaLinkedinIn, FaTwitterSquare } from 'react-icons/fa';
+import {
+  FaGithubSquare,
+  FaUserClock,
+  FaRegCopy,
+  FaWhatsappSquare,
+  FaFacebookSquare,
+  FaLinkedinIn,
+  FaTwitterSquare,
+} from 'react-icons/fa';
 import Layout from '../../components/layout/Layout';
+
+// ----------------------------------------------------------------------
+// Helper Components (for cleaner code)
+// ----------------------------------------------------------------------
+
+const StatusBadge = ({ status }) => {
+  const statusMap = {
+    completed: {
+      color: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800',
+      icon: <CheckCircle className="w-3.5 h-3.5" />,
+      label: 'Completed',
+    },
+    active: {
+      color: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800',
+      icon: <Zap className="w-3.5 h-3.5" />,
+      label: 'Active',
+    },
+    'in-progress': {
+      color: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800',
+      icon: <TrendingUp className="w-3.5 h-3.5" />,
+      label: 'In Progress',
+    },
+    'on-hold': {
+      color: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800',
+      icon: <Clock className="w-3.5 h-3.5" />,
+      label: 'On Hold',
+    },
+    planned: {
+      color: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800',
+      icon: <Target className="w-3.5 h-3.5" />,
+      label: 'Planned',
+    },
+    maintenance: {
+      color: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800',
+      icon: <Wrench className="w-3.5 h-3.5" />,
+      label: 'Maintenance',
+    },
+  };
+  const info = statusMap[status?.toLowerCase()] || {
+    color: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-700',
+    icon: <FileText className="w-3.5 h-3.5" />,
+    label: 'Unknown',
+  };
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${info.color}`}>
+      {info.icon}
+      {info.label}
+    </span>
+  );
+};
+
+const CategoryBadge = ({ category }) => (
+  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-200 dark:from-blue-900/20 dark:to-indigo-900/20 dark:text-blue-400 dark:border-blue-800">
+    <Layers className="w-3.5 h-3.5" />
+    {category || 'Web Development'}
+  </span>
+);
+
+const InfoItem = ({ icon, label, value }) => (
+  <div className="flex items-start gap-3">
+    <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+      {icon}
+    </div>
+    <div>
+      <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+      <p className="text-sm font-medium text-gray-900 dark:text-white">{value}</p>
+    </div>
+  </div>
+);
+
+const QuickLink = ({ href, icon, title, subtitle, gradient }) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="group flex items-center gap-4 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md transition-all duration-200"
+  >
+    <div className={`p-2.5 rounded-lg ${gradient}`}>
+      {icon}
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="font-medium text-gray-900 dark:text-white truncate">{title}</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{subtitle}</p>
+    </div>
+    <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
+  </a>
+);
+
+// ----------------------------------------------------------------------
+// Main Component
+// ----------------------------------------------------------------------
 
 export default function ProjectDetailsPage() {
   const { id } = useParams();
@@ -54,7 +156,6 @@ export default function ProjectDetailsPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [showFullDescription, setShowFullDescription] = useState(false);
 
-  // Tabs configuration for users
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <Monitor className="w-4 h-4" /> },
     { id: 'developers', label: 'Team', icon: <Users className="w-4 h-4" /> },
@@ -66,9 +167,7 @@ export default function ProjectDetailsPage() {
       setLoading(true);
       setError(null);
 
-      // Fetch project
       const projectDoc = await getDoc(doc(fireDB, 'sgsProjects', id));
-
       if (!projectDoc.exists()) {
         setError('Project not found');
         setProject(null);
@@ -81,7 +180,6 @@ export default function ProjectDetailsPage() {
         createdAt: projectDoc.data().createdAt?.toDate?.(),
         updatedAt: projectDoc.data().updatedAt?.toDate?.(),
       };
-
       setProject(projectData);
 
       // Fetch team members
@@ -94,11 +192,11 @@ export default function ProjectDetailsPage() {
       const team = assignmentsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
-        assignedAt: doc.data().assignedAt?.toDate?.()
+        assignedAt: doc.data().assignedAt?.toDate?.(),
       }));
       setTeamMembers(team);
 
-      // Fetch project tasks
+      // Fetch project tasks (optional)
       const tasksQuery = query(
         collection(fireDB, 'projectTasks'),
         where('projectId', '==', id)
@@ -108,7 +206,7 @@ export default function ProjectDetailsPage() {
         id: doc.id,
         ...doc.data(),
         dueDate: doc.data().dueDate?.toDate?.(),
-        createdAt: doc.data().createdAt?.toDate?.()
+        createdAt: doc.data().createdAt?.toDate?.(),
       }));
       setProjectTasks(tasks);
 
@@ -119,14 +217,11 @@ export default function ProjectDetailsPage() {
         id: doc.id,
         ...doc.data(),
       }));
-
       const filteredProjects = allProjects
         .filter(p => p.id !== id && p.status === 'active')
         .sort(() => Math.random() - 0.5)
         .slice(0, 4);
-
       setRelatedProjects(filteredProjects);
-
     } catch (err) {
       console.error('Error fetching project:', err);
       setError('Failed to load project details');
@@ -136,208 +231,143 @@ export default function ProjectDetailsPage() {
   }, [id]);
 
   useEffect(() => {
-    if (id) {
-      fetchProjectDetails();
-    }
+    if (id) fetchProjectDetails();
   }, [id, fetchProjectDetails]);
 
-  // Format date function
   const formatDate = (date) => {
     if (!date) return 'Not specified';
     try {
       const d = date.toDate ? date.toDate() : new Date(date);
       if (isNaN(d.getTime())) return 'Invalid Date';
-      return d.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      });
+      return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     } catch {
       return 'Date unavailable';
     }
   };
 
+  const getLeadDevelopers = () => teamMembers.filter(m => m.roleInProject?.toLowerCase() === 'lead');
+  const getActiveDevelopers = () => teamMembers.filter(m => m.status === 'Active' || !m.status);
 
-  // Get status color and icon
-  const getStatusInfo = (status) => {
-    const statusMap = {
-      'completed': {
-        color: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800',
-        icon: <CheckCircle className="w-4 h-4" />,
-        label: 'Completed',
-        description: 'Project is fully developed and deployed'
-      },
-      'active': {
-        color: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800',
-        icon: <Zap className="w-4 h-4" />,
-        label: 'Active',
-        description: 'Currently under active development'
-      },
-      'in-progress': {
-        color: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800',
-        icon: <TrendingUp className="w-4 h-4" />,
-        label: 'In Progress',
-        description: 'Development is ongoing'
-      },
-      'on-hold': {
-        color: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800',
-        icon: <Clock className="w-4 h-4" />,
-        label: 'On Hold',
-        description: 'Development temporarily paused'
-      },
-      'planned': {
-        color: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800',
-        icon: <Target className="w-4 h-4" />,
-        label: 'Planned',
-        description: 'In planning phase'
-      },
-      'maintenance': {
-        color: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800',
-        icon: <Wrench className="w-4 h-4" />,
-        label: 'Maintenance',
-        description: 'Regular updates and maintenance'
-      }
-    };
-    return statusMap[status?.toLowerCase()] || {
-      color: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950/20 dark:text-gray-400 dark:border-black',
-      icon: <FileText className="w-4 h-4" />,
-      label: 'Unknown',
-      description: 'Status information unavailable'
-    };
-  };
-
-  // Get lead developers
-  const getLeadDevelopers = () => {
-    return teamMembers.filter(member =>
-      member.roleInProject === 'lead' ||
-      member.roleInProject === 'Lead'
-    );
-  };
-
-  // Get active developers
-  const getActiveDevelopers = () => {
-    return teamMembers.filter(member =>
-      member.status === 'Active' ||
-      !member.status // If no status, assume active
-    );
-  };
-
-
-
-  // Handle share
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
+    // Use a toast notification in a real app
     alert('Project link copied to clipboard!');
   };
 
   const handleShare = (platform) => {
-    const text = `Check out "${project?.name}" - ${project?.shortDescription || project?.description?.substring(0, 100)}`;
+    const text = `Check out "${project?.name}" – ${project?.shortDescription || project?.description?.substring(0, 100)}`;
     const url = window.location.href;
-
     const shareUrls = {
       twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-      whatsapp: `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`,
     };
-
-    if (shareUrls[platform]) {
-      window.open(shareUrls[platform], '_blank');
-    }
+    if (shareUrls[platform]) window.open(shareUrls[platform], '_blank');
   };
 
-  // Render loading
+  // Loading Skeleton (Premium)
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-black">
-        <div className="container mx-auto px-4 py-12">
-          <div className="max-w-6xl mx-auto">
+      <Layout>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+          <div className="container mx-auto px-4 py-8 max-w-7xl">
             <div className="animate-pulse space-y-8">
-              <div className="flex items-center space-x-4">
-                <div className="w-8 h-8 bg-gray-300 dark:bg-gray-700 rounded"></div>
-                <div className="h-8 w-64 bg-gray-300 dark:bg-gray-700 rounded"></div>
+              {/* Header skeleton */}
+              <div className="flex items-center justify-between">
+                <div className="h-10 w-32 bg-gray-200 dark:bg-gray-800 rounded-xl" />
+                <div className="h-10 w-40 bg-gray-200 dark:bg-gray-800 rounded-xl" />
               </div>
+              {/* Title & badges */}
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <div className="h-6 w-20 bg-gray-200 dark:bg-gray-800 rounded-full" />
+                  <div className="h-6 w-24 bg-gray-200 dark:bg-gray-800 rounded-full" />
+                </div>
+                <div className="h-10 w-3/4 bg-gray-200 dark:bg-gray-800 rounded-lg" />
+                <div className="h-6 w-1/2 bg-gray-200 dark:bg-gray-800 rounded-lg" />
+              </div>
+              {/* Tabs */}
+              <div className="h-12 w-64 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
+              {/* Content grid */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-6">
-                  <div className="h-96 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-700 dark:to-gray-600 rounded-2xl"></div>
-                  <div className="h-64 bg-gray-300 dark:bg-gray-700 rounded-2xl"></div>
+                  <div className="h-80 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
+                  <div className="h-64 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
                 </div>
                 <div className="space-y-6">
-                  <div className="h-48 bg-gray-300 dark:bg-gray-700 rounded-2xl"></div>
-                  <div className="h-48 bg-gray-300 dark:bg-gray-700 rounded-2xl"></div>
-                  <div className="h-48 bg-gray-300 dark:bg-gray-700 rounded-2xl"></div>
+                  <div className="h-48 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
+                  <div className="h-48 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
+                  <div className="h-48 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </Layout>
     );
   }
 
-  // Render error
+  // Error state
   if (error || !project) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-black">
-        <div className="max-w-md mx-auto text-center p-8">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r from-red-100 to-pink-100 dark:from-red-900/20 dark:to-pink-900/20 flex items-center justify-center">
-            <span className="text-3xl">⚠️</span>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-950 dark:text-white mb-3">
-            {error || 'Project Not Found'}
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-8">
-            The project you're looking for doesn't exist or has been removed.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={() => navigate(-1)}
-              className="px-6 py-3 bg-gradient-to-r from-gray-950 to-gray-700 text-white rounded-xl hover:opacity-90 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Go Back
-            </button>
-            <button
-              onClick={() => navigate('/projects')}
-              className="px-6 py-3 border-2 border-gray-950 text-gray-950 dark:border-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-black/50 transition-all duration-200"
-            >
-              Browse All Projects
-            </button>
+      <Layout>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4">
+          <div className="max-w-md text-center">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
+              <AlertCircle className="w-10 h-10 text-red-600 dark:text-red-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+              {error || 'Project Not Found'}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-8">
+              The project you're looking for doesn't exist or has been removed.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => navigate(-1)}
+                className="px-6 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-medium hover:bg-gray-800 dark:hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Go Back
+              </button>
+              <button
+                onClick={() => navigate('/projects')}
+                className="px-6 py-3 border-2 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+              >
+                Browse All Projects
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </Layout>
     );
   }
 
-  const statusInfo = getStatusInfo(project.status);
   const leadDevelopers = getLeadDevelopers();
   const activeDevelopers = getActiveDevelopers();
 
-
   return (
     <Layout>
- <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-gray-950 dark:to-black/90">
-      {/* Header */}
-    
-
-      <div className="container mx-auto px-4 py-8">
-           <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
+          {/* Header with back button and actions */}
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
             <button
               onClick={() => navigate(-1)}
-              className="group flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white dark:bg-black border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 hover:shadow-md"
+              className="group flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-all shadow-sm hover:shadow-md"
             >
-              <ArrowLeft className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-gray-950 dark:group-hover:text-white" />
-              <span className="text-gray-700 dark:text-gray-300 group-hover:text-gray-950 dark:group-hover:text-white">Back</span>
+              <ArrowLeft className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
+              <span className="text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Back</span>
             </button>
 
             <div className="flex items-center gap-3">
               <button
                 onClick={handleCopyLink}
-                className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md transition-all duration-200"
+                className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-md transition-all"
               >
-                <Copy className="w-4 h-4" />
-                <span className="hidden sm:inline">Copy Link</span>
+                <Copy className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
+                <span className="hidden sm:inline text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">Copy Link</span>
               </button>
 
               {project.sourceCode && (
@@ -345,7 +375,7 @@ export default function ProjectDetailsPage() {
                   href={project.sourceCode}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-gray-950 to-gray-700 text-white rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+                  className="group flex items-center gap-2 px-5 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all"
                 >
                   <FaGithubSquare className="w-4 h-4" />
                   <span className="font-medium">View Code</span>
@@ -354,48 +384,39 @@ export default function ProjectDetailsPage() {
               )}
             </div>
           </div>
-      </div>
-        <div className="max-w-7xl mx-auto">
-          {/* Project Header */}
+
+          {/* Project header */}
           <div className="mb-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 dark:from-blue-900/20 dark:to-indigo-900/20 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                    {project.category || 'Web Development'}
-                  </span>
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border ${statusInfo.color}`}>
-                    {statusInfo.icon}
-                    {statusInfo.label}
-                  </span>
-                </div>
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-950 dark:text-white mb-2">
-                  {project.name}
-                </h1>
-                <p className="text-gray-600 dark:text-gray-300 text-lg max-w-3xl">
-                  {project.tagline || project.shortDescription || project.description?.substring(0, 200)}
-                </p>
+            <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+              <div className="flex flex-wrap gap-2">
+                <CategoryBadge category={project.category} />
+                <StatusBadge status={project.status} />
               </div>
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Created</p>
-                  <p className="font-medium text-gray-950 dark:text-white">{formatDate(project.createdAt)}</p>
-                </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Created</p>
+                <p className="font-medium text-gray-900 dark:text-white">{formatDate(project.createdAt)}</p>
               </div>
             </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3">
+              {project.name}
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl">
+              {project.tagline || project.shortDescription || project.description?.substring(0, 200)}
+            </p>
           </div>
 
-          {/* Tabs Navigation */}
+          {/* Tabs */}
           <div className="mb-8">
-            <div className="flex space-x-1 bg-gray-100 dark:bg-black rounded-2xl p-1.5 max-w-md">
+            <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800/50 rounded-2xl p-1.5 w-fit">
               {tabs.map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${activeTab === tab.id
-                      ? 'bg-white dark:bg-gray-950 text-gray-950 dark:text-white shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-950 dark:hover:text-white'
-                    }`}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                    activeTab === tab.id
+                      ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
                 >
                   {tab.icon}
                   <span>{tab.label}</span>
@@ -404,15 +425,14 @@ export default function ProjectDetailsPage() {
             </div>
           </div>
 
-          {/* Main Content */}
+          {/* Main content grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column - Main Content */}
+            {/* Left column (main content) */}
             <div className="lg:col-span-2 space-y-8">
-              {/* Overview Tab */}
               {activeTab === 'overview' && (
                 <>
-                  {/* Project Hero Image */}
-                  <div className="relative rounded-2xl overflow-hidden shadow-xl border border-gray-200 dark:border-black">
+                  {/* Hero image */}
+                  <div className="relative rounded-2xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-800">
                     <img
                       src={project.photoUrl || 'https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'}
                       alt={project.name}
@@ -422,150 +442,133 @@ export default function ProjectDetailsPage() {
                         e.target.src = 'https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80';
                       }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                   </div>
 
-                  {/* Project Description Card */}
-                  <div className="bg-white dark:bg-gray-950 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-black">
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-xl font-semibold text-gray-950 dark:text-white flex items-center gap-2">
+                  {/* Description card */}
+                  <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                         <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         Project Details
                       </h2>
-                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
                         <Clock className="w-4 h-4" />
                         Updated {formatDate(project.updatedAt || project.createdAt)}
                       </div>
                     </div>
 
-                    <div className="relative">
-                      <p className={`text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed ${!showFullDescription && project.description?.length > 500 ? 'line-clamp-5' : ''
-                        }`}>
+                    <div className="prose prose-gray dark:prose-invert max-w-none">
+                      <p className={`text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed ${!showFullDescription && project.description?.length > 500 ? 'line-clamp-5' : ''}`}>
                         {project.description || 'No description available for this project.'}
                       </p>
-
-                      {project.description?.length > 500 && (
-                        <button
-                          onClick={() => setShowFullDescription(!showFullDescription)}
-                          className="mt-4 inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium group"
-                        >
-                          {showFullDescription ? 'Show Less' : 'Read More'}
-                          <ChevronRight className={`w-4 h-4 transform transition-transform ${showFullDescription ? 'rotate-90' : 'group-hover:translate-x-1'}`} />
-                        </button>
-                      )}
                     </div>
 
-                    {/* Project Highlights Grid */}
+                    {project.description?.length > 500 && (
+                      <button
+                        onClick={() => setShowFullDescription(!showFullDescription)}
+                        className="mt-4 inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium group"
+                      >
+                        {showFullDescription ? 'Show Less' : 'Read More'}
+                        <ChevronRight className={`w-4 h-4 transform transition-transform ${showFullDescription ? 'rotate-90' : 'group-hover:translate-x-1'}`} />
+                      </button>
+                    )}
+
+                    {/* Highlights grid */}
                     <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/10 dark:to-gray-950 border border-blue-100 dark:border-blue-800/30">
-                        <div className="flex items-center gap-3 mb-3">
+                      <div className="p-5 rounded-xl bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/10 dark:to-gray-900 border border-blue-100 dark:border-blue-800/30">
+                        <div className="flex items-center gap-3 mb-2">
                           <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
                             <Target className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                           </div>
-                          <h3 className="font-semibold text-gray-950 dark:text-white">Objective</h3>
+                          <h3 className="font-semibold text-gray-900 dark:text-white">Objective</h3>
                         </div>
                         <p className="text-gray-700 dark:text-gray-300 text-sm">
                           {project.objective || 'To build a scalable and efficient solution that addresses user needs.'}
                         </p>
                       </div>
 
-                      <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-900/10 dark:to-gray-950 border border-emerald-100 dark:border-emerald-800/30">
-                        <div className="flex items-center gap-3 mb-3">
+                      <div className="p-5 rounded-xl bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-900/10 dark:to-gray-900 border border-emerald-100 dark:border-emerald-800/30">
+                        <div className="flex items-center gap-3 mb-2">
                           <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
                             <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                           </div>
-                          <h3 className="font-semibold text-gray-950 dark:text-white">Current Status</h3>
+                          <h3 className="font-semibold text-gray-900 dark:text-white">Current Status</h3>
                         </div>
                         <p className="text-gray-700 dark:text-gray-300 text-sm">
-                          {statusInfo.description}
+                          {project.statusDescription || 'Development is progressing as planned.'}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Development Team Preview */}
+                  {/* Team preview (if any) */}
                   {teamMembers.length > 0 && (
-                    <div className="bg-white dark:bg-gray-950 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-black">
+                    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
                       <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-semibold text-gray-950 dark:text-white flex items-center gap-2">
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                           <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                           Development Team
                         </h2>
                         <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
                             <UserCheck className="w-3 h-3" />
                             {activeDevelopers.length} Active
                           </span>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Lead Developers */}
-                        {leadDevelopers.length > 0 && (
-                          <div>
-                            <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
-                              <Crown className="w-4 h-4 text-amber-500" />
-                              Lead Developers
-                            </h3>
-                            <div className="space-y-3">
-                              {leadDevelopers.slice(0, 2).map(member => (
-                                <div key={member.id} className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-amber-50 to-white dark:from-amber-900/10 dark:to-gray-950 border border-amber-100 dark:border-amber-800/30">
-                                  <div className="relative">
-                                    <img
-                                      src={member.memberPhoto || `https://ui-avatars.com/api/?name=${member.memberName}&background=f59e0b&color=fff`}
-                                      alt={member.memberName}
-                                      className="w-14 h-14 rounded-xl object-cover"
-                                    />
-                                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-950">
-                                      <Crown className="w-3 h-3 text-white" />
-                                    </div>
-                                  </div>
-
-                                  <div className="flex-1">
-                                    <h4 className="font-semibold text-gray-950 dark:text-white">{member.memberName}</h4>
-                                    <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
-                                      {member.roleInProject?.toUpperCase()}
-                                    </p>
-                                    {member.department && (
-                                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{member.department?.toUpperCase()}</p>
-                                    )}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Active Developers */}
-                        <div>
-                          <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-4">Active Contributors</h3>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            {activeDevelopers.slice(0, 6).map(member => (
-                              <div key={member.id} className="group p-3 rounded-xl bg-gray-50 dark:bg-black hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 transition-all duration-200">
-                                <div className="flex flex-col items-center text-center">
-                                  <img
-                                    src={member.memberPhoto || `https://ui-avatars.com/api/?name=${member.memberName}&background=3b82f6&color=fff`}
-                                    alt={member.memberName}
-                                    className="w-10 h-10 rounded-lg object-cover mb-2 group-hover:scale-105 transition-transform"
-                                  />
-                                  <div>
-                                    <h4 className="font-medium text-gray-950 dark:text-white text-sm truncate">{member.memberName.split(' ')[0]}</h4>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{member.roleInProject?.toUpperCase() || 'Lead Developer'}</p>
-                                  </div>
+                      {/* Lead developers */}
+                      {leadDevelopers.length > 0 && (
+                        <div className="mb-6">
+                          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-1">
+                            <Crown className="w-4 h-4 text-amber-500" />
+                            Lead Developers
+                          </h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {leadDevelopers.slice(0, 2).map(member => (
+                              <div key={member.id} className="flex items-center gap-4 p-4 rounded-xl bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30">
+                                <img
+                                  src={member.memberPhoto || `https://ui-avatars.com/api/?name=${member.memberName}&background=f59e0b&color=fff`}
+                                  alt={member.memberName}
+                                  className="w-12 h-12 rounded-lg object-cover"
+                                />
+                                <div>
+                                  <h4 className="font-semibold text-gray-900 dark:text-white">{member.memberName}</h4>
+                                  <p className="text-sm text-amber-600 dark:text-amber-400">{member.roleInProject}</p>
+                                  {member.department && (
+                                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{member.department}</p>
+                                  )}
                                 </div>
                               </div>
                             ))}
-                            {activeDevelopers.length > 6 && (
-                              <div className="p-3 rounded-xl bg-gradient-to-br from-gray-100 to-white dark:from-black dark:to-gray-950 border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center">
-                                <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center mb-2">
-                                  <UserPlus className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                                </div>
-                                <span className="text-sm text-gray-600 dark:text-gray-400">
-                                  +{activeDevelopers.length - 6} more
-                                </span>
-                              </div>
-                            )}
                           </div>
+                        </div>
+                      )}
+
+                      {/* Other team members */}
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">Team Members</h3>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                          {teamMembers.filter(m => !leadDevelopers.includes(m)).slice(0, 6).map(member => (
+                            <div key={member.id} className="flex flex-col items-center p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                              <img
+                                src={ `https://ui-avatars.com/api/?name=${member.memberName}&background=3b82f6&color=fff`}
+                                alt={member.memberName}
+                                className="w-10 h-10 rounded-lg object-cover mb-2"
+                              />
+                              <p className="font-medium text-sm text-gray-900 dark:text-white text-center truncate w-full">{member.memberName}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">{member.roleInProject || 'Developer'}</p>
+                            </div>
+                          ))}
+                          {teamMembers.length > 6 && (
+                            <div className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                              <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center mb-2">
+                                <UserPlus className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                              </div>
+                              <span className="text-sm text-gray-600 dark:text-gray-400">+{teamMembers.length - 6} more</span>
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -581,25 +584,22 @@ export default function ProjectDetailsPage() {
                 </>
               )}
 
-              {/* Developers Tab */}
               {activeTab === 'developers' && (
-                <div className="bg-white dark:bg-gray-950 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-black">
-                  <div className="flex items-center justify-between mb-8">
+                <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
+                  <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-xl font-semibold text-gray-950 dark:text-white flex items-center gap-2">
+                      <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                         <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         Development Team
                       </h2>
-                      <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-                        {teamMembers.length} team members
-                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{teamMembers.length} team members</p>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+                    <div className="flex gap-2">
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
                         <Crown className="w-3 h-3" />
                         {leadDevelopers.length} Leads
                       </span>
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400">
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400">
                         <UserCheck className="w-3 h-3" />
                         {activeDevelopers.length} Active
                       </span>
@@ -609,65 +609,46 @@ export default function ProjectDetailsPage() {
                   {teamMembers.length === 0 ? (
                     <div className="text-center py-12">
                       <Users className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                        No Team Members
-                      </h3>
-                      <p className="text-gray-500 dark:text-gray-400">
-                        Team information is not available for this project.
-                      </p>
+                      <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">No Team Members</h3>
+                      <p className="text-gray-500 dark:text-gray-400">Team information is not available for this project.</p>
                     </div>
                   ) : (
                     <>
-                      {/* Lead Developers Section */}
                       {leadDevelopers.length > 0 && (
                         <div className="mb-8">
-                          <h3 className="text-lg font-semibold text-gray-950 dark:text-white mb-4 flex items-center gap-2">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                             <Crown className="w-5 h-5 text-amber-500" />
                             Lead Developers
                           </h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {leadDevelopers.map(member => (
-                              <div key={member.id} className="p-5 rounded-xl bg-gradient-to-r from-amber-50 to-white dark:from-amber-900/10 dark:to-gray-950 border border-amber-200 dark:border-amber-800/50">
-                                <div className="flex items-start gap-4">
-                                  <div className="relative">
-                                    <img
-                                      src={member.memberPhoto || `https://ui-avatars.com/api/?name=${member.memberName}&background=f59e0b&color=fff`}
-                                      alt={member.memberName}
-                                      className="w-16 h-16 rounded-xl object-cover border-2 border-amber-300 dark:border-amber-700"
-                                    />
-                                  </div>
-
-                                  <div className="flex-1">
-                                    <div className="flex items-start justify-between mb-2">
-                                      <div>
-                                        <h4 className="font-bold text-gray-950 dark:text-white">{member.memberName}</h4>
-                                        <div className="flex items-center gap-2 mt-1">
-                                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-                                            {member.roleInProject?.toUpperCase() || 'Lead Developer'}
-                                          </span>
-                                          {member.department && (
-                                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                                              {member.department?.toUpperCase()}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-4 mt-4 pt-4 border-t border-amber-100 dark:border-amber-800/30">
-                                      {member.memberEmail && (
-                                        <a href={`mailto:${member.memberEmail}`}
-                                          className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">
-                                          <Mail className="w-3 h-3" />
-                                          Email
-                                        </a>
-                                      )}
-                                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                                        <Calendar className="w-3 h-3 inline mr-1" />
-                                        Since: {formatDate(member.assignedAt)}
+                              <div key={member.id} className="flex items-start gap-4 p-5 rounded-xl bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30">
+                                <img
+                                  src={member.memberPhoto || `https://ui-avatars.com/api/?name=${member.memberName}&background=f59e0b&color=fff`}
+                                  alt={member.memberName}
+                                  className="w-14 h-14 rounded-xl object-cover"
+                                />
+                                <div className="flex-1">
+                                  <h4 className="font-bold text-gray-900 dark:text-white">{member.memberName}</h4>
+                                  <div className="flex flex-wrap gap-2 mt-1">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                                      {member.roleInProject}
+                                    </span>
+                                    {member.department && (
+                                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                        {member.department}
                                       </span>
-                                    </div>
+                                    )}
                                   </div>
+                                  {member.memberEmail && (
+                                    <a href={`mailto:${member.memberEmail}`} className="inline-flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 mt-3">
+                                      <Mail className="w-3 h-3" />
+                                      {member.memberEmail}
+                                    </a>
+                                  )}
+                                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                                    Since {formatDate(member.assignedAt)}
+                                  </p>
                                 </div>
                               </div>
                             ))}
@@ -675,62 +656,30 @@ export default function ProjectDetailsPage() {
                         </div>
                       )}
 
-                      {/* All Team Members */}
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-950 dark:text-white mb-4">All Team Members</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {teamMembers
-                            .filter(member => !leadDevelopers.some(lead => lead.id === member.id))
-                            .map(member => (
-                              <div key={member.id} className="p-4 rounded-xl bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 hover:shadow-sm">
-                                <div className="flex items-center gap-3">
-                                  <img
-                                    src={member.memberPhoto || `https://ui-avatars.com/api/?name=${member.memberName}&background=3b82f6&color=fff`}
-                                    alt={member.memberName}
-                                    className="w-12 h-12 rounded-xl object-cover"
-                                  />
-
-                                  <div className="flex-1 min-w-0">
-                                    <h4 className="font-semibold text-gray-950 dark:text-white truncate">{member.memberName}</h4>
-                                    <div className="flex items-center gap-2 mt-1">
-                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                                        {member.roleInProject?.toUpperCase() || 'Developer'}
-                                      </span>
-                                      {member.department && (
-                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
-                                          {member.department?.toUpperCase()}
-                                        </span>
-                                      )}
-                                    </div>
-
-                                    {member.memberEmail && (
-                                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 truncate">
-                                        {member.memberEmail}
-                                      </p>
-                                    )}
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                  <span className="text-xs">
-                                    {member.status === 'Active' ? (
-                                      <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-                                        <UserCheck className="w-3 h-3" />
-                                        Active
-                                      </span>
-                                    ) : (
-                                      <span className="inline-flex items-center gap-1 text-gray-500">
-                                        <FaUserClock className="w-3 h-3" />
-                                        Inactive
-                                      </span>
-                                    )}
-                                  </span>
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                                    {formatDate(member.assignedAt)}
-                                  </span>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">All Team Members</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {teamMembers.filter(m => !leadDevelopers.includes(m)).map(member => (
+                            <div key={member.id} className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all">
+                              <div className="flex items-center gap-3">
+                                <img
+                                  src={member.memberPhoto || `https://ui-avatars.com/api/?name=${member.memberName}&background=3b82f6&color=fff`}
+                                  alt={member.memberName}
+                                  className="w-10 h-10 rounded-lg object-cover"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-semibold text-gray-900 dark:text-white truncate">{member.memberName}</h4>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{member.roleInProject || 'Developer'}</p>
                                 </div>
                               </div>
-                            ))}
+                              <div className="mt-3 flex items-center justify-between text-xs">
+                                <span className={member.status === 'Active' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500'}>
+                                  {member.status || 'Active'}
+                                </span>
+                                <span className="text-gray-500 dark:text-gray-400">{formatDate(member.assignedAt)}</span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </>
@@ -739,263 +688,116 @@ export default function ProjectDetailsPage() {
               )}
             </div>
 
-            {/* Right Column - Sidebar */}
+            {/* Right sidebar */}
             <div className="space-y-6">
-              {/* Project Quick Info Card */}
-              <div className="bg-white dark:bg-gray-950 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-black">
-                <h3 className="text-lg font-semibold text-gray-950 dark:text-white mb-6">Project Details</h3>
-
-                <div className="space-y-5">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                      <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Created Date</p>
-                      <p className="font-medium text-gray-950 dark:text-white">
-                        {formatDate(project.createdAt)}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                      <Clock className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Last Updated</p>
-                      <p className="font-medium text-gray-950 dark:text-white">
-                        {formatDate(project.updatedAt || project.createdAt)}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-gray-100 dark:bg-black">
-                      <Code className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Project ID</p>
-                      <p className="font-medium text-gray-950 dark:text-white font-mono text-sm">
-                        {project.id.substring(0, 8)}...
-                      </p>
-                    </div>
-                  </div>
-
-                  {project.client && (
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-                        <Building className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Client</p>
-                        <p className="font-medium text-gray-950 dark:text-white">
-                          {project.client}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {project.category && (
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
-                        <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Category</p>
-                        <p className="font-medium text-gray-950 dark:text-white">
-                          {project.category}
-                        </p>
-                      </div>
-                    </div>
-                  )}
+              {/* Project info card */}
+              <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-5">Project Details</h3>
+                <div className="space-y-4">
+                  <InfoItem icon={<Calendar className="w-4 h-4" />} label="Created" value={formatDate(project.createdAt)} />
+                  <InfoItem icon={<Clock className="w-4 h-4" />} label="Last Updated" value={formatDate(project.updatedAt || project.createdAt)} />
+                  <InfoItem icon={<Code className="w-4 h-4" />} label="Project ID" value={project.id.substring(0, 8) + '...'} />
+                  {project.client && <InfoItem icon={<Building className="w-4 h-4" />} label="Client" value={project.client} />}
+                  {project.category && <InfoItem icon={<Layers className="w-4 h-4" />} label="Category" value={project.category} />}
                 </div>
               </div>
 
-              {/* Quick Links Card */}
-              <div className="bg-white dark:bg-gray-950 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-black">
-                <h3 className="text-lg font-semibold text-gray-950 dark:text-white mb-6">Quick Links</h3>
-
+              {/* Quick links */}
+              <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-5">Quick Links</h3>
                 <div className="space-y-3">
                   {project.sourceCode && (
-                    <a
+                    <QuickLink
                       href={project.sourceCode}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex items-center gap-4 p-3 rounded-xl bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all duration-200"
-                    >
-                      <div className="p-2.5 rounded-lg bg-gradient-to-r from-gray-950 to-gray-700 group-hover:from-black group-hover:to-gray-600">
-                        <FaGithubSquare className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-950 dark:text-white truncate">Source Code</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                          View on GitHub
-                        </p>
-                      </div>
-                      <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
-                    </a>
+                      icon={<FaGithubSquare className="w-5 h-5 text-white" />}
+                      title="Source Code"
+                      subtitle="View on GitHub"
+                      gradient="bg-gray-900 dark:bg-gray-700"
+                    />
                   )}
-
                   {project.deployLink && (
-                    <a
+                    <QuickLink
                       href={project.deployLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex items-center gap-4 p-3 rounded-xl bg-gradient-to-r from-blue-50 to-blue-50/50 dark:from-blue-900/20 dark:to-blue-900/10 border border-blue-200 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-sm transition-all duration-200"
-                    >
-                      <div className="p-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500">
-                        <Globe className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-950 dark:text-white truncate">Live Demo</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                          Try it out now
-                        </p>
-                      </div>
-                      <ExternalLink className="w-4 h-4 text-blue-400 group-hover:text-blue-500" />
-                    </a>
+                      icon={<Globe className="w-5 h-5 text-white" />}
+                      title="Live Demo"
+                      subtitle="Try it out now"
+                      gradient="bg-blue-600"
+                    />
                   )}
-
                   {project.documentation && (
-                    <a
+                    <QuickLink
                       href={project.documentation}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex items-center gap-4 p-3 rounded-xl bg-gradient-to-r from-emerald-50 to-emerald-50/50 dark:from-emerald-900/20 dark:to-emerald-900/10 border border-emerald-200 dark:border-emerald-800 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-sm transition-all duration-200"
-                    >
-                      <div className="p-2.5 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500">
-                        <FileText className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-950 dark:text-white truncate">Documentation</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                          Read the docs
-                        </p>
-                      </div>
-                      <ExternalLink className="w-4 h-4 text-emerald-400 group-hover:text-emerald-500" />
-                    </a>
+                      icon={<FileText className="w-5 h-5 text-white" />}
+                      title="Documentation"
+                      subtitle="Read the docs"
+                      gradient="bg-emerald-600"
+                    />
                   )}
-
                   {project.photoUrl && (
-                    <a
+                    <QuickLink
                       href={project.photoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex items-center gap-4 p-3 rounded-xl bg-gradient-to-r from-purple-50 to-purple-50/50 dark:from-purple-900/20 dark:to-purple-900/10 border border-purple-200 dark:border-purple-800 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-sm transition-all duration-200"
-                    >
-                      <div className="p-2.5 rounded-lg bg-gradient-to-r from-purple-600 to-purple-500">
-                        <ImageIcon className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-950 dark:text-white truncate">Project Image</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                          View full size
-                        </p>
-                      </div>
-                      <ExternalLink className="w-4 h-4 text-purple-400 group-hover:text-purple-500" />
-                    </a>
+                      icon={<ImageIcon className="w-5 h-5 text-white" />}
+                      title="Project Image"
+                      subtitle="View full size"
+                      gradient="bg-purple-600"
+                    />
                   )}
                 </div>
               </div>
 
-              {/* Development Status Card */}
+              {/* Development status */}
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-2xl p-6 border border-blue-200 dark:border-blue-800/50">
-                <h3 className="text-lg font-semibold text-gray-950 dark:text-white mb-6">Development Status</h3>
-
-                <div className="space-y-5">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-5">Development Status</h3>
+                <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-700 dark:text-gray-300">Project Status</span>
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${statusInfo.color}`}>
-                      {statusInfo.icon}
-                      {statusInfo.label}
-                    </span>
+                    <StatusBadge status={project.status} />
                   </div>
-
                   <div className="flex items-center justify-between">
                     <span className="text-gray-700 dark:text-gray-300">Team Size</span>
                     <div className="flex items-center gap-2">
                       <Users className="w-4 h-4 text-gray-500" />
-                      <span className="font-semibold text-gray-950 dark:text-white">{teamMembers.length} members</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">{teamMembers.length}</span>
                     </div>
                   </div>
-
                   <div className="flex items-center justify-between">
                     <span className="text-gray-700 dark:text-gray-300">Tasks</span>
-                    <span className="font-semibold text-gray-950 dark:text-white">{projectTasks.length} total</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">{projectTasks.length}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Share Project Card */}
-              <div className="bg-white dark:bg-gray-950 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-black">
-
-                {/* Header */}
-                <div className="flex items-center gap-2 mb-6">
+              {/* Share project */}
+              <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
+                <div className="flex items-center gap-2 mb-5">
                   <Share2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  <h3 className="text-lg font-semibold text-gray-950 dark:text-white">
-                    Share Project
-                  </h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Share Project</h3>
                 </div>
-
-                {/* Share Buttons */}
-                <div className="grid grid-cols-4 gap-3 mb-4">
+                <div className="grid grid-cols-4 gap-2 mb-4">
                   {[
-                    {
-                      key: "twitter",
-                      label: "Twitter",
-                      Icon: FaTwitterSquare,
-                      bg: "bg-black hover:bg-gray-950",
-                    },
-                    {
-                      key: "linkedin",
-                      label: "LinkedIn",
-                      Icon: FaLinkedinIn,
-                      bg: "bg-blue-700 hover:bg-blue-800",
-                    },
-                    {
-                      key: "facebook",
-                      label: "Facebook",
-                      Icon: FaFacebookSquare,
-                      bg: "bg-blue-600 hover:bg-blue-700",
-                    },
-                    {
-                      key: "whatsapp",
-                      label: "WhatsApp",
-                      Icon: FaWhatsappSquare,
-                      bg: "bg-green-500 hover:bg-green-600",
-                    },
-                  ].map(({ key, label, Icon, bg }) => (
+                    { key: 'twitter', Icon: FaTwitterSquare, bg: 'bg-black hover:bg-gray-800' },
+                    { key: 'linkedin', Icon: FaLinkedinIn, bg: 'bg-blue-700 hover:bg-blue-800' },
+                    { key: 'facebook', Icon: FaFacebookSquare, bg: 'bg-blue-600 hover:bg-blue-700' },
+                    { key: 'whatsapp', Icon: FaWhatsappSquare, bg: 'bg-green-500 hover:bg-green-600' },
+                  ].map(({ key, Icon, bg }) => (
                     <button
                       key={key}
                       onClick={() => handleShare(key)}
-                      className={`p-3 ${bg} text-white rounded-xl 
-          flex flex-col items-center justify-center gap-1.5
-          transition-all duration-200
-          hover:scale-[1.02] active:scale-[0.98]`}
+                      className={`p-3 ${bg} text-white rounded-xl flex flex-col items-center justify-center gap-1 transition-all hover:scale-105 active:scale-95`}
                     >
                       <Icon className="text-lg" />
-                      <span className="text-xs font-medium">{label}</span>
+                      <span className="text-xs font-medium capitalize">{key}</span>
                     </button>
                   ))}
                 </div>
-
-                {/* Copy Link */}
                 <button
                   onClick={handleCopyLink}
-                  className="w-full py-3 rounded-xl font-medium
-      bg-gray-100 dark:bg-black
-      text-gray-700 dark:text-gray-300
-      hover:bg-gray-200 dark:hover:bg-gray-700
-      transition-all duration-200
-      flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2"
                 >
                   <FaRegCopy className="text-sm" />
                   Copy Project Link
                 </button>
               </div>
-
-
             </div>
           </div>
 
@@ -1003,9 +805,7 @@ export default function ProjectDetailsPage() {
           {relatedProjects.length > 0 && (
             <div className="mt-16">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-950 dark:text-white">
-                  Similar Projects
-                </h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Similar Projects</h2>
                 <button
                   onClick={() => navigate('/SGS-Projects')}
                   className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium inline-flex items-center gap-1 group"
@@ -1014,75 +814,66 @@ export default function ProjectDetailsPage() {
                   <ChevronRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {relatedProjects.map((relatedProject) => {
-                  const relatedStatusInfo = getStatusInfo(relatedProject.status);
-                  return (
-                    <div
-                      key={relatedProject.id}
-                      onClick={() => navigate(`/SGS-Projects/${relatedProject.id}`)}
-                      className="group bg-white dark:bg-gray-950 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-200 dark:border-black hover:border-gray-300 dark:hover:border-gray-700 hover:translate-y-[-2px]"
-                    >
-                      <div className="h-40 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-black relative overflow-hidden">
-                        <img
-                          src={relatedProject.photoUrl || 'https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'}
-                          alt={relatedProject.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                        <div className="absolute top-3 right-3">
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${relatedStatusInfo.color}`}>
-                            {relatedStatusInfo.icon}
-                            {relatedStatusInfo.label}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="p-5">
-                        <h3 className="font-semibold text-gray-950 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-2 line-clamp-1">
-                          {relatedProject.name}
-                        </h3>
-                        <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 mb-4">
-                          {relatedProject.shortDescription || relatedProject.description?.substring(0, 100)}
-                        </p>
-                        <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-black">
-                          <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-                            <Users className="w-3 h-3" />
-                            <span>{relatedProject.teamSize || 'Team'}</span>
-                          </div>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">{formatDate(relatedProject.createdAt)}</span>
-                        </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {relatedProjects.map(related => (
+                  <div
+                    key={related.id}
+                    onClick={() => navigate(`/SGS-Projects/${related.id}`)}
+                    className="group bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 hover:-translate-y-1"
+                  >
+                    <div className="h-40 bg-gray-200 dark:bg-gray-800 relative overflow-hidden">
+                      <img
+                        src={related.photoUrl || 'https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'}
+                        alt={related.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute top-3 right-3">
+                        <StatusBadge status={related.status} />
                       </div>
                     </div>
-                  );
-                })}
+                    <div className="p-5">
+                      <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1 mb-2">
+                        {related.name}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4">
+                        {related.shortDescription || related.description?.substring(0, 100)}
+                      </p>
+                      <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-400">
+                        <div className="flex items-center gap-1">
+                          <Users className="w-3 h-3" />
+                          <span>{related.teamSize || 'Team'}</span>
+                        </div>
+                        <span>{formatDate(related.createdAt)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
           {/* Call to Action */}
           <div className="mt-16">
-            <div className="bg-gradient-to-r from-purple-600 to-indigo-700 dark:from-gray-950 dark:to-black rounded-2xl p-8 text-white overflow-hidden relative">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full -translate-y-32 translate-x-32"></div>
+            <div className="bg-gradient-to-r from-purple-600 to-indigo-700 dark:from-gray-900 dark:to-gray-800 rounded-2xl p-8 text-white relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32" />
               <div className="relative z-10">
                 <h2 className="text-2xl font-bold mb-3">Interested in This Project?</h2>
-                <p className="text-gray-300 mb-6 max-w-2xl">
+                <p className="text-purple-100 mb-6 max-w-2xl">
                   Want to know more or have questions about the development process?
                 </p>
                 <div className="flex flex-wrap gap-4">
                   <button
                     onClick={() => navigate('/SGS-Projects')}
-                    className="px-6 py-3 bg-white text-gray-950 rounded-xl font-semibold hover:bg-gray-100 hover:shadow-lg transition-all duration-200"
+                    className="px-6 py-3 bg-white text-gray-900 rounded-xl font-semibold hover:bg-gray-100 hover:shadow-lg transition-all"
                   >
                     Browse More Projects
                   </button>
-
                   {project.deployLink && (
                     <a
                       href={project.deployLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-6 py-3 bg-transparent border-2 border-white text-white rounded-xl font-semibold hover:bg-white/10 transition-all duration-200"
+                      className="px-6 py-3 bg-transparent border-2 border-white text-white rounded-xl font-semibold hover:bg-white/10 transition-all"
                     >
                       Try Live Demo
                     </a>
@@ -1093,8 +884,6 @@ export default function ProjectDetailsPage() {
           </div>
         </div>
       </div>
-    </div>
     </Layout>
-   
   );
 }

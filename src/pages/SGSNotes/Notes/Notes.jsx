@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, getDocs} from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { fireDB } from '../../../DataBase/firebaseConfig';
 import Layout from '../../../components/layout/Layout';
 import { useNavigate } from 'react-router-dom';
 import {
   FaSearch, FaSchool, FaGraduationCap, FaCodeBranch,
-  FaBook, FaFilePdf, FaCalendarAlt, FaDownload, FaEye,
+  FaBook, FaFilePdf, FaCalendarAlt, FaEye,
   FaFilter, FaTimes, FaSortAmountDown, FaUserGraduate,
-  FaCompressArrowsAlt, FaExclamationCircle, FaChartBar,
-  FaUniversity, FaLayerGroup, FaArrowRight
+  FaCompressArrowsAlt, FaExclamationCircle,
+  FaUniversity, FaLayerGroup, FaArrowRight,
+  FaQuestionCircle
 } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet';
@@ -80,15 +81,6 @@ export default function Notes() {
 
   // Extract dropdown values
   const extractUniqueValues = (data) => {
-    const clean = (v) => String(v || '').trim().toLowerCase();
-
-    const colleges = [...new Set(data.map(n => clean(n.college)).filter(Boolean))].sort();
-    const courses = [...new Set(data.map(n => clean(n.course)).filter(Boolean))].sort();
-    const branches = [...new Set(data.map(n => clean(n.branch)).filter(Boolean))].sort();
-    const semesters = [...new Set(data.map(n => clean(n.semester)).filter(Boolean))]
-      .sort((a, b) => parseInt(a) - parseInt(b));
-    const subjects = [...new Set(data.map(n => clean(n.subject)).filter(Boolean))].sort();
-    const categories = [...new Set(data.map(n => clean(n.category)).filter(Boolean))].sort();
 
     setUniqueValues({
       colleges: [...new Set(data.map(n => n.college).filter(Boolean))].sort(),
@@ -104,7 +96,7 @@ export default function Notes() {
   const calculateStats = (data) => {
     const total = data.length;
     const totalSize = data.reduce((sum, note) => sum + (note.compressedSize || 0), 0);
-    const avgCompression = data.length > 0 
+    const avgCompression = data.length > 0
       ? Math.round(data.reduce((sum, note) => sum + (note.compressionRatio || 0), 0) / data.length)
       : 0;
     const uniqueColleges = new Set(data.map(n => n.college).filter(Boolean)).size;
@@ -151,7 +143,7 @@ export default function Notes() {
     } else if (filters.sort === 'oldest') {
       result.sort((a, b) => a.createdAt - b.createdAt);
     } else if (filters.sort === 'size') {
-      result.sort((a, b) => b.compressedSize - a.compressedSize);
+      result.sort((a, b) => (b.compressedSize || 0) - (a.compressedSize || 0));
     } else if (filters.sort === 'name') {
       result.sort((a, b) => (a.subject || '').localeCompare(b.subject || ''));
     }
@@ -198,10 +190,14 @@ export default function Notes() {
     });
   };
 
-  const formatDate = (date) =>
-    new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric', month: 'short', day: 'numeric'
+  const formatDate = (date) => {
+    if (!date) return "Unknown";
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
+  };
 
   const formatFileSize = (bytes) => {
     if (!bytes) return '0 Bytes';
@@ -360,7 +356,7 @@ export default function Notes() {
               <FaFilePdf className="text-3xl text-blue-500 opacity-80" />
             </div>
           </div>
-          
+
           <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
             <div className="flex items-center justify-between">
               <div>
@@ -370,7 +366,7 @@ export default function Notes() {
               <FaCompressArrowsAlt className="text-3xl text-green-500 opacity-80" />
             </div>
           </div>
-          
+
           <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200">
             <div className="flex items-center justify-between">
               <div>
@@ -380,7 +376,7 @@ export default function Notes() {
               <FaLayerGroup className="text-3xl text-purple-500 opacity-80" />
             </div>
           </div>
-          
+
           <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200">
             <div className="flex items-center justify-between">
               <div>
@@ -390,7 +386,7 @@ export default function Notes() {
               <FaUniversity className="text-3xl text-orange-500 opacity-80" />
             </div>
           </div>
-          
+
           <div className="bg-gradient-to-r from-red-50 to-red-100 p-4 rounded-xl border border-red-200">
             <div className="flex items-center justify-between">
               <div>
@@ -402,22 +398,22 @@ export default function Notes() {
           </div>
         </div>
         <div className="m-4 text-center">
-              <div className="flex justify-center lg:justify-between flex-wrap items-center  bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
-                <div className="text-left">
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Want to share your notes?</h3>
-                  <p className="text-gray-600">
-                    Help other students by uploading your study materials. It's quick and easy!
-                  </p>
-                </div>
-                <button
-                  onClick={() => navigate('/UplodesNotes')}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
-                >
-                  Upload Your Notes
-                  <FaArrowRight />
-                </button>
-              </div>
+          <div className="flex justify-center lg:justify-between flex-wrap items-center  bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
+            <div className="text-left">
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Want to share your notes?</h3>
+              <p className="text-gray-600">
+                Help other students by uploading your study materials. It's quick and easy!
+              </p>
             </div>
+            <button
+              onClick={() => navigate('/UploadNotes')}
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
+            >
+              Upload Your Notes
+              <FaArrowRight />
+            </button>
+          </div>
+        </div>
 
         {/* Search + Filters */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
@@ -547,9 +543,9 @@ export default function Notes() {
             <div className="flex items-center gap-2 text-gray-600">
               <FaSortAmountDown />
               <span className="text-sm">
-                Sorted by {filters.sort === 'newest' ? 'Newest' : 
-                          filters.sort === 'oldest' ? 'Oldest' : 
-                          filters.sort === 'name' ? 'A-Z' : 'Largest'}
+                Sorted by {filters.sort === 'newest' ? 'Newest' :
+                  filters.sort === 'oldest' ? 'Oldest' :
+                    filters.sort === 'name' ? 'A-Z' : 'Largest'}
               </span>
             </div>
           </div>
@@ -561,7 +557,7 @@ export default function Notes() {
             <FaExclamationCircle className="text-6xl text-gray-300 mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-gray-800 mb-3">No Notes Found</h3>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              {notes.length === 0 
+              {notes.length === 0
                 ? "No notes have been uploaded yet. Be the first to share your study materials!"
                 : "No notes match your search criteria. Try adjusting your filters."}
             </p>
@@ -581,7 +577,7 @@ export default function Notes() {
                   </p>
                 </div>
                 <button
-                  onClick={() => navigate('/UplodesNotes')}
+                  onClick={() => navigate('/UploadNotes')}
                   className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
                 >
                   Upload Your Notes
@@ -655,10 +651,21 @@ export default function Notes() {
                         className="flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
                       >
                         <FaEye />
-                        View
+                        View Notes
                       </button>
-                      
+                      {note.quizEnabled && (
+                        <button
+                          onClick={() => navigate(`/NoteQuiz/${note.id}`)}
+                          className="flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+                        >
+                          <FaQuestionCircle />
+                          Take Quiz
+                        </button>
+                      )}
+
                     </div>
+
+
 
                     {/* Uploader Info */}
                     {note.studentName && (
@@ -681,7 +688,7 @@ export default function Notes() {
                   </p>
                 </div>
                 <button
-                  onClick={() => navigate('/UplodesNotes')}
+                  onClick={() => navigate('/UploadNotes')}
                   className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
                 >
                   Upload Your Notes

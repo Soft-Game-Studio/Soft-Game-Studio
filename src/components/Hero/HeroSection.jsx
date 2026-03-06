@@ -25,10 +25,15 @@ const HomePage = () => {
 
 
 
+const handleViewDetails = (projectId) => {
+    navigate(`/SGS-Projects/${projectId}`); // Navigate to details page
+  };
 
 
 
-   const [projects, setProjects] = useState([]);
+const [projects, setProjects] = useState([]);
+
+const loopProjects = [...projects, ...projects];
       
         const fetchProjects = async () => {
           const querySnapshot = await getDocs(collection(fireDB, 'sgsProjects'));
@@ -314,52 +319,105 @@ const HomePage = () => {
                         </p>
                       </motion.div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {projects.slice(0,3).map((project, idx) => (
-                          <motion.div
-                            key={project.id} 
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: idx * 0.1 }}
-                            viewport={{ once: true }}
-                            className="bg-white dark:bg-neutral-800 rounded-2xl shadow-lg p-6 border border-purple-200 dark:border-neutral-700 hover:shadow-xl transition-all"
-                          >
-                            <div className="h-48 rounded-xl overflow-hidden mb-4">
-                              <div className="bg-gradient-to-r from-purple-400 to-purple-600 w-full h-full flex items-center justify-center">
-                                {project.img === "" ? (
-                                  <span className="text-white text-4xl">Project {idx+1}</span>
-                                ) : (
-                                  renderImagePreview(project.photoUrl)
-                                )}
-                              </div>
-                            </div>
-                            <h3 className="text-2xl font-bold mb-2">{project.name}</h3>
-                            <p className="text-purple-700 dark:text-purple-300 line-clamp-3 min-h-[72px] mb-4">{project.description}</p>
-                            <div className="flex flex-col sm:flex-row gap-4">
-                              {project.sourceCode && 
-                              (<Link 
-                      to={project.sourceCode} 
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-full flex items-center justify-center transition-colors"
-                    >
-                     GitHub Link
-                      <FaArrowRight className="ml-2" />
-                    </Link>) }
-                   {project.deployLink && (
-<Link 
-                      to={project.deployLink}
-                      className="bg-white dark:bg-slate-800 border border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 px-6 py-3 rounded-full flex items-center justify-center transition-colors"
-                    >
-                      <FaEye className="mr-2" />
-                       View Project
-                    </Link>
-                   )}
+                    <div className="overflow-hidden w-full py-12">
+  <motion.div
+    className="flex gap-8"
+    animate={{ x: ["0%", "-50%"] }}
+    transition={{
+      repeat: Infinity,
+      duration: 40,
+      ease: "linear",
+    }}
+  >
+    {[...projects, ...projects].map((project, idx) => (
+       <div 
+      key={project.id}
+      className="group relative min-w-[420px] max-w-[420px] flex-shrink-0 bg-white dark:bg-neutral-900 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-neutral-800 hover:-translate-y-2 hover:scale-[1.02]"
+    >
+      {/* Premium hover effect overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-transparent to-indigo-500/0 group-hover:from-purple-500/5 group-hover:to-indigo-500/5 transition-all duration-500 z-0" />
+      
+      {/* Image container with overlay */}
+      <div className="relative overflow-hidden h-48">
+        {renderImagePreview(project.photoUrl)}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        
+        {/* Premium status badge */}
+        <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm px-3 py-1.5 rounded-full">
+          <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+          <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">
+            {project.status || "Active"}
+          </span>
+        </div>
+      </div>
+      
+      {/* Content */}
+      <div className="relative p-6 md:p-7 z-10">
+        {/* Title and category */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 truncate pr-2">
+              {project.name}
+            </h3>
+          </div>
+          
+          {project.category && (
+            <span className="inline-block px-3 py-1 bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-gray-300 text-xs font-medium rounded-full">
+              {project.category}
+            </span>
+          )}
+        </div>
+        
+        {/* Description */}
+        <p className="text-gray-600 dark:text-gray-300 mb-6 line-clamp-3 min-h-[72px] leading-relaxed">
+          {project.description}
+        </p>
+        
+        {/* Tech stack (optional) */}
+        {project.technologies && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            {project.technologies.slice(0, 3).map((tech, index) => (
+              <span 
+                key={index}
+                className="px-2.5 py-1 bg-gray-50 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 text-xs font-medium rounded-lg"
+              >
+                {tech}
+              </span>
+            ))}
+            {project.technologies.length > 3 && (
+              <span className="px-2.5 py-1 text-gray-500 dark:text-gray-400 text-xs font-medium">
+                +{project.technologies.length - 3} more
+              </span>
+            )}
+          </div>
+        )}
+        
+        {/* Action buttons */}
+        <div className="flex flex-col flex-wrap sm:flex-row gap-3">
+          
+          
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleViewDetails(project.id);
+            }}
+            className="px-4 py-3 w-full bg-transparent border-2 border-purple-600 dark:border-purple-500 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2"
+          >
+            <span>View Details</span>
+            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    ))}
+  </motion.div>
+</div>
+
+       
+
                     
-                  </div>
-                            
-                          
-                          </motion.div>
-                        ))}
-                      </div>
                       <div className='flex justify-center items-center'>
 <Link 
   to="/SGS-Projects" 
@@ -440,7 +498,7 @@ const HomePage = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                           {[
-                            { icon: "✉️", title: "Email", value: "officialsoftgamestudio@gmail.com" },
+                            { icon: "✉️", title: "Email", value: "sgs.web.app@gmail.com" },
                             { icon: "📱", title: "Phone", value: "For Hindi: +91 9914267704" },
                             { icon: "📱", title: "Phone", value: "For English: +91 6283400770 " },
                           ].map((contact, idx) => (

@@ -398,7 +398,7 @@ export default function NoteView() {
           <div className="mt-12">
             <div className="grid grid-cols-1  gap-4">
               <button
-                onClick={() => navigate('/UplodesNotes')}
+                onClick={() => navigate('/UploadNotes')}
                 className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200 hover:border-blue-300 transition-colors text-left"
               >
                 <h4 className="font-semibold mb-2 text-blue-800">Share Your Notes</h4>
