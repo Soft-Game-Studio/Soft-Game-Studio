@@ -78,9 +78,7 @@ import Notes from "./pages/SGSNotes/Notes/Notes.jsx";
 import NoteDetail from "./pages/SGSNotes/Notes/Notesview.jsx";
 import RedirectPage from "./pages/Redirect page/Redirectpage.jsx";
 import NoteQuizExam from "./pages/SGSNotes/Notes/NoteQuizExam.jsx";
-import Events from "./pages/SGS Hackthone/Event.jsx";
-import EventDetails from "./pages/SGS Hackthone/EventDetails.jsx";
-import EventRegister from "./pages/SGS Hackthone/EventRegister.jsx";
+import InnovationChallenge from "./pages/SGS Hackthone/Event.jsx";
 
 
 
@@ -187,9 +185,7 @@ function App() {
           <Route path="/SGSCERT/:rollNumber" element={<CertificatePage/>} />
 
              {/* SGS official hackthone */}
-          <Route path="/events" element={<Events/>} />
-          <Route path="/events/:id" element={<EventDetails/>} />
-          <Route path="/events/:id/register" element={<EventRegister/>} />
+          <Route path="/InnovationChallenge" element={<InnovationChallenge/>} />
 
 
 

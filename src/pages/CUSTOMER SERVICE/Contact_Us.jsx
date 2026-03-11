@@ -1,11 +1,12 @@
 // ContactPage.jsx
 import React, { useState, useCallback, useEffect, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Helmet } from "react-helmet";
 import Layout from "../../components/layout/Layout";
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import {ToastContainer, toast } from "react-toastify";
-import { Send, MapPin, Mail, Phone, Clock, AlertCircle } from "lucide-react";
+import { Send, MapPin, Mail, Phone, Clock, AlertCircle, Info } from "lucide-react";
 import { fireDB } from "../../DataBase/firebaseConfig";
 
 // Simple debounce function
@@ -39,6 +40,8 @@ const DISPOSABLE_DOMAINS = [
 
 const ContactPage = () => {
   const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_API;
+  const [searchParams] = useSearchParams();
+  const [isProjectEnquiry, setIsProjectEnquiry] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -207,8 +210,29 @@ const ContactPage = () => {
     };
   }, [formData]);
 
-  // Load form draft from localStorage on mount
+  // Load form draft from localStorage on mount, OR auto-fill from URL params
   useEffect(() => {
+    const subjectParam = searchParams.get('subject');
+    const projectName = searchParams.get('projectName');
+    const projectLink = searchParams.get('projectLink');
+    const projecturl = searchParams.get('projecturl');
+    const projectDesc = searchParams.get('projectDesc');
+
+    // If arriving from a project page with params, auto-fill the form
+    if (subjectParam && projectName) {
+      const autoMessage = `I would like to request the source code for the project: ${projectName}.\nProject link: ${projectLink || 'N/A'}.\nProjecturl: ${projecturl || 'N/A'}. \n${projectDesc ? `Project details: ${projectDesc}\n` : ''}\nPlease share the source code details.`;
+      setFormData(prev => ({
+        ...prev,
+        subject: subjectParam,
+        message: autoMessage,
+      }));
+      setIsProjectEnquiry(true);
+      // Clear the draft so auto-fill takes priority
+      localStorage.removeItem('contactFormDraft');
+      return;
+    }
+
+    // Otherwise try to load saved draft
     try {
       const savedDraft = localStorage.getItem('contactFormDraft');
       if (savedDraft) {
@@ -218,6 +242,7 @@ const ContactPage = () => {
     } catch (error) {
       console.error('Error loading form draft:', error);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Check form validity for submit button
@@ -715,6 +740,17 @@ const ContactPage = () => {
                   </motion.div>
 
                   <form onSubmit={handleSubmit} className="space-y-1">
+                    {/* Project enquiry info banner */}
+                    {isProjectEnquiry && (
+                      <div className="mb-6 flex items-start gap-3 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300">
+                        <Info className="w-5 h-5 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium text-sm">Project Enquiry Auto-Filled</p>
+                          <p className="text-xs mt-1 opacity-80">The subject and message have been pre-filled with project details. You can edit them before submitting.</p>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Honeypot field for bot detection */}
                     <div className="hidden" aria-hidden="true">
                       <label htmlFor="honeypot">Leave this field empty</label>
