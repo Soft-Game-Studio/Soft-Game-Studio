@@ -31,14 +31,16 @@ const challengeData = {
     { title: "Presentation Quality", desc: "How well can the team communicate their vision and product?" },
   ],
   prizes: [
-    { place: "Grand Champion", reward: "₹50,000 + Funding + Pro Certificate", icon: "🏆", color: "from-yellow-400 to-amber-600" },
-    { place: "First Runner-Up", reward: "₹30,000 + Internship Opps + Certificate", icon: "🥈", color: "from-slate-300 to-slate-500" },
-    { place: "Second Runner-Up", reward: "₹20,000 + Swag + Certificate", icon: "🥉", color: "from-orange-400 to-amber-800" },
-    { place: "Community Favorite", reward: "Special Mystery Box + Features", icon: "🔥", color: "from-rose-400 to-red-600" },
+    { place: "Grand Champion", reward: "₹5000 + Welcome Gift  + Digital Certificate", icon: "🏆", color: "from-yellow-400 to-amber-600" },
+    { place: "First Runner-Up", reward: "₹3000  + Welcome Gift + Digital Certificate", icon: "🥈", color: "from-slate-300 to-slate-500" },
+    { place: "Second Runner-Up", reward: "₹2000 + Welcome Gift + Digital Certificate", icon: "🥉", color: "from-orange-400 to-amber-800" },
+    { place: "Community Favorite", reward: "Welcome Gift + Digital Participation Certificate", icon: "🔥", color: "from-rose-400 to-red-600" },
+    { place: "Selected Offline Participants", reward: "Welcome Gift + Digital Participation Certificate", icon: "🏅", color: "from-green-400 to-lime-600" },
+{ place: "Participants", reward: "Digital Participation Certificate", icon: "👥", color: "from-purple-400 to-violet-600" },
   ],
   faq: [
     { q: "Who can participate?", a: "This hackathon is open to all students globally. Both technical and non-technical founders are welcome to pitch." },
-    { q: "What is the team size limit?", a: "Teams can range from solo founders (1 member) up to a maximum of 6 members." },
+    { q: "What is the team size limit?", a: "Teams can range from solo founders (1 member) up to a maximum of 2 members." },
     { q: "What deliverables are required?", a: "A detailed presentation (PPT) explaining your solution, the market impact, and a working prototype/MVP if applicable." },
     { q: "Is there a registration fee?", a: "No! Registration and participation are completely free." },
   ],
@@ -273,7 +275,7 @@ export default function InnovationChallenge() {
                   <h3 className="text-2xl font-bold mb-6 relative z-10 w-full">Quick FAQ Facts</h3>
                   <div className="space-y-4 relative z-10">
                     <p className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0"/> Global Student Access</p>
-                    <p className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0"/> Teams of 1 to 6 Members</p>
+                    <p className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0"/> Teams of 1 to 2 Members</p>
                     <p className="flex items-start gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0"/> 100% Free Registration</p>
                   </div>
                 </div>
@@ -286,8 +288,8 @@ export default function InnovationChallenge() {
         {/* ---------- PRIZES (Hover 3D Showcase) ---------- */}
         <section className="relative z-10 py-32 px-6 max-w-7xl mx-auto">
           <div className="text-center mb-24">
-            <h2 className="text-5xl font-black inline-flex items-center gap-4 bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-orange-600 mb-4">
-              <Award className="w-12 h-12 text-amber-500" /> Glory & Rewards
+            <h2 className="text-5xl font-black flex justify-center items-center text-center  bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-orange-600 mb-4">
+                Glory & Rewards
             </h2>
             <p className="text-xl text-gray-500 dark:text-gray-400 font-medium">Massive prize pools and invaluable networking opportunities.</p>
           </div>

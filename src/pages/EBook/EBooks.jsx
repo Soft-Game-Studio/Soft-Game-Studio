@@ -20,6 +20,19 @@ import html2pdf from 'html2pdf.js';
 import { fireDB } from '../../DataBase/firebaseConfig';
 import Layout from '../../components/layout/Layout';
 import { Helmet } from 'react-helmet';
+import RenderContent from '../../components/RenderContent';
+
+import katex from "katex";
+import "katex/dist/katex.min.css";
+
+const renderMathToHTML = (content) => {
+  return content.replace(/\$\$(.*?)\$\$/g, (_, formula) => {
+    return katex.renderToString(formula, {
+      throwOnError: false,
+      displayMode: true,
+    });
+  });
+};
 
 const EbookReader = () => {
   const { id } = useParams();
@@ -129,7 +142,7 @@ const EbookReader = () => {
       // Create a temporary element with proper styling
       const tempDiv = document.createElement('div');
       tempDiv.className = 'prose max-w-none bg-white p-10 rounded-xl';
-      tempDiv.innerHTML = chapter.content;
+      tempDiv.innerHTML = renderMathToHTML(chapter.content);
       document.body.appendChild(tempDiv);
       
       const opt = {
@@ -171,7 +184,7 @@ const EbookReader = () => {
         // Create a temporary element for each chapter
         const tempDiv = document.createElement('div');
         tempDiv.className = 'prose max-w-none bg-white p-10 rounded-xl';
-        tempDiv.innerHTML = chapter.content;
+       tempDiv.innerHTML = renderMathToHTML(chapter.content);
         document.body.appendChild(tempDiv);
         
         // Generate PDF for this chapter
@@ -210,28 +223,7 @@ const EbookReader = () => {
     }
   };
 
-  const downloadAllChaptersAsText = async () => {
-    setDownloading(true);
-    
-    try {
-      // Create a zip file
-      const zip = new JSZip();
-      
-      // Add each chapter to the zip
-      chapters.forEach(chapter => {
-        zip.file(`${chapter.chapterNo}_${chapter.title.replace(/\s+/g, '_')}.txt`, chapter.content);
-      });
-      
-      // Generate the zip file
-      const content = await zip.generateAsync({ type: 'blob' });
-      saveAs(content, `${ebook.title.replace(/\s+/g, '_')}_Chapters.zip`);
-    } catch (err) {
-      console.error('Error downloading all chapters:', err);
-      alert('Failed to download all chapters. Please try again.');
-    } finally {
-      setDownloading(false);
-    }
-  };
+
 
   if (loading) {
     return (
@@ -434,10 +426,15 @@ const EbookReader = () => {
                           transition={{ duration: 0.4 }}
                         >
                           <div className="ml-17 border-t border-purple-200 dark:border-neutral-700 pt-6">
-                            <div 
+                            {/* <div 
                               className="prose max-w-none  text-black bg-white  p-8 rounded-2xl shadow-inner mb-6 "
                               dangerouslySetInnerHTML={{ __html: chapter.content }}
-                            />
+                            /> */}
+             
+                            
+                                             <div className="prose max-w-none text-black bg-white p-8 rounded-2xl shadow-inner mb-6">
+  <RenderContent content={chapter.content} />
+</div>
                             
                             <div className="flex flex-wrap justify-end gap-4">
                               <motion.button 

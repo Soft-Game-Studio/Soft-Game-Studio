@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect,  lazy, Suspense } from "react";
 import {
   BrowserRouter as Router,
   Route,
@@ -6,88 +6,91 @@ import {
   Navigate,
 } from "react-router-dom";
 
-import NotFoundPage from "./pages/NoPage/NoPage";
-import UserLogin from "./pages/Registraction/UserLogin";
-import UserSignup from "./pages/Registraction/UserSignup";
-import UserResetPasswordPage from "./pages/Registraction/UserResetPasword";
+const NotFoundPage = lazy(() => import("./pages/NoPage/NoPage"));
+const UserLogin = lazy(() => import("./pages/Registraction/UserLogin"));
+const UserSignup = lazy(() => import("./pages/Registraction/UserSignup"));
+const UserResetPasswordPage = lazy(() => import("./pages/Registraction/UserResetPasword"));
+
+const Privacy = lazy(() => import("./pages/CUSTOMER SERVICE/PrivacyPolicy"));
+const About = lazy(() => import("./pages/CUSTOMER SERVICE/About"));
+const ContactUs = lazy(() => import("./pages/CUSTOMER SERVICE/Contact_Us"));
+const ReturnPolicy = lazy(() => import("./pages/CUSTOMER SERVICE/Return Policy"));
+const TermsAndConditions = lazy(() => import("./pages/CUSTOMER SERVICE/TermsAndConditions"));
+const CopyrightPage = lazy(() => import("./pages/CopyrightPage/CopyrightPage"));
+
+const Cart = lazy(() => import("./pages/Cart/Cart"));
+const ProductsPage = lazy(() => import("./pages/Projects/Product"));
+const FeedbackSection = lazy(() => import("./pages/CUSTOMER SERVICE/FeedBackFome"));
+const FAQItem = lazy(() => import("./pages/CUSTOMER SERVICE/FAQs"));
+const CookiesPolicy = lazy(() => import("./pages/CUSTOMER SERVICE/CookiesPolicy"));
+
+const OurMembers = lazy(() => import("./components/Members/OurMembers"));
+const AboutExam = lazy(() => import("./pages/CUSTOMER SERVICE/AboutSGSExam"));
+const ProductDetailsPage = lazy(() => import("./pages/Projects/ProductDetail"));
+
+const FreeNotesAndBooks = lazy(() => import("./pages/NotesAndBooks/FreeNotesAndBooks.jsx"));
+const HomePage = lazy(() => import("./components/Hero/HeroSection.jsx"));
+
+const DisplayCourses = lazy(() => import("./pages/Courses/Courses.jsx"));
+const SingleCourse = lazy(() => import("./pages/Courses/SingleCourse.jsx"));
+const PlayListCourse = lazy(() => import("./pages/Courses/PlayListCourse.jsx"));
+
+const EbookReader = lazy(() => import("./pages/EBook/EBooks.jsx"));
+const EbookCatalog = lazy(() => import("./pages/EBook/DesplayEbboks.jsx"));
+
+const DevelopmentPage = lazy(() => import("./pages/CUSTOMER SERVICE/AboutDevelopment.jsx"));
+const ProfilePage = lazy(() => import("./pages/Profile/Profile.jsx"));
+
+const SupportUs = lazy(() => import("./components/Suport US/SuportUS.jsx"));
+const SGSProject = lazy(() => import("./pages/SGSProject/SGSProject.jsx"));
+
+const ExamHomePage = lazy(() => import("./Exams/Home.jsx"));
+const FreeQuizExam = lazy(() => import("./Exams/QuizFree/EXAM CONTROLER/QuizExam.jsx"));
+const FreeQuizDetails = lazy(() => import("./Exams/QuizFree/EXAM CONTROLER/ExamDetails.jsx"));
+const FreeQuizList = lazy(() => import("./Exams/QuizFree/Quiz.jsx"));
+
+const OfficialQuizList = lazy(() => import("./Exams/Quiz/Quiz.jsx"));
+const OfficialQuizExam = lazy(() => import("./Exams/Quiz/EXAM CONTROLER/QuizExam.jsx"));
+const OfficialQuizDetails = lazy(() => import("./Exams/Quiz/EXAM CONTROLER/ExamDetails.jsx"));
+
+const WeeklyQuizList = lazy(() => import("./Exams/DailyQuiz/DailyQuizList.jsx"));
+const WeeklyQuiz = lazy(() => import("./Exams/DailyQuiz/Exam Control/DailyQuiz.jsx"));
+const WeeklyQuizDetails = lazy(() => import("./Exams/DailyQuiz/Exam Control/DailyQuizDetaisl.jsx"));
+
+const QuizList = lazy(() => import("./Exams/Quiz.jsx"));
+const DailyResultsPage = lazy(() => import("./Exams/Result/DailyResult.jsx"));
+const ResultsPage = lazy(() => import("./Exams/Result/Result.jsx"));
+
+const CommunityMembers = lazy(() => import("./components/Members/CommunityMembers.jsx"));
+const CertificatePage = lazy(() => import("./pages/Certiificate/CertificatePage.jsx"));
+
+const ProjectDetailsPage = lazy(() => import("./pages/SGSProject/SGSProjectDetaisl.jsx"));
+
+const GamesListPage = lazy(() => import("./pages/App/Gamepage.jsx"));
+const GamePage = lazy(() => import("./pages/App/GamePageDetais.jsx"));
+
+const UploadNotes = lazy(() => import("./pages/SGSNotes/Uplode Notes/UplodeNotes.jsx"));
+const Notes = lazy(() => import("./pages/SGSNotes/Notes/Notes.jsx"));
+const NoteDetail = lazy(() => import("./pages/SGSNotes/Notes/Notesview.jsx"));
+const NoteQuizExam = lazy(() => import("./pages/SGSNotes/Notes/NoteQuizExam.jsx"));
+
+const RedirectPage = lazy(() => import("./pages/Redirect page/Redirectpage.jsx"));
+const InnovationChallenge = lazy(() => import("./pages/SGS Hackthone/Event.jsx"));
+
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Privacy from "./pages/CUSTOMER SERVICE/PrivacyPolicy";
-import About from "./pages/CUSTOMER SERVICE/About";
-import ContactUs from "./pages/CUSTOMER SERVICE/Contact_Us";
-import ReturnPolicy from "./pages/CUSTOMER SERVICE/Return Policy";
-
-import TermsAndConditions from "./pages/CUSTOMER SERVICE/TermsAndConditions";
-
-import CopyrightPage from "./pages/CopyrightPage/CopyrightPage";
-
 import ScrollToTop from "./ScrollToTop";
-import Cart from "./pages/Cart/Cart";
-import ProductsPage from "./pages/Projects/Product";
-import FeedbackSection from "./pages/CUSTOMER SERVICE/FeedBackFome";
-import FAQItem from "./pages/CUSTOMER SERVICE/FAQs";
-import CookiesPolicy from "./pages/CUSTOMER SERVICE/CookiesPolicy";
-import OurMembers from "./components/Members/OurMembers";
-
-
 import { MyProvider } from "./Library/MyContext";
-
-import AboutExam from "./pages/CUSTOMER SERVICE/AboutSGSExam";
-import ProductDetailsPage from "./pages/Projects/ProductDetail";
-
-import FreeNotesAndBooks from "./pages/NotesAndBooks/FreeNotesAndBooks.jsx";
-import HomePage from "./components/Hero/HeroSection.jsx";
-
-import DisplayCourses from "./pages/Courses/Courses.jsx";
-import SingleCourse from "./pages/Courses/SingleCourse.jsx";
-import PlayListCourse from "./pages/Courses/PlayListCourse.jsx";
-import EbookReader from "./pages/EBook/EBooks.jsx";
-import EbookCatalog from "./pages/EBook/DesplayEbboks.jsx";
-import DevelopmentPage from "./pages/CUSTOMER SERVICE/AboutDevelopment.jsx";
-import ProfilePage from "./pages/Profile/Profile.jsx";
-
-import SupportUs from "./components/Suport US/SuportUS.jsx";
-
-
 import { useAuth } from "./AuthProvide.jsx";
-import SGSProject from "./pages/SGSProject/SGSProject.jsx";
-
 import LoadingSpinner from "./components/Loarding/LoadingSpinner.jsx";
-
-
-import ExamHomePage from "./Exams/Home.jsx";
-import FreeQuizExam from "./Exams/QuizFree/EXAM CONTROLER/QuizExam.jsx";
-import FreeQuizDetails from "./Exams/QuizFree/EXAM CONTROLER/ExamDetails.jsx";
-import FreeQuizList from "./Exams/QuizFree/Quiz.jsx";
-import OfficialQuizList from "./Exams/Quiz/Quiz.jsx";
-import OfficialQuizExam from "./Exams/Quiz/EXAM CONTROLER/QuizExam.jsx";
-import OfficialQuizDetails from "./Exams/Quiz/EXAM CONTROLER/ExamDetails.jsx";
-import WeeklyQuizList from "./Exams/DailyQuiz/DailyQuizList.jsx";
-import WeeklyQuiz from "./Exams/DailyQuiz/Exam Control/DailyQuiz.jsx";
-import WeeklyQuizDetails from "./Exams/DailyQuiz/Exam Control/DailyQuizDetaisl.jsx";
-import QuizList from "./Exams/Quiz.jsx";
-import DailyResultsPage from "./Exams/Result/DailyResult.jsx";
-import ResultsPage from "./Exams/Result/Result.jsx";
-import CommunityMembers from "./components/Members/CommunityMembers.jsx";
-import CertificatePage from "./pages/Certiificate/CertificatePage.jsx";
-import ProjectDetailsPage from "./pages/SGSProject/SGSProjectDetaisl.jsx";
-import GamesListPage from "./pages/App/Gamepage.jsx";
-import GamePage from "./pages/App/GamePageDetais.jsx";
-import UploadNotes from "./pages/SGSNotes/Uplode Notes/UplodeNotes.jsx";
-import Notes from "./pages/SGSNotes/Notes/Notes.jsx";
-import NoteDetail from "./pages/SGSNotes/Notes/Notesview.jsx";
-import RedirectPage from "./pages/Redirect page/Redirectpage.jsx";
-import NoteQuizExam from "./pages/SGSNotes/Notes/NoteQuizExam.jsx";
-import InnovationChallenge from "./pages/SGS Hackthone/Event.jsx";
-
-
 
 
 
 
 function App() {
   return (
-    <MyProvider>
+    <Suspense fallback={<LoadingSpinner />}>
+   <MyProvider>
       <Router
         future={{
           v7_startTransition: true,
@@ -193,6 +196,8 @@ function App() {
         <ToastContainer />
       </Router>
     </MyProvider>
+    </Suspense>
+ 
   );
 }
 

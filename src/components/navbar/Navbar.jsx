@@ -26,21 +26,21 @@ import { useCart } from "../../Modules/Cart/CartContext";
 const navItems = [
   { name: "Home", link: "/" },
   { name: "Notes", link: "/DownloadNotes" },
-  { name: "Course", link: "/OurCourse"},
+  { name: "Course", link: "/OurCourse" },
   { name: "E-Books", link: "/E-Books" },
-   { name: "Games", link: "/game" },
+  { name: "Games", link: "/game" },
 ];
 
 export function NavbarMenu() {
- const { theme, setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const { user} = useAuth()
-  const {cartItems} = useCart()
+  const { user } = useAuth()
+  const { cartItems } = useCart()
 
   const logout = () => {
-   signOut(auth)  
+    signOut(auth)
   };
 
   const toggleTheme = () => {
@@ -79,7 +79,7 @@ export function NavbarMenu() {
           {/* Profile/Login Dropdown */}
           <div className="relative group">
             <NavbarButton className="flex items-center p-1 rounded-full text-neutral-950 dark:text-gray-300   ">
-              {user ?  (
+              {user ? (
                 <>
                   <IoMdMenu className="w-4 h-4 mr-2" />
                   <RiAccountCircleFill className="w-6 h-6" />
@@ -132,13 +132,13 @@ export function NavbarMenu() {
                 </span>
               )}
             </NavbarButton> */}
-           <NavbarButton
-            onClick={toggleTheme}
-            className="p-2 rounded-full text-neutral-950 dark:text-gray-300 "
-            aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-          >
-            {theme === "light" ? <FiMoon className="w-5 h-5" /> : <FiSun className="w-5 h-5" />}
-          </NavbarButton>
+            <NavbarButton
+              onClick={toggleTheme}
+              className="p-2 rounded-full text-neutral-950 dark:text-gray-300 "
+              aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+            >
+              {theme === "light" ? <FiMoon className="w-5 h-5" /> : <FiSun className="w-5 h-5" />}
+            </NavbarButton>
             <MobileNavToggle
               isOpen={isMobileMenuOpen}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

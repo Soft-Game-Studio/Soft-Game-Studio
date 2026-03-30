@@ -636,10 +636,10 @@ const ContactPage = () => {
                       <div>
                         <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Email</h3>
                         <a
-                          href="mailto:team.softgamestudio@gmail.com"
+                          href="mailto:sgs.web.app@gmail.com"
                           className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors text-sm sm:text-base"
                         >
-                          team.softgamestudio@gmail.com
+                          sgs.web.app@gmail.com
                         </a>
                       </div>
                     </div>
