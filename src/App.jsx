@@ -86,7 +86,6 @@ import LoadingSpinner from "./components/Loarding/LoadingSpinner.jsx";
 
 
 
-
 function App() {
   return (
     <Suspense fallback={<LoadingSpinner />}>
@@ -187,7 +186,7 @@ function App() {
           <Route path="/SGS-Exam-Details-Official/:id" element={<FreeQuizDetails/>} />
           <Route path="/SGSCERT/:rollNumber" element={<CertificatePage/>} />
 
-             {/* SGS official hackthone */}
+          {/* SGS official hackthone */}
           <Route path="/InnovationChallenge" element={<InnovationChallenge/>} />
 
 
