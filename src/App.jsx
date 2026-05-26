@@ -44,15 +44,11 @@ const ProfilePage = lazy(() => import("./pages/Profile/Profile.jsx"));
 const SupportUs = lazy(() => import("./components/Suport US/SuportUS.jsx"));
 const SGSProject = lazy(() => import("./pages/SGSProject/SGSProject.jsx"));
 
-const ExamHomePage = lazy(() => import("./Exams/Home.jsx"));
 
 const OfficialQuizList = lazy(() => import("./Exams/Quiz/Quiz.jsx"));
 const OfficialQuizExam = lazy(() => import("./Exams/Quiz/EXAM CONTROLER/QuizExam.jsx"));
 const OfficialQuizDetails = lazy(() => import("./Exams/Quiz/EXAM CONTROLER/ExamDetails.jsx"));
 
-
-
-const QuizList = lazy(() => import("./Exams/Quiz.jsx"));
 const ResultsPage = lazy(() => import("./Exams/Result/Result.jsx"));
 
 const CommunityMembers = lazy(() => import("./components/Members/CommunityMembers.jsx"));
@@ -160,10 +156,7 @@ function App() {
           <Route path="/SGS-Projects" element={<SGSProject />} />
            <Route path="/SGS-Projects/:id" element={<ProjectDetailsPage />} />
 
-          {/* SGS Exams */}
-          <Route path="/SGS-Exam-Home" element={<ExamHomePage/>} />
-          <Route path="/SGS-Quiz" element={<QuizList/>} />
-
+   
            {/* SGS Exams official */}
           <Route path="/SGS-Quiz-Official" element={<OfficialQuizList/>} />
           <Route path="/SGS-Quiz-Official/:id" element={<OfficialQuizExam/>} />
