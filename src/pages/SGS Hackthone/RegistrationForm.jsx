@@ -1,10 +1,12 @@
+// src/components/events/RegistrationForm.jsx
 import React, { useState } from 'react';
 import { addDoc, collection, Timestamp } from 'firebase/firestore';
 import { fireDB } from '../../DataBase/firebaseConfig';
-import { CheckCircle, Users, MapPin, Sparkles, Send, ShieldCheck, Mail, Phone, BookOpen, User } from 'lucide-react';
+import { CheckCircle, Send, ShieldCheck, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export default function RegistrationForm({ eventId, onClose, className = "" }) {
+export default function RegistrationForm({ eventId, dynamicFields = [], onClose, className = "" }) {
+  // Base form state for standard fields
   const [form, setForm] = useState({
     firstName: '',
     teamName: '',
@@ -17,13 +19,21 @@ export default function RegistrationForm({ eventId, onClose, className = "" }) {
     cityVillage: '',
     state: '',
     pincode: '',
-    country: 'India'
+    country: 'India',
   });
+
+  // Dynamic fields state as an object { label: value }
+  const [customFields, setCustomFields] = useState({});
+
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleCustomFieldChange = (label, value) => {
+    setCustomFields(prev => ({ ...prev, [label]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -32,7 +42,8 @@ export default function RegistrationForm({ eventId, onClose, className = "" }) {
     try {
       await addDoc(collection(fireDB, 'event_registrations'), {
         ...form,
-        eventId: eventId || 'hackathon_2026',
+        customFields, // dynamic answers
+        eventId: eventId || 'unknown',
         createdAt: Timestamp.now()
       });
       setSubmitted(true);
@@ -44,16 +55,62 @@ export default function RegistrationForm({ eventId, onClose, className = "" }) {
     }
   };
 
+  // Render dynamic field input based on type
+  const renderDynamicField = (field, index) => {
+    const { type, label, required, options } = field;
+    const value = customFields[label] || '';
+
+    const commonProps = {
+      id: `custom-${index}`,
+      value,
+      onChange: (e) => handleCustomFieldChange(label, e.target.value),
+      required,
+      className: "w-full p-4 border border-gray-200 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-black/20 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 font-medium",
+    };
+
+    switch (type?.toUpperCase()) {
+      case 'TEXT':
+      case 'EMAIL':
+      case 'NUMBER':
+      case 'DATE':
+        return <input type={type.toLowerCase()} placeholder={label} {...commonProps} />;
+      case 'PHONE':
+        return <input type="tel" placeholder={label} {...commonProps} />;
+      case 'TEXTAREA':
+        return <textarea rows="3" placeholder={label} {...commonProps} />;
+      case 'SELECT':
+        return (
+          <select {...commonProps} className={`${commonProps.className} appearance-none bg-white dark:bg-neutral-900 text-slate-900 dark:text-white`}>
+            <option value="" className="text-slate-500 bg-white dark:bg-neutral-900">Select {label}</option>
+            {(options || []).map((opt, i) => (
+              <option key={i} value={opt} className="text-slate-900 dark:text-white bg-white dark:bg-neutral-900">{opt}</option>
+            ))}
+          </select>
+        );
+      case 'FILE':
+        // File input cannot be fully controlled; use a separate handler
+        return (
+          <input
+            type="file"
+            onChange={(e) => handleCustomFieldChange(label, e.target.files?.[0]?.name || '')}
+            className="w-full p-4 border border-gray-200 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-black/20 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+            required={required}
+          />
+        );
+      default:
+        return <input type="text" placeholder={label} {...commonProps} />;
+    }
+  };
+
   if (submitted) {
     return (
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className={`w-full max-w-2xl mx-auto rounded-3xl p-10 bg-white/5 dark:bg-white/5 backdrop-blur-3xl border border-white/20 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] text-center relative overflow-hidden ${className}`}
+        className={`w-full max-w-2xl mx-auto rounded-3xl p-10 bg-white/5 backdrop-blur-3xl border border-white/20 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] text-center relative overflow-hidden ${className}`}
       >
         <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-[-50px] left-[-50px] w-48 h-48 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
-        
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
@@ -61,14 +118,12 @@ export default function RegistrationForm({ eventId, onClose, className = "" }) {
         >
           <CheckCircle className="w-24 h-24 text-emerald-500 mx-auto mb-6 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
         </motion.div>
-        
         <h3 className="text-4xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-400">
           Registration Successful!
         </h3>
         <p className="text-lg text-gray-700 dark:text-gray-300 mb-8 max-w-md mx-auto">
-          You are officially registered. We've securely saved your details and will send updates to your email.
+          You are officially registered. We've saved your details and will send updates to your email.
         </p>
-        
         {onClose && (
           <button
             onClick={onClose}
@@ -84,8 +139,6 @@ export default function RegistrationForm({ eventId, onClose, className = "" }) {
   return (
     <div className={`w-full max-w-4xl mx-auto ${className}`}>
       <div className="bg-white/70 dark:bg-[#0B0B15]/70 backdrop-blur-2xl rounded-[2rem] shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] border border-white/40 dark:border-white/10 overflow-hidden relative">
-        
-        {/* Decorative Gradients */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -95,112 +148,49 @@ export default function RegistrationForm({ eventId, onClose, className = "" }) {
               <Sparkles className="w-8 h-8 text-purple-500" />
               Secure Your Spot
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-3 font-medium">Fill in the details below to complete your registration request.</p>
+            <p className="text-gray-600 dark:text-gray-400 mt-3 font-medium">Fill in the details below to complete your registration.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-10">
-            {/* ── Personal Info ── */}
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2.5 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
-                  <User className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Personal Information</h3>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">Full Name *</label>
-                  <input name="firstName" placeholder="John Doe" value={form.firstName} onChange={handleChange} required className="w-full p-4 border border-gray-200 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-black/20 focus:ring-2 focus:ring-purple-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 font-medium" />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">Team Name (Optional)</label>
-                  <input name="teamName" placeholder="Tech Titans" value={form.teamName} onChange={handleChange} className="w-full p-4 border border-gray-200 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-black/20 focus:ring-2 focus:ring-purple-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 font-medium" />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">Course & Semester *</label>
-                  <input name="courseSemester" placeholder="e.g. B.Tech 4th Sem" value={form.courseSemester} onChange={handleChange} required className="w-full p-4 border border-gray-200 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-black/20 focus:ring-2 focus:ring-purple-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 font-medium" />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">College/University *</label>
-                  <input name="college" placeholder="Your College Name" value={form.college} onChange={handleChange} required className="w-full p-4 border border-gray-200 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-black/20 focus:ring-2 focus:ring-purple-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 font-medium" />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">Age *</label>
-                  <input name="age" type="number" placeholder="18" value={form.age} onChange={handleChange} required className="w-full p-4 border border-gray-200 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-black/20 focus:ring-2 focus:ring-purple-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 font-medium" />
-                </div>
-              </div>
+            {/* Standard Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Input label="Full Name *" name="firstName" value={form.firstName} onChange={handleChange} required />
+              <Input label="Team Name (Optional)" name="teamName" value={form.teamName} onChange={handleChange} />
+              <Input label="Course & Semester *" name="courseSemester" value={form.courseSemester} onChange={handleChange} required />
+              <Input label="College/University *" name="college" value={form.college} onChange={handleChange} required />
+              <Input label="Age *" name="age" type="number" value={form.age} onChange={handleChange} required />
+              <Input label="Mobile Number *" name="mobile" type="tel" value={form.mobile} onChange={handleChange} required />
+              <Input label="Email Address *" name="email" type="email" value={form.email} onChange={handleChange} required />
+              <Input label="Address Line *" name="addressLine" value={form.addressLine} onChange={handleChange} required />
+              <Input label="City/Village *" name="cityVillage" value={form.cityVillage} onChange={handleChange} required />
+              <Input label="State *" name="state" value={form.state} onChange={handleChange} required />
+              <Input label="Pincode *" name="pincode" value={form.pincode} onChange={handleChange} required />
+              <Input label="Country *" name="country" value={form.country} onChange={handleChange} required />
             </div>
 
-            {/* ── Contact Info ── */}
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2.5 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
-                  <Phone className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Contact Details</h3>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">Mobile Number *</label>
-                  <input name="mobile" type="tel" placeholder="+91 9876543210" value={form.mobile} onChange={handleChange} required className="w-full p-4 border border-gray-200 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-black/20 focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 font-medium" />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">Email Address *</label>
-                  <input name="email" type="email" placeholder="you@domain.com" value={form.email} onChange={handleChange} required className="w-full p-4 border border-gray-200 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-black/20 focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 font-medium" />
-                </div>
-              </div>
-            </div>
-
-            {/* ── Address ── */}
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
-                  <MapPin className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Postal Address</h3>
-              </div>
-              
+            {/* Dynamic Custom Fields */}
+            {dynamicFields.length > 0 && (
               <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">Address Line *</label>
-                  <input name="addressLine" placeholder="House No, Street Area" value={form.addressLine} onChange={handleChange} required className="w-full p-4 border border-gray-200 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-black/20 focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 font-medium" />
-                </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">City/Village *</label>
-                    <input name="cityVillage" placeholder="City" value={form.cityVillage} onChange={handleChange} required className="w-full p-4 border border-gray-200 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-black/20 focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 font-medium" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">State *</label>
-                    <input name="state" placeholder="State/Province" value={form.state} onChange={handleChange} required className="w-full p-4 border border-gray-200 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-black/20 focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 font-medium" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">Pincode *</label>
-                    <input name="pincode" placeholder="ZIP Code" value={form.pincode} onChange={handleChange} required className="w-full p-4 border border-gray-200 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-black/20 focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 font-medium" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">Country *</label>
-                    <input name="country" placeholder="Country" value={form.country} onChange={handleChange} required className="w-full p-4 border border-gray-200 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-black/20 focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 font-medium" />
-                  </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Additional Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {dynamicFields.map((field, index) => (
+                    <div key={index} className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">
+                        {field.label} {field.required && '*'}
+                      </label>
+                      {renderDynamicField(field, index)}
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
+            )}
 
-            {/* ── Actions ── */}
+            {/* Actions */}
             <div className="pt-8 mt-8 border-t border-gray-200 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-6">
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <ShieldCheck className="w-4 h-4 text-emerald-500" />
                 Your data is secure and encrypted.
               </div>
-              
               <div className="flex items-center gap-4 w-full sm:w-auto">
                 {onClose && (
                   <button type="button" onClick={onClose} className="px-6 py-4 rounded-2xl font-semibold border border-gray-200 dark:border-white/20 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-all w-full sm:w-auto">
@@ -220,6 +210,24 @@ export default function RegistrationForm({ eventId, onClose, className = "" }) {
           </form>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Reusable input component for standard fields
+function Input({ label, name, type = 'text', required, value, onChange }) {
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">{label}</label>
+      <input
+        name={name}
+        type={type}
+        placeholder={label}
+        value={value}
+        onChange={onChange}
+        required={required}
+        className="w-full p-4 border border-gray-200 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-black/20 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 font-medium"
+      />
     </div>
   );
 }

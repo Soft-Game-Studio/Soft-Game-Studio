@@ -1,13 +1,19 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  collection, query, where, getDocs, doc, updateDoc 
-} from 'firebase/firestore';
-import { fireDB } from '../../DataBase/firebaseConfig';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
+import { fireDB } from "../../DataBase/firebaseConfig";
 import {
   FaEdit,
   FaSave,
+  FaStar,
   FaTimes,
   FaUser,
   FaMapMarkerAlt,
@@ -17,73 +23,56 @@ import {
   FaClock,
   FaRocket,
   FaCalendarAlt,
-  FaLinkedinIn,
-  FaGithub,
-  FaInstagram,
+  FaEye,
+  FaEyeSlash,
   FaGamepad,
-  FaPalette,
-  FaCode,
-  FaStar,
-  FaCrown,
-  FaGem,
-  FaChevronRight
 } from "react-icons/fa";
-import { useAuth } from '../../AuthProvide';
-import Layout from '../../components/layout/Layout';
-import { Helmet } from 'react-helmet';
+import { useAuth } from "../../AuthProvide";
+import Layout from "../../components/layout/Layout";
+import { Helmet } from "react-helmet";
 
 const ProfilePage = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({});
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState("profile");
   const [communityData, setCommunityData] = useState(null);
   const [loadingCommunity, setLoadingCommunity] = useState(true);
+  const [revealedEmail, setRevealedEmail] = useState(false);
+  const [revealedPhone, setRevealedPhone] = useState(false);
   const navigate = useNavigate();
 
   const { user } = useAuth();
-
-  // Color theme for soft game studio
-  const theme = {
-    primary: 'rgb(139, 92, 246)',
-    primaryLight: 'rgb(167, 139, 250)',
-    secondary: 'rgb(59, 130, 246)',
-    accent: 'rgb(236, 72, 153)',
-    gradient: 'linear-gradient(135deg, rgb(139, 92, 246) 0%, rgb(59, 130, 246) 100%)',
-    glass: 'rgba(255, 255, 255, 0.08)',
-    glassBorder: 'rgba(255, 255, 255, 0.18)',
-    darkGlass: 'rgba(15, 23, 42, 0.7)'
-  };
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const storedUser = user;
         if (!storedUser?.email) {
-          navigate('/Login');
+          navigate("/Login");
           return;
         }
 
-        const usersRef = collection(fireDB, 'users');
-        const q = query(usersRef, where('email', '==', storedUser?.email));
+        const usersRef = collection(fireDB, "users");
+        const q = query(usersRef, where("email", "==", storedUser?.email));
         const querySnapshot = await getDocs(q);
-        
+
         if (!querySnapshot.empty) {
-          querySnapshot.forEach(doc => {
+          querySnapshot.forEach((doc) => {
             const data = doc.data();
             setUserData({ id: doc.id, ...data });
             setEditedData({
               name: data.name,
               phone: data.phone,
-              address: { ...data.address }
+              address: { ...data.address },
             });
           });
         } else {
-          navigate('/Login');
+          navigate("/Login");
         }
       } catch (error) {
-        console.error('Error fetching user:', error);
+        console.error("Error fetching user:", error);
       } finally {
         setLoading(false);
       }
@@ -105,13 +94,13 @@ const ProfilePage = () => {
         if (!snapshot.empty) {
           const doc = snapshot.docs[0];
           const docData = doc.data();
-          
+
           setCommunityData({
             id: doc.id,
             ...docData,
             acceptedAt: docData.acceptedAt,
             appliedAt: docData.appliedAt,
-            updatedAt: docData.updatedAt
+            updatedAt: docData.updatedAt,
           });
         } else {
           setCommunityData(null);
@@ -135,80 +124,100 @@ const ProfilePage = () => {
 
   const handleChange = (e, field, nestedField = null) => {
     if (nestedField) {
-      setEditedData(prev => ({
+      setEditedData((prev) => ({
         ...prev,
         [field]: {
           ...prev[field],
-          [nestedField]: e.target.value
-        }
+          [nestedField]: e.target.value,
+        },
       }));
     } else {
-      setEditedData(prev => ({
+      setEditedData((prev) => ({
         ...prev,
-        [field]: e.target.value
+        [field]: e.target.value,
       }));
     }
   };
 
   const handleSave = async () => {
     try {
-      const userDoc = doc(fireDB, 'users', userData.id);
+      const userDoc = doc(fireDB, "users", userData.id);
       await updateDoc(userDoc, editedData);
-      
-      setUserData(prev => ({
+
+      setUserData((prev) => ({
         ...prev,
-        ...editedData
+        ...editedData,
       }));
-      
+
       setIsEditing(false);
     } catch (error) {
-      console.error('Error updating document:', error);
+      console.error("Error updating document:", error);
     }
   };
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      pending: { 
-        color: 'bg-amber-500/20 text-amber-100 border border-amber-500/30',
-        glow: 'shadow-[0_0_20px_rgba(245,158,11,0.3)]',
-        icon: '⏳'
+      pending: {
+        color: "bg-amber-500/20 text-amber-100 border border-amber-500/30",
+        glow: "shadow-[0_0_20px_rgba(245,158,11,0.3)]",
+        icon: "⏳",
       },
-      accepted: { 
-        color: 'bg-emerald-500/20 text-emerald-100 border border-emerald-500/30',
-        glow: 'shadow-[0_0_20px_rgba(16,185,129,0.3)]',
-        icon: '✨'
+      accepted: {
+        color:
+          "bg-emerald-500/20 text-emerald-100 border border-emerald-500/30",
+        glow: "shadow-[0_0_20px_rgba(16,185,129,0.3)]",
+        icon: "✨",
       },
-      rejected: { 
-        color: 'bg-rose-500/20 text-rose-100 border border-rose-500/30',
-        glow: 'shadow-[0_0_20px_rgba(244,63,94,0.3)]',
-        icon: '🔄'
-      }
+      rejected: {
+        color: "bg-rose-500/20 text-rose-100 border border-rose-500/30",
+        glow: "shadow-[0_0_20px_rgba(244,63,94,0.3)]",
+        icon: "🔄",
+      },
     };
-    
+
     const config = statusConfig[status] || statusConfig.pending;
     return (
-      <div className={`px-4 py-2 rounded-full backdrop-blur-sm ${config.color} ${config.glow} flex items-center gap-2 w-fit`}>
+      <div
+        className={`px-4 py-2 rounded-full backdrop-blur-sm ${config.color} ${config.glow} flex items-center gap-2 w-fit`}
+      >
         <span className="text-sm">{config.icon}</span>
         <span className="text-sm font-medium">
-          {config.text || status.charAt(0).toUpperCase() + status.slice(1)}
+          {status.charAt(0).toUpperCase() + status.slice(1)}
         </span>
       </div>
     );
   };
 
   const formatDate = (timestamp) => {
-    if (!timestamp) return 'Not available';
-    
+    if (!timestamp) return "Not available";
+
     try {
       const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
       });
     } catch (error) {
-      return 'Not available';
+      return "Not available";
     }
+  };
+
+  // Masking helpers
+  const maskEmail = (email) => {
+    if (!email) return "";
+    const [local, domain] = email.split("@");
+    if (!domain) return email;
+    const maskedLocal = local.length > 1 ? local.charAt(0) + "***" : "***";
+    return `${maskedLocal}@${domain}`;
+  };
+
+  const maskPhone = (phone) => {
+    if (!phone || phone.length < 5) return phone;
+    const start = phone.slice(0, 3);
+    const end = phone.slice(-2);
+    const masked = "*".repeat(phone.length - 5);
+    return `${start}${masked}${end}`;
   };
 
   if (loading) {
@@ -216,14 +225,14 @@ const ProfilePage = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
         <div className="relative">
           <motion.div
-            animate={{ 
+            animate={{
               rotate: 360,
-              scale: [1, 1.1, 1]
+              scale: [1, 1.1, 1],
             }}
-            transition={{ 
+            transition={{
               duration: 2,
               repeat: Infinity,
-              ease: "easeInOut"
+              ease: "easeInOut",
             }}
             className="w-24 h-24 relative"
           >
@@ -244,49 +253,34 @@ const ProfilePage = () => {
 
   if (!userData) return null;
 
+  // Letter avatar
+  const firstLetter = userData.name?.charAt(0).toUpperCase() || "?";
+
   return (
     <Layout>
       <Helmet>
-        <title>Player Profile | Soft Game Studios</title>
-        <meta 
-          name="description" 
-          content="Your personal profile at Soft Game Studios. Manage your information, track community status, and access exclusive member benefits." 
+        <title>Profile | Soft Game Studios</title>
+        <meta
+          name="description"
+          content="Your personal profile at Soft Game Studios. Manage your information, track community status, and access exclusive member benefits."
         />
-        <meta name="keywords" content="game studio profile, player dashboard, community member, gaming profile" />
+        <meta
+          name="keywords"
+          content="game studio profile, player dashboard, community member, gaming profile"
+        />
       </Helmet>
 
-      {/* Animated Background Elements */}
+      {/* Background */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"></div>
-        <div className={`absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%239C92AC" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]`}>
-        </div>
-        
-        {/* Floating Game Elements */}
         <motion.div
-          className="absolute top-1/4 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl"
-          animate={{
-            y: [0, -40, 0],
-            x: [0, 30, 0],
-            scale: [1, 1.1, 1]
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
+          animate={{ y: [0, -40, 0], x: [0, 30, 0], scale: [1, 1.1, 1] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
           className="absolute bottom-1/4 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"
-          animate={{
-            y: [0, 40, 0],
-            x: [0, -30, 0],
-            scale: [1, 1.2, 1]
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
+          animate={{ y: [0, 40, 0], x: [0, -30, 0], scale: [1, 1.2, 1] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
       </div>
 
@@ -302,7 +296,9 @@ const ProfilePage = () => {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
-                  Player <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Profile</span>
+                  <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                    Profile
+                  </span>
                 </h1>
                 <p className="text-slate-300 text-sm sm:text-base">
                   Manage your account and community status
@@ -330,49 +326,10 @@ const ProfilePage = () => {
                 </span>
               </motion.button>
             </div>
-
-            {/* Stats Bar */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-              <div className="bg-slate-800/40 backdrop-blur-sm rounded-xl p-5 border border-slate-700/50 hover:border-purple-500/30 transition-all duration-300">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-purple-500/20">
-                    <FaGamepad className="text-purple-400 text-xl" />
-                  </div>
-                  <div>
-                    <p className="text-slate-400 text-sm">Games Played</p>
-                    <p className="text-white text-2xl font-bold">24</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-slate-800/40 backdrop-blur-sm rounded-xl p-5 border border-slate-700/50 hover:border-blue-500/30 transition-all duration-300">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-blue-500/20">
-                    <FaAward className="text-blue-400 text-xl" />
-                  </div>
-                  <div>
-                    <p className="text-slate-400 text-sm">Achievements</p>
-                    <p className="text-white text-2xl font-bold">12</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-slate-800/40 backdrop-blur-sm rounded-xl p-5 border border-slate-700/50 hover:border-pink-500/30 transition-all duration-300">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-pink-500/20">
-                    <FaUsers className="text-pink-400 text-xl" />
-                  </div>
-                  <div>
-                    <p className="text-slate-400 text-sm">Friends</p>
-                    <p className="text-white text-2xl font-bold">47</p>
-                  </div>
-                </div>
-              </div>
-            </div>
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column - Profile Card */}
+            {/* Left Column */}
             <motion.div
               initial={{ x: -30, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
@@ -380,17 +337,14 @@ const ProfilePage = () => {
               className="lg:col-span-2"
             >
               <div className="bg-slate-800/40 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden">
-                {/* Tabs */}
                 <div className="flex border-b border-slate-700/50">
                   <button
-                    onClick={() => setActiveTab('profile')}
-                    className={`flex-1 py-4 px-6 text-center font-medium transition-all duration-300 relative ${activeTab === 'profile' 
-                      ? 'text-white' 
-                      : 'text-slate-400 hover:text-white'}`}
+                    onClick={() => setActiveTab("profile")}
+                    className={`flex-1 py-4 px-6 text-center font-medium transition-all duration-300 relative ${activeTab === "profile" ? "text-white" : "text-slate-400 hover:text-white"}`}
                   >
                     <span className="relative">
                       Profile Info
-                      {activeTab === 'profile' && (
+                      {activeTab === "profile" && (
                         <motion.div
                           layoutId="activeTab"
                           className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500"
@@ -399,14 +353,12 @@ const ProfilePage = () => {
                     </span>
                   </button>
                   <button
-                    onClick={() => setActiveTab('community')}
-                    className={`flex-1 py-4 px-6 text-center font-medium transition-all duration-300 relative ${activeTab === 'community' 
-                      ? 'text-white' 
-                      : 'text-slate-400 hover:text-white'}`}
+                    onClick={() => setActiveTab("community")}
+                    className={`flex-1 py-4 px-6 text-center font-medium transition-all duration-300 relative ${activeTab === "community" ? "text-white" : "text-slate-400 hover:text-white"}`}
                   >
                     <span className="relative">
                       Community
-                      {activeTab === 'community' && (
+                      {activeTab === "community" && (
                         <motion.div
                           layoutId="activeTab"
                           className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500"
@@ -416,7 +368,6 @@ const ProfilePage = () => {
                   </button>
                 </div>
 
-                {/* Tab Content */}
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeTab}
@@ -426,10 +377,9 @@ const ProfilePage = () => {
                     transition={{ duration: 0.3 }}
                     className="p-6 sm:p-8"
                   >
-                    {activeTab === 'profile' ? (
+                    {activeTab === "profile" ? (
                       <div className="space-y-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                          {/* Personal Info */}
                           <div>
                             <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                               <div className="p-2 rounded-lg bg-purple-500/20">
@@ -438,36 +388,55 @@ const ProfilePage = () => {
                               Personal Information
                             </h3>
                             <div className="space-y-4">
-                              <InfoItem 
-                                label="Full Name" 
-                                value={isEditing ? editedData.name : userData.name} 
+                              <InfoItem
+                                label="Full Name"
+                                value={
+                                  isEditing ? editedData.name : userData.name
+                                }
                                 isEditing={isEditing}
-                                onChange={(e) => handleChange(e, 'name')}
+                                onChange={(e) => handleChange(e, "name")}
                                 icon="👤"
                               />
-                              <InfoItem 
-                                label="Email Address" 
-                                value={userData.email} 
+                              <InfoItem
+                                label="Email Address"
+                                value={userData.email}
+                                maskedValue={maskEmail(userData.email)}
+                                isRevealed={revealedEmail}
+                                onToggleReveal={() =>
+                                  setRevealedEmail(!revealedEmail)
+                                }
                                 icon="✉️"
                                 isEditing={false}
                               />
-                              <InfoItem 
-                                label="Phone" 
-                                value={isEditing ? editedData.phone : userData.phone} 
-                                isEditing={isEditing}
-                                onChange={(e) => handleChange(e, 'phone')}
+                              <InfoItem
+                                label="Phone"
+                                value={userData.phone}
+                                maskedValue={maskPhone(userData.phone)}
+                                isRevealed={revealedPhone}
+                                onToggleReveal={() =>
+                                  setRevealedPhone(!revealedPhone)
+                                }
                                 icon="📱"
+                                isEditing={false}
                               />
-                              <InfoItem 
-                                label="Member Since" 
-                                value={formatDate(userData.time)} 
+                              {/* Existing items */}
+                              <InfoItem
+                                label="Member Since"
+                                value={formatDate(userData.time)}
                                 icon="📅"
+                                isEditing={false}
+                              />
+
+                              {/* 👇 NEW: Roll Number */}
+                              <InfoItem
+                                label="Roll Number"
+                                value={userData?.rollNumber || "Not assigned"}
+                                icon="🎓"
                                 isEditing={false}
                               />
                             </div>
                           </div>
 
-                          {/* Address */}
                           <div>
                             <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                               <div className="p-2 rounded-lg bg-blue-500/20">
@@ -476,39 +445,69 @@ const ProfilePage = () => {
                               Location
                             </h3>
                             <div className="space-y-4">
-                              <InfoItem 
-                                label="Street Address" 
-                                value={isEditing ? editedData.address?.streetno : userData.address?.streetno} 
+                              <InfoItem
+                                label="Street Address"
+                                value={
+                                  isEditing
+                                    ? editedData.address?.streetno
+                                    : userData.address?.streetno
+                                }
                                 isEditing={isEditing}
-                                onChange={(e) => handleChange(e, 'address', 'streetno')}
+                                onChange={(e) =>
+                                  handleChange(e, "address", "streetno")
+                                }
                                 icon="📍"
                               />
-                              <InfoItem 
-                                label="Area" 
-                                value={isEditing ? editedData.address?.area : userData.address?.area} 
+                              <InfoItem
+                                label="Area"
+                                value={
+                                  isEditing
+                                    ? editedData.address?.area
+                                    : userData.address?.area
+                                }
                                 isEditing={isEditing}
-                                onChange={(e) => handleChange(e, 'address', 'area')}
+                                onChange={(e) =>
+                                  handleChange(e, "address", "area")
+                                }
                                 icon="🏘️"
                               />
-                              <InfoItem 
-                                label="City" 
-                                value={isEditing ? editedData.address?.city : userData.address?.city} 
+                              <InfoItem
+                                label="City"
+                                value={
+                                  isEditing
+                                    ? editedData.address?.city
+                                    : userData.address?.city
+                                }
                                 isEditing={isEditing}
-                                onChange={(e) => handleChange(e, 'address', 'city')}
+                                onChange={(e) =>
+                                  handleChange(e, "address", "city")
+                                }
                                 icon="🏙️"
                               />
-                              <InfoItem 
-                                label="State" 
-                                value={isEditing ? editedData.address?.state : userData.address?.state} 
+                              <InfoItem
+                                label="State"
+                                value={
+                                  isEditing
+                                    ? editedData.address?.state
+                                    : userData.address?.state
+                                }
                                 isEditing={isEditing}
-                                onChange={(e) => handleChange(e, 'address', 'state')}
+                                onChange={(e) =>
+                                  handleChange(e, "address", "state")
+                                }
                                 icon="🗺️"
                               />
-                              <InfoItem 
-                                label="Pincode" 
-                                value={isEditing ? editedData.address?.pincode : userData.address?.pincode} 
+                              <InfoItem
+                                label="Pincode"
+                                value={
+                                  isEditing
+                                    ? editedData.address?.pincode
+                                    : userData.address?.pincode
+                                }
                                 isEditing={isEditing}
-                                onChange={(e) => handleChange(e, 'address', 'pincode')}
+                                onChange={(e) =>
+                                  handleChange(e, "address", "pincode")
+                                }
                                 icon="📮"
                               />
                             </div>
@@ -535,8 +534,8 @@ const ProfilePage = () => {
                         )}
                       </div>
                     ) : (
-                      <CommunityStatusTab 
-                        communityData={communityData} 
+                      <CommunityStatusTab
+                        communityData={communityData}
                         loadingCommunity={loadingCommunity}
                         userData={userData}
                         formatDate={formatDate}
@@ -548,113 +547,41 @@ const ProfilePage = () => {
               </div>
             </motion.div>
 
-            {/* Right Column - User Card & Quick Links */}
+            {/* Right Column */}
             <motion.div
               initial={{ x: 30, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
               className="space-y-6"
             >
-              {/* User Card */}
               <div className="bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
                 <div className="flex flex-col items-center text-center mb-6">
                   <div className="relative mb-4">
                     <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 p-1">
                       <div className="w-full h-full rounded-full bg-slate-800 flex items-center justify-center">
-                        <FaUser className="text-5xl text-slate-300" />
+                        <span className="text-5xl font-bold text-slate-300">
+                          {firstLetter}
+                        </span>
                       </div>
                     </div>
-                    <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center border-4 border-slate-800">
-                      <FaCrown className="text-white text-sm" />
-                    </div>
                   </div>
-                  
+
                   <h2 className="text-2xl font-bold text-white mb-2">
                     {userData.name}
                   </h2>
                   <div className="flex items-center gap-2 text-slate-300 mb-4">
                     <FaMapMarkerAlt className="text-sm" />
-                    <span>{userData.address?.city}, {userData.address?.state}</span>
+                    <span>
+                      {userData.address?.city}, {userData.address?.state}
+                    </span>
                   </div>
 
-                  {/* Community Status */}
                   {!loadingCommunity && communityData && (
                     <div className="mb-6">
                       {getStatusBadge(communityData.status)}
                     </div>
                   )}
-
-                  <div className="flex gap-3">
-                    <button className="p-3 rounded-xl bg-slate-700/50 hover:bg-slate-700/70 transition-colors">
-                      <FaGithub className="text-xl text-slate-300" />
-                    </button>
-                    <button className="p-3 rounded-xl bg-slate-700/50 hover:bg-slate-700/70 transition-colors">
-                      <FaLinkedinIn className="text-xl text-slate-300" />
-                    </button>
-                    <button className="p-3 rounded-xl bg-slate-700/50 hover:bg-slate-700/70 transition-colors">
-                      <FaInstagram className="text-xl text-slate-300" />
-                    </button>
-                  </div>
                 </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-400">Profile Completion</span>
-                    <span className="text-white font-medium">85%</span>
-                  </div>
-                  <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: '85%' }}
-                      transition={{ duration: 1, delay: 0.5 }}
-                      className="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Quick Links */}
-              <div className="bg-slate-800/40 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">Quick Links</h3>
-                <div className="space-y-2">
-                  {[
-                    { icon: FaGamepad, label: 'My Games', color: 'text-purple-400' },
-                    { icon: FaAward, label: 'Achievements', color: 'text-yellow-400' },
-                    { icon: FaUsers, label: 'Friends', color: 'text-blue-400' },
-                    { icon: FaPalette, label: 'Customization', color: 'text-pink-400' },
-                    { icon: FaCode, label: 'Developer Tools', color: 'text-emerald-400' }
-                  ].map((item, index) => (
-                    <motion.button
-                      key={index}
-                      whileHover={{ x: 5 }}
-                      className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-700/30 transition-colors group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`${item.color} text-lg`}>
-                          <item.icon />
-                        </div>
-                        <span className="text-slate-300 group-hover:text-white">
-                          {item.label}
-                        </span>
-                      </div>
-                      <FaChevronRight className="text-slate-500 group-hover:text-slate-300" />
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Premium Badge */}
-              <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-sm rounded-2xl border border-purple-500/30 p-6 text-center">
-                <div className="mb-3 inline-flex p-3 rounded-xl bg-purple-500/20">
-                  <FaGem className="text-2xl text-purple-300" />
-                </div>
-                <h4 className="text-white font-semibold mb-2">Upgrade to Premium</h4>
-                <p className="text-slate-300 text-sm mb-4">
-                  Unlock exclusive features and early access
-                </p>
-                <button className="w-full py-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium hover:opacity-90 transition-opacity">
-                  Upgrade Now
-                </button>
               </div>
             </motion.div>
           </div>
@@ -664,8 +591,14 @@ const ProfilePage = () => {
   );
 };
 
-// Community Status Tab Component
-const CommunityStatusTab = ({ communityData, loadingCommunity, userData, formatDate, navigate }) => {
+// Community Tab (unchanged)
+const CommunityStatusTab = ({
+  communityData,
+  loadingCommunity,
+  userData,
+  formatDate,
+  navigate,
+}) => {
   if (loadingCommunity) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -677,23 +610,28 @@ const CommunityStatusTab = ({ communityData, loadingCommunity, userData, formatD
   if (communityData) {
     return (
       <div className="space-y-6">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h3 className="text-2xl font-bold text-white mb-2">
-              Community <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Membership</span>
+              Community{" "}
+              <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                Membership
+              </span>
             </h3>
-            <p className="text-slate-300">Welcome to our exclusive gaming community</p>
+            <p className="text-slate-300">
+              Welcome to our exclusive gaming community
+            </p>
           </div>
           {communityData.communityId && (
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl px-4 py-3 border border-slate-700/50">
               <div className="text-slate-400 text-sm">Community ID</div>
-              <div className="text-white font-mono font-bold">{communityData.communityId}</div>
+              <div className="text-white font-mono font-bold">
+                {communityData.communityId}
+              </div>
             </div>
           )}
         </div>
 
-        {/* Status Card */}
         <div className="bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6 mb-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50">
@@ -704,14 +642,15 @@ const CommunityStatusTab = ({ communityData, loadingCommunity, userData, formatD
                 <div>
                   <div className="text-slate-400 text-sm">Status</div>
                   <div className="text-white font-semibold">
-                    {communityData.status === 'accepted' ? 'Active Member' :
-                     communityData.status === 'pending' ? 'Under Review' :
-                     'Not Accepted'}
+                    {communityData.status === "accepted"
+                      ? "Active Member"
+                      : communityData.status === "pending"
+                        ? "Under Review"
+                        : "Not Accepted"}
                   </div>
                 </div>
               </div>
             </div>
-
             <div className="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-blue-500/20">
@@ -720,12 +659,11 @@ const CommunityStatusTab = ({ communityData, loadingCommunity, userData, formatD
                 <div>
                   <div className="text-slate-400 text-sm">Role</div>
                   <div className="text-white font-semibold">
-                    {communityData.role || 'Member'}
+                    {communityData.role || "Member"}
                   </div>
                 </div>
               </div>
             </div>
-
             <div className="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-purple-500/20">
@@ -739,7 +677,6 @@ const CommunityStatusTab = ({ communityData, loadingCommunity, userData, formatD
                 </div>
               </div>
             </div>
-
             <div className="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-amber-500/20">
@@ -756,13 +693,14 @@ const CommunityStatusTab = ({ communityData, loadingCommunity, userData, formatD
           </div>
         </div>
 
-        {/* Skills Section */}
         {communityData.skills && (
           <div className="bg-slate-800/40 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6 mb-6">
-            <h4 className="text-lg font-semibold text-white mb-4">Skills & Expertise</h4>
+            <h4 className="text-lg font-semibold text-white mb-4">
+              Skills & Expertise
+            </h4>
             <div className="flex flex-wrap gap-2">
-              {communityData.skills.split(',').map((skill, index) => (
-                <span 
+              {communityData.skills.split(",").map((skill, index) => (
+                <span
                   key={index}
                   className="px-4 py-2 bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-100 rounded-full text-sm border border-purple-500/30"
                 >
@@ -773,7 +711,6 @@ const CommunityStatusTab = ({ communityData, loadingCommunity, userData, formatD
           </div>
         )}
 
-        {/* Bio Section */}
         {communityData.bio && (
           <div className="bg-slate-800/40 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6 mb-6">
             <h4 className="text-lg font-semibold text-white mb-4">About Me</h4>
@@ -783,19 +720,20 @@ const CommunityStatusTab = ({ communityData, loadingCommunity, userData, formatD
           </div>
         )}
 
-        {/* Benefits */}
         <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 backdrop-blur-sm rounded-2xl border border-purple-500/30 p-6">
-          <h4 className="text-lg font-semibold text-white mb-4">Community Benefits</h4>
+          <h4 className="text-lg font-semibold text-white mb-4">
+            Community Benefits
+          </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
-              { icon: FaRocket, text: 'Early game access', color: 'from-purple-500/20 to-purple-600/20' },
-              { icon: FaUsers, text: 'Exclusive events', color: 'from-blue-500/20 to-blue-600/20' },
-              { icon: FaAward, text: 'Special badges', color: 'from-amber-500/20 to-amber-600/20' },
-              { icon: FaStar, text: 'Premium support', color: 'from-emerald-500/20 to-emerald-600/20' }
+              { icon: FaRocket, text: "Early game access" },
+              { icon: FaUsers, text: "Exclusive events" },
+              { icon: FaAward, text: "Special badges" },
+              { icon: FaStar, text: "Premium support" },
             ].map((benefit, index) => (
-              <div 
+              <div
                 key={index}
-                className={`bg-gradient-to-r ${benefit.color} backdrop-blur-sm rounded-xl p-4 border border-slate-700/50`}
+                className="bg-slate-800/40 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50"
               >
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-white/10">
@@ -811,7 +749,6 @@ const CommunityStatusTab = ({ communityData, loadingCommunity, userData, formatD
     );
   }
 
-  // Not a member - Join Community
   return (
     <div className="text-center py-8">
       <motion.div
@@ -821,28 +758,25 @@ const CommunityStatusTab = ({ communityData, loadingCommunity, userData, formatD
       >
         <div className="relative bg-gradient-to-br from-purple-500/10 to-blue-500/10 backdrop-blur-sm rounded-2xl p-8 border-2 border-dashed border-purple-500/30 mb-6 overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(139,92,246,0.1),transparent_50%)]"></div>
-          
           <div className="relative mb-6">
             <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 p-1">
               <div className="w-full h-full rounded-full bg-slate-800 flex items-center justify-center">
                 <FaUsers className="text-4xl text-white" />
               </div>
             </div>
-            
             <h3 className="text-2xl font-bold text-white mb-3">
               Join Our Gaming Community
             </h3>
-            
             <p className="text-slate-300 mb-6">
-              Connect with fellow gamers, get early access to new releases, and participate in exclusive events.
+              Connect with fellow gamers, get early access to new releases, and
+              participate in exclusive events.
             </p>
-
             <div className="space-y-3 mb-6">
               {[
-                'Exclusive beta testing access',
-                'Monthly gaming tournaments',
-                'Developer Q&A sessions',
-                'Early game discounts'
+                "Exclusive beta testing access",
+                "Monthly gaming tournaments",
+                "Developer Q&A sessions",
+                "Early game discounts",
               ].map((feature, index) => (
                 <div key={index} className="flex items-center gap-3 text-left">
                   <div className="w-2 h-2 rounded-full bg-green-400"></div>
@@ -850,7 +784,6 @@ const CommunityStatusTab = ({ communityData, loadingCommunity, userData, formatD
                 </div>
               ))}
             </div>
-
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -866,28 +799,56 @@ const CommunityStatusTab = ({ communityData, loadingCommunity, userData, formatD
   );
 };
 
-// InfoItem Component
-const InfoItem = ({ label, value, isEditing, onChange, icon }) => (
-  <div className="flex items-center justify-between py-3 border-b border-slate-700/50 last:border-0">
-    <div className="flex items-center gap-3">
-      <span className="text-lg">{icon}</span>
-      <span className="text-slate-400 font-medium">{label}</span>
+// Updated InfoItem with reveal support
+const InfoItem = ({
+  label,
+  value,
+  isEditing,
+  onChange,
+  icon,
+  maskedValue,
+  isRevealed,
+  onToggleReveal,
+}) => {
+  const showReveal = maskedValue && !isEditing; // only when not editing and maskedValue exists
+
+  return (
+    <div className="flex items-center justify-between py-3 border-b border-slate-700/50 last:border-0">
+      <div className="flex items-center gap-3">
+        <span className="text-lg">{icon}</span>
+        <span className="text-slate-400 font-medium">{label}</span>
+      </div>
+
+      {isEditing ? (
+        <input
+          type="text"
+          value={value || ""}
+          onChange={onChange}
+          className="bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 text-white w-48 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+          placeholder={`Enter ${label.toLowerCase()}`}
+        />
+      ) : (
+        <div className="flex items-center gap-2">
+          <span className="text-white font-medium truncate max-w-[200px]">
+            {showReveal
+              ? isRevealed
+                ? value
+                : maskedValue
+              : value || "Not set"}
+          </span>
+          {showReveal && (
+            <button
+              onClick={onToggleReveal}
+              className="p-1 rounded-md hover:bg-slate-700/50 text-slate-400 hover:text-white transition-colors"
+              title={isRevealed ? "Hide" : "Reveal"}
+            >
+              {isRevealed ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
+            </button>
+          )}
+        </div>
+      )}
     </div>
-    
-    {isEditing ? (
-      <input
-        type="text"
-        value={value || ''}
-        onChange={onChange}
-        className="bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 text-white w-48 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-        placeholder={`Enter ${label.toLowerCase()}`}
-      />
-    ) : (
-      <span className="text-white font-medium truncate max-w-[200px]">
-        {value || 'Not set'}
-      </span>
-    )}
-  </div>
-);
+  );
+};
 
 export default ProfilePage;

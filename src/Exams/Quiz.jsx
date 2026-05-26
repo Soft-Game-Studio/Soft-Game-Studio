@@ -1,291 +1,220 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaTrophy, FaLock, FaPlay, FaCode, FaClock,  FaInfoCircle  } from "react-icons/fa";
+import { FaTrophy, FaLock, FaPlay, FaCode, FaClock, FaInfoCircle, FaSearch } from "react-icons/fa";
 import { useAuth } from "./../AuthProvide.jsx";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query } from "firebase/firestore";
 import { fireDB } from "../DataBase/firebaseConfig";
 import Layout from "../components/layout/Layout.jsx";
 
 const QuizList = () => {
-  const [activeTab, setActiveTab] = useState("free");
-  const [freeQuizzes, setFreeQuizzes] = useState([]);
-  const [officialQuizzes, setOfficialQuizzes] = useState([]);
-  const [weeklyQuizzes, setWeeklyQuizzes] = useState([]);
+  const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [timers, setTimers] = useState({});
+  const [search, setSearch] = useState("");
   const navigate = useNavigate();
   const { user } = useAuth();
-
-  // Check if user is logged in
   const isLoggedIn = !!user?.email;
 
-  // Fetch quizzes based on type
   useEffect(() => {
     const fetchQuizzes = async () => {
       setLoading(true);
       try {
-        // Fetch free quizzes
-        const freeQuery = query(collection(fireDB, "quizzesfree"));
-        const freeSnapshot = await getDocs(freeQuery);
-        const freeData = freeSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setFreeQuizzes(freeData);
-
-        // Fetch official quizzes
-        const officialQuery = query(collection(fireDB, "quizzes"));
-        const officialSnapshot = await getDocs(officialQuery);
-        const officialData = officialSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setOfficialQuizzes(officialData);
-
-        // Fetch weekly quizzes
-        const weeklyQuery = query(collection(fireDB, "Dailyquizzes"));
-        const weeklySnapshot = await getDocs(weeklyQuery);
-        const weeklyData = weeklySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setWeeklyQuizzes(weeklyData);
+        const snap = await getDocs(query(collection(fireDB, "quizzes")));
+        setQuizzes(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       } catch (error) {
         console.error("Error fetching quizzes:", error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchQuizzes();
   }, []);
 
-  // Timer effect for quizzes
   useEffect(() => {
-    const allQuizzes = [...freeQuizzes, ...officialQuizzes, ...weeklyQuizzes];
     const interval = setInterval(() => {
-      const updatedTimers = {};
-      allQuizzes.forEach((quiz) => {
-        if (quiz.examPage) {
-          const examTime = new Date(quiz.examPage).getTime();
-          const now = new Date().getTime();
-          const timeLeft = examTime - now;
-    
-          if (timeLeft <= 0) {
-            updatedTimers[quiz.id] = "STARTED";
+      const updated = {};
+      quizzes.forEach((quiz) => {
+        if (quiz.examStart && quiz.examEnd) {
+          const start = new Date(quiz.examStart).getTime();
+          const end = new Date(quiz.examEnd).getTime();
+          const now = Date.now();
+          if (now < start) {
+            const diff = start - now;
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff % 86400000) / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            updated[quiz.id] = { status: "UPCOMING", text: d > 0 ? `Starts in ${d}d ${h}h` : `Starts in ${h}H ${m}M ${s}S` };
+          } else if (now >= start && now <= end) {
+            updated[quiz.id] = { status: "ACTIVE", text: "LIVE" };
           } else {
-            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-            if (days > 0) {
-              updatedTimers[quiz.id] = `${days} days `;
-            } else {   
-              updatedTimers[quiz.id] = `${hours}H ${minutes}M ${seconds}S`; 
-            }
+            updated[quiz.id] = { status: "ENDED", text: "Exam Ended" };
           }
+        } else {
+          updated[quiz.id] = { status: "ENDED", text: "No Schedule" };
         }
       });
-      setTimers(updatedTimers);
+      setTimers(updated);
     }, 1000);
-  
     return () => clearInterval(interval);
-  }, [freeQuizzes, officialQuizzes, weeklyQuizzes]);
+  }, [quizzes]);
 
-  const handleOpenQuiz = (quiz, type) => {
-    if ((type === 'official' || type === 'weekly') && !isLoggedIn) {
-      navigate('/login');
-      return;
-    }
-    
-    navigate(`/SGS-Quiz-${type}/${quiz.id}`);
+  const handleOpenQuiz = (quiz) => {
+    if (!isLoggedIn) { navigate('/login'); return; }
+    navigate(`/SGS-Quiz-Official/${quiz.id}`);
   };
 
-
-  const handleDetailsQuiz = (quiz, type) => {
-    if ((type === 'official' || type === 'weekly') && !isLoggedIn) {
-      navigate('/login');
-      return;
-    }
-
-    navigate(`/SGS-Details-${type}/${quiz.id}`);
+  const handleDetailsQuiz = (quiz) => {
+    if (!isLoggedIn) { navigate('/login'); return; }
+    navigate(`/SGS-Details-Official/${quiz.id}`);
   };
 
-  const handleSeeResults = (type) => {
-    navigate(`/SGS-Quiz-${type}-Result`);
-  };
+  const filtered = quizzes.filter(q =>
+    q.name?.toLowerCase().includes(search.toLowerCase()) ||
+    q.language?.toLowerCase().includes(search.toLowerCase())
+  );
 
-  const QuizCard = ({ quiz, type }) => {
-    const typeLower = type.toLowerCase();
-    const isLocked = (typeLower === 'official' || typeLower === 'weekly') && !isLoggedIn;
-    
+  if (loading) {
     return (
-   <div className="bg-white rounded-lg shadow-md p-5 border-l-4 border-purple-500 dark:bg-neutral-800 transition-all duration-300 hover:shadow-lg">
-  {/* Image on top */}
-  <div className="flex justify-center">
-    <img
-      src={quiz.imageUrl}
-      alt={quiz.name}
-      className="h-40 sm:h-48 w-full object-contain object-center rounded-lg mb-4"
-    />
-  </div>
-
-  {/* Content */}
-  <h3 className="font-bold text-lg text-gray-800 dark:text-white line-clamp-2">
-    {quiz.name}
-  </h3>
-
-  <div className="flex items-center mt-2 text-sm text-gray-600 dark:text-gray-300 flex-wrap">
-    <FaCode className="mr-1 text-purple-500" />
-    <span>{quiz.language || "General"}</span>
-    <span className="mx-2">•</span>
-    <span>{quiz.questions?.length || 0} questions</span>
-  </div>
-
-  {quiz.description && (
-    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 line-clamp-3">
-      {quiz.description}
-    </p>
-  )}
-
-  {/* Actions */}
-  <div className="flex flex-wrap items-center gap-3 mt-4">
-    {isLocked ? (
-      <div className="flex flex-col items-center">
-        <FaLock className="text-amber-500 text-xl" />
-        <span className="text-xs text-amber-500 mt-1">Login Required</span>
-      </div>
-    ) : timers[quiz.id] === "STARTED" ? (
-      <button
-        onClick={() => handleOpenQuiz(quiz, typeLower)}
-        className="flex items-center bg-purple-600 text-white py-2 px-4 rounded-lg text-sm hover:bg-purple-700 transition-colors"
-      >
-        <FaPlay className="mr-1" /> Play
-      </button>
-    ) : (
-      <div className="flex flex-col items-center">
-        <FaClock className="text-gray-500 text-xl" />
-        <span className="text-xs text-gray-500 mt-1 whitespace-nowrap">
-          {timers[quiz.id] || "Upcoming"}
-        </span>
-      </div>
-    )}
-
-    {/* Details Button */}
-    <button
-      onClick={() => handleDetailsQuiz(quiz, typeLower)}
-      className="flex items-center bg-purple-600 text-white py-2 px-4 rounded-lg text-sm hover:bg-purple-700 transition-colors"
-    >
-      <FaInfoCircle className="mr-1" /> Details
-    </button>
-  </div>
-</div>
-
-
+      <Layout>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-neutral-950 gap-4">
+          <div className="animate-spin rounded-full h-14 w-14 border-4 border-purple-500 border-t-transparent"></div>
+          <p className="text-purple-600 dark:text-purple-400 font-medium">Loading competition exams...</p>
+        </div>
+      </Layout>
     );
-  };
+  }
 
-  const TabContent = ({ type, quizzes }) => {
-    if (loading) {
-      return (
-        <div className="flex justify-center items-center py-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-        </div>
-      );
-    }
-
-    if ((type === 'official' || type === 'weekly') && !isLoggedIn) {
-      return (
-        <div className="bg-white p-8 rounded-lg shadow-md text-center dark:bg-neutral-800">
-          <FaLock className="text-5xl text-amber-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-4 dark:text-white">Authentication Required</h2>
-          <p className="text-gray-600 mb-6 dark:text-gray-300">
-            You need to be logged in to access {type} quizzes.
-          </p>
-          <button
-            onClick={() => navigate('/Login')}
-            className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-lg transition duration-200"
-          >
-            Go to Login Page
-          </button>
-        </div>
-      );
-    }
-
-    if (quizzes.length === 0) {
-      return (
-        <div className="bg-white p-8 rounded-lg shadow-md text-center dark:bg-neutral-800">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4 dark:text-white">No Quizzes Available</h2>
-          <p className="text-gray-600 dark:text-gray-300">
-            There are no {type} quizzes available at the moment.
-          </p>
-        </div>
-      );
-    }
+  const QuizCard = ({ quiz }) => {
+    const isLocked = !isLoggedIn;
+    const quizTimer = timers[quiz.id] || { status: "ENDED", text: "Ended" };
+    const isActive = quizTimer.status === "ACTIVE";
+    const isEnded = quizTimer.status === "ENDED";
 
     return (
-      <div>
-        {(type === 'official' || type === 'weekly') && isLoggedIn && (
-          <div className="flex justify-end mb-4">
-            <button 
-              onClick={() => handleSeeResults(type)}
-              className="bg-amber-500 hover:bg-amber-600 text-white font-medium py-2 px-4 rounded-lg flex items-center"
+      <div className="group bg-white dark:bg-neutral-900 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-neutral-800 overflow-hidden flex flex-col">
+        <div className={`h-1.5 w-full ${isActive ? "bg-gradient-to-r from-green-400 to-emerald-500" : isEnded ? "bg-gray-200 dark:bg-neutral-700" : "bg-gradient-to-r from-purple-500 to-indigo-500"}`}></div>
+
+        <div className="p-5">
+          <div className="relative h-44 bg-gray-50 dark:bg-neutral-800 rounded-xl overflow-hidden flex items-center justify-center mb-4">
+            <img src={quiz.imageUrl} alt={quiz.name} className="h-full w-full object-contain" />
+            {isActive && (
+              <span className="absolute top-2 right-2 flex items-center gap-1.5 bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow">
+                <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>LIVE
+              </span>
+            )}
+            {isEnded && (
+              <span className="absolute top-2 right-2 bg-red-100 dark:bg-red-900/50 text-red-500 dark:text-red-400 text-xs font-semibold px-2.5 py-1 rounded-full">Ended</span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5 text-xs text-purple-600 dark:text-purple-400 font-semibold uppercase tracking-wider mb-1">
+            <FaCode className="w-3 h-3" /> {quiz.language || "General"}
+          </div>
+          <h3 className="font-bold text-gray-800 dark:text-white line-clamp-2 mb-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+            {quiz.name}
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+            {quiz.questions?.length || 0} questions · Shuffled every session
+          </p>
+
+          <div className="space-y-2">
+            {isLocked ? (
+              <button
+                onClick={() => navigate('/login')}
+                className="w-full flex items-center justify-center gap-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 py-2.5 px-4 rounded-xl text-sm font-medium"
+              >
+                <FaLock className="w-3 h-3" /> Login to Access
+              </button>
+            ) : isActive ? (
+              <button
+                onClick={() => handleOpenQuiz(quiz)}
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-2.5 px-4 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all"
+              >
+                <FaPlay className="w-3 h-3" /> Start Exam
+              </button>
+            ) : isEnded ? (
+              <div className="w-full flex items-center justify-center gap-2 bg-gray-100 dark:bg-neutral-800 text-gray-400 dark:text-neutral-500 py-2.5 px-4 rounded-xl text-sm font-medium cursor-not-allowed">
+                Exam Closed
+              </div>
+            ) : (
+              <div className="w-full flex items-center justify-center gap-2 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 py-2.5 px-4 rounded-xl text-sm font-mono font-semibold">
+                <FaClock className="w-3 h-3" /> {quizTimer.text}
+              </div>
+            )}
+            <button
+              onClick={() => handleDetailsQuiz(quiz)}
+              className="w-full flex items-center justify-center gap-2 bg-gray-50 dark:bg-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-700 text-gray-700 dark:text-gray-300 py-2.5 px-4 rounded-xl text-sm border border-gray-200 dark:border-neutral-700 transition-colors"
             >
-              <FaTrophy className="mr-2" /> {type} Results
+              <FaInfoCircle className="w-3 h-3 text-purple-500" /> View Details
             </button>
           </div>
-        )}
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {quizzes.map((quiz) => (
-            <QuizCard key={quiz.id} quiz={quiz} type={type} />
-          ))}
         </div>
       </div>
     );
   };
 
   return (
-    <Layout> <div className="min-h-screen bg-gray-50 dark:bg-neutral-900 py-8">
-      <div className="max-w-6xl mx-auto p-4 sm:p-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2 dark:text-white">Available Quizzes</h1>
-        <p className="text-gray-600 mb-8 dark:text-gray-300">Test your knowledge with our various quiz categories</p>
-        
-        {/* Tabs */}
-        <div className="flex border-b border-gray-200 dark:border-gray-700 mb-8">
-          <button
-            className={`py-3 px-6 font-medium text-sm flex items-center ${
-              activeTab === "free" 
-                ? "text-purple-600 border-b-2 border-purple-600 dark:text-purple-400 dark:border-purple-400" 
-                : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-            }`}
-            onClick={() => setActiveTab("free")}
-          >
-            <FaPlay className="mr-2" /> Free Quizzes
-          </button>
-          <button
-            className={`py-3 px-6 font-medium text-sm flex items-center ${
-              activeTab === "official" 
-                ? "text-purple-600 border-b-2 border-purple-600 dark:text-purple-400 dark:border-purple-400" 
-                : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-            }`}
-            onClick={() => setActiveTab("official")}
-          >
-            <FaLock className="mr-2" /> Official Quizzes
-          </button>
-          <button
-            className={`py-3 px-6 font-medium text-sm flex items-center ${
-              activeTab === "weekly" 
-                ? "text-purple-600 border-b-2 border-purple-600 dark:text-purple-400 dark:border-purple-400" 
-                : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-            }`}
-            onClick={() => setActiveTab("weekly")}
-          >
-            <FaTrophy className="mr-2" /> Weekly Quizzes
-          </button>
+    <Layout>
+      <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 transition-colors duration-300">
+        {/* Hero */}
+        <div className="bg-gradient-to-br from-purple-700 via-indigo-700 to-blue-700 dark:from-purple-900 dark:via-indigo-900 dark:to-blue-900 py-16 px-4 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-10 left-10 w-64 h-64 bg-white rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 right-10 w-48 h-48 bg-yellow-300 rounded-full blur-3xl"></div>
+          </div>
+          <div className="relative max-w-5xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur px-4 py-1.5 rounded-full text-white/90 text-sm font-medium mb-4">
+              🏆 Official Competition Exams
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">SGS Competition Quizzes</h1>
+            <p className="text-purple-100 text-lg max-w-2xl mx-auto mb-8">
+              Compete in live, timed exams with anti-cheat shuffling. Every session is unique.
+            </p>
+            <div className="relative max-w-md mx-auto">
+              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search exams..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/90 dark:bg-neutral-800/90 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-400 border border-white/20 backdrop-blur"
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Tab Content */}
-        <div className="bg-white p-6 rounded-lg shadow dark:bg-neutral-800">
-          {activeTab === "free" && <TabContent type="free" quizzes={freeQuizzes} />}
-          {activeTab === "official" && <TabContent type="official" quizzes={officialQuizzes} />}
-          {activeTab === "weekly" && <TabContent type="weekly" quizzes={weeklyQuizzes} />}
+        {/* Toolbar */}
+        <div className="max-w-6xl mx-auto px-4 pt-8 flex justify-between items-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">{filtered.length} exam{filtered.length !== 1 ? "s" : ""} found</p>
+          {isLoggedIn && (
+            <button
+              onClick={() => navigate("/Official-Results")}
+              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold py-2 px-4 rounded-xl shadow transition-colors"
+            >
+              <FaTrophy className="w-3.5 h-3.5" /> Results
+            </button>
+          )}
+        </div>
+
+        {/* Grid */}
+        <div className="max-w-6xl mx-auto px-4 py-6">
+          {filtered.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="text-6xl mb-4">🔍</div>
+              <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-200 mb-2">No Exams Found</h2>
+              <p className="text-gray-500 dark:text-gray-400">
+                {search ? "Try a different search." : "No competition quizzes available right now."}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filtered.map((quiz) => <QuizCard key={quiz.id} quiz={quiz} />)}
+            </div>
+          )}
         </div>
       </div>
-    </div>
     </Layout>
-   
   );
 };
 

@@ -45,20 +45,14 @@ const SupportUs = lazy(() => import("./components/Suport US/SuportUS.jsx"));
 const SGSProject = lazy(() => import("./pages/SGSProject/SGSProject.jsx"));
 
 const ExamHomePage = lazy(() => import("./Exams/Home.jsx"));
-const FreeQuizExam = lazy(() => import("./Exams/QuizFree/EXAM CONTROLER/QuizExam.jsx"));
-const FreeQuizDetails = lazy(() => import("./Exams/QuizFree/EXAM CONTROLER/ExamDetails.jsx"));
-const FreeQuizList = lazy(() => import("./Exams/QuizFree/Quiz.jsx"));
 
 const OfficialQuizList = lazy(() => import("./Exams/Quiz/Quiz.jsx"));
 const OfficialQuizExam = lazy(() => import("./Exams/Quiz/EXAM CONTROLER/QuizExam.jsx"));
 const OfficialQuizDetails = lazy(() => import("./Exams/Quiz/EXAM CONTROLER/ExamDetails.jsx"));
 
-const WeeklyQuizList = lazy(() => import("./Exams/DailyQuiz/DailyQuizList.jsx"));
-const WeeklyQuiz = lazy(() => import("./Exams/DailyQuiz/Exam Control/DailyQuiz.jsx"));
-const WeeklyQuizDetails = lazy(() => import("./Exams/DailyQuiz/Exam Control/DailyQuizDetaisl.jsx"));
+
 
 const QuizList = lazy(() => import("./Exams/Quiz.jsx"));
-const DailyResultsPage = lazy(() => import("./Exams/Result/DailyResult.jsx"));
 const ResultsPage = lazy(() => import("./Exams/Result/Result.jsx"));
 
 const CommunityMembers = lazy(() => import("./components/Members/CommunityMembers.jsx"));
@@ -75,7 +69,14 @@ const NoteDetail = lazy(() => import("./pages/SGSNotes/Notes/Notesview.jsx"));
 const NoteQuizExam = lazy(() => import("./pages/SGSNotes/Notes/NoteQuizExam.jsx"));
 
 const RedirectPage = lazy(() => import("./pages/Redirect page/Redirectpage.jsx"));
-const InnovationChallenge = lazy(() => import("./pages/SGS Hackthone/Event.jsx"));
+
+const DynamicEventPage = lazy(() =>
+  import("./pages/SGS Hackthone/DynamicEventPage.jsx")
+);
+
+const EventsListing = lazy(() =>
+  import("./pages/SGS Hackthone/EventsListing.jsx")
+);
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -163,31 +164,16 @@ function App() {
           <Route path="/SGS-Exam-Home" element={<ExamHomePage/>} />
           <Route path="/SGS-Quiz" element={<QuizList/>} />
 
-           {/* SGS Exams Free */}
-          <Route path="/SGS-Quiz-Free" element={<FreeQuizList/>} />
-          <Route path="/SGS-Quiz-Free/:id" element={<FreeQuizExam/>} />
-          <Route path="/SGS-Details-Free/:id" element={<FreeQuizDetails/>} />
-
-           {/* SGS Exams Weekely */}
-          <Route path="/SGS-Quiz-Weekly" element={<WeeklyQuizList/>} />
-          <Route path="/SGS-Quiz-Weekly/:id" element={<WeeklyQuiz/>} />
-          <Route path="/SGS-Details-Weekly/:id" element={<WeeklyQuizDetails/>} />
-          <Route path="/Weekly-Results" element={<DailyResultsPage/>} />
-
            {/* SGS Exams official */}
           <Route path="/SGS-Quiz-Official" element={<OfficialQuizList/>} />
           <Route path="/SGS-Quiz-Official/:id" element={<OfficialQuizExam/>} />
           <Route path="/SGS-Details-Official/:id" element={<OfficialQuizDetails/>} />
           <Route path="/Official-Results" element={<ResultsPage/>} />
-
-          {/* SGS Exams official */}
-          <Route path="/SGS-Exam-Official" element={<FreeQuizList/>} />
-          <Route path="/SGS-Exam-Official/:id" element={<FreeQuizExam/>} />
-          <Route path="/SGS-Exam-Details-Official/:id" element={<FreeQuizDetails/>} />
           <Route path="/SGSCERT/:rollNumber" element={<CertificatePage/>} />
 
           {/* SGS official hackthone */}
-          <Route path="/InnovationChallenge" element={<InnovationChallenge/>} />
+          <Route path="/event" element={<EventsListing/>} />
+          <Route path="/event/:id" element={<ProtectedRoute><DynamicEventPage/></ProtectedRoute>} />
 
 
 
