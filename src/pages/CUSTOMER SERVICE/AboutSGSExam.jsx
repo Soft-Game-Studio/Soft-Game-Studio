@@ -1,253 +1,272 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { useInView } from "react-intersection-observer";
+// src/pages/CUSTOMER SERVICE/AboutSGSExam.jsx
+import React, { useMemo } from "react";
+import { Link } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
 import Layout from "../../components/layout/Layout";
 import { Helmet } from "react-helmet";
+import {
+  ShieldAlert,
+  Lock,
+  Eye,
+  RefreshCw,
+  Zap,
+  BarChart3,
+  CheckCircle2,
+  HelpCircle,
+  FileCheck,
+  Server,
+  ArrowRight,
+  ShieldCheck
+} from "lucide-react";
 
 const AboutExam = () => {
-  const [ref1, inView1] = useInView({ threshold: 0.3, triggerOnce: true });
-  const [ref2, inView2] = useInView({ threshold: 0.3, triggerOnce: true });
-  const [ref3, inView3] = useInView({ threshold: 0.3, triggerOnce: true });
-  const [ref4, inView4] = useInView({ threshold: 0.3, triggerOnce: true });
+  const shouldReduceMotion = useReducedMotion();
+
+  const structuredData = useMemo(() => {
+    return JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebPage",
+          "@id": "https://softgamestudios.web.app/About-Exam#webpage",
+          "url": "https://softgamestudios.web.app/About-Exam",
+          "name": "About SGS Exam Platform | Soft Game Studio",
+          "description": "Secure, scalable, and proctored examination platform designed by Soft Game Studio for academic testing and developer certifications.",
+          "isPartOf": {
+            "@type": "WebSite",
+            "@id": "https://softgamestudios.web.app/#website",
+            "name": "Soft Game Studio",
+            "url": "https://softgamestudios.web.app"
+          }
+        }
+      ]
+    });
+  }, []);
+
+  const pageTitle = "About Exam Platform | Soft Game Studio";
+  const pageDescription = "Learn about the SGS Exam Platform: secure, scalable online assessment system with browser lockdown, tab monitoring, and automated grading.";
+  const canonicalUrl = "https://softgamestudios.web.app/About-Exam";
 
   return (
     <Layout>
       <Helmet>
-  <title>About Exam Platform | Soft Game Studio</title>
-  <meta 
-    name="description" 
-    content="Discover how the SGS Exam Platform by Soft Game Studio delivers secure, scalable, and AI-powered online & offline exam solutions for institutions and certification bodies." 
-  />
-  <meta 
-    name="keywords" 
-    content="SGS Exam Platform, Online Exams, Offline Exams, AI Proctoring, Secure Exam System, Anti-Cheating Exams, Educational Assessment, Exam Monitoring, Browser Lockdown, Adaptive Testing, Soft Game Studio Exams" 
-  />
-  <meta name="author" content="Soft Game Studio" />
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta name="keywords" content="SGS Exam Platform, Online Exams, Proctored Assessment, Secure Examination, Anti Cheating Testing, Developer Quiz Engine" />
+        <meta name="author" content="Soft Game Studio" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={canonicalUrl} />
 
-  {/* Open Graph / Social Media */}
-  <meta property="og:title" content="About SGS Exam Platform | Soft Game Studio" />
-  <meta 
-    property="og:description" 
-    content="Learn about the SGS Exam Platform – a secure and scalable assessment system with AI proctoring, real-time analytics, and instant grading for online and offline exams." 
-  />
-  <meta property="og:url" content="https://softgamestudios.web.app/exam-platform" />
-  <meta property="og:type" content="website" />
-</Helmet>
+        {/* Open Graph */}
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Soft Game Studio" />
 
- <div className="min-h-screen bg-purple-50 dark:bg-neutral-950 transition-colors duration-300">
-      {/* Hero Section with Parallax */}
-      <div className="relative h-screen overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/pattern.svg')] bg-cover bg-center opacity-10 dark:opacity-5"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-100/30 to-purple-50 dark:from-neutral-950/90 dark:to-neutral-950"></div>
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {structuredData}
+        </script>
+      </Helmet>
+
+      <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 selection:bg-neutral-800 selection:text-white dark:selection:bg-neutral-200 dark:selection:text-neutral-900">
         
-        <motion.div 
-          className="relative h-full flex flex-col items-center justify-center px-4 text-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1 }}
-        >
-          <motion.h1 
-            className="text-5xl md:text-7xl font-bold mb-6 text-purple-900 dark:text-purple-300"
-            initial={{ y: -50 }}
-            animate={{ y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            SGS Exam Platform
-          </motion.h1>
-          <motion.p 
-            className="text-xl md:text-2xl max-w-3xl text-purple-800 dark:text-purple-200"
-            initial={{ y: 50 }}
-            animate={{ y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            Revolutionizing the way assessments are conducted with cutting-edge technology
-          </motion.p>
-        </motion.div>
-      </div>
+        {/* ── Header ────────────────────────────────────────────────── */}
+        <header className="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 py-12 sm:py-16">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 mb-6">
+              <Link to="/" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
+                Home
+              </Link>
+              <span>/</span>
+              <span className="text-neutral-900 dark:text-neutral-200 font-medium">
+                SGS Exam Platform
+              </span>
+            </nav>
 
-      {/* About Section */}
-      <div className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <motion.div
-          ref={ref1}
-          initial={{ opacity: 0, y: 50 }}
-          animate={inView1 ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="mb-20"
-        >
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-purple-900 dark:text-purple-300">
-            About Our Examination System
-          </h2>
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <p className="text-lg mb-6 text-black dark:text-white">
-                The SGS Exam Platform is a state-of-the-art assessment system designed to provide secure, reliable, and scalable examination solutions for educational institutions and certification bodies.
-              </p>
-              <p className="text-lg mb-6 text-black dark:text-white">
-                Our platform leverages advanced technologies to prevent cheating, ensure fairness, and deliver a seamless experience for both examiners and candidates.
-              </p>
-            </div>
-            <motion.div
-              whileHover={{ scale: 1.03 }}
-              className="bg-white dark:bg-neutral-900 p-6 rounded-xl shadow-xl border border-purple-200 dark:border-neutral-800"
-            >
-              <h3 className="text-xl font-semibold mb-4 text-purple-800 dark:text-purple-300">Key Features</h3>
-              <ul className="space-y-3 text-black dark:text-white">
-                <li className="flex items-start">
-                  <span className="text-purple-600 dark:text-purple-400 mr-2">✓</span>
-                  <span>Advanced anti-cheating mechanisms</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-purple-600 dark:text-purple-400 mr-2">✓</span>
-                  <span>Real-time monitoring and analytics</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-purple-600 dark:text-purple-400 mr-2">✓</span>
-                  <span>Secure question bank management</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-purple-600 dark:text-purple-400 mr-2">✓</span>
-                  <span>Automated grading and feedback</span>
-                </li>
-              </ul>
-            </motion.div>
-          </div>
-        </motion.div>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md text-xs font-mono font-medium tracking-wide uppercase bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 mb-4">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#00ACF0]" />
+                  <span>Proctored Testing Engine</span>
+                </div>
 
-        {/* How It Works Section */}
-        <motion.div
-          ref={ref2}
-          initial={{ opacity: 0, y: 50 }}
-          animate={inView2 ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="mb-20"
-        >
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-purple-900 dark:text-purple-300">
-            How We Conduct Exams
-          </h2>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                title: "1. Secure Authentication",
-                desc: "Multi-factor authentication ensures only authorized candidates can access the exam.",
-                icon: "🔒"
-              },
-              {
-                title: "2. Proctoring System",
-                desc: "AI-powered proctoring monitors candidate activity throughout the exam.",
-                icon: "👁️"
-              },
-              {
-                title: "3. Anti-Cheating Measures",
-                desc: "Browser lockdown, tab switching detection, and plagiarism checks maintain integrity.",
-                icon: "🚫"
-              },
-              {
-                title: "4. Adaptive Testing",
-                desc: "Optional adaptive testing adjusts question difficulty based on performance.",
-                icon: "🔄"
-              },
-              {
-                title: "5. Instant Results",
-                desc: "Automated grading provides immediate results for objective questions.",
-                icon: "⚡"
-              },
-              {
-                title: "6. Detailed Analytics",
-                desc: "Comprehensive reports help analyze candidate performance and question quality.",
-                icon: "📊"
-              }
-            ].map((item, index) => (
-              <motion.div
-                key={index}
-                whileHover={{ y: -5 }}
-                className="bg-white dark:bg-neutral-900 p-6 rounded-lg shadow-lg border border-purple-100 dark:border-neutral-800"
-              >
-                <div className="text-3xl mb-4">{item.icon}</div>
-                <h3 className="text-xl font-semibold mb-3 text-purple-800 dark:text-purple-300">{item.title}</h3>
-                <p className="text-black dark:text-white">{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 leading-tight">
+                  SGS Examination & Proctoring Platform
+                </h1>
 
-        {/* Technology Stack */}
-        <motion.div
-          ref={ref3}
-          initial={{ opacity: 0, y: 50 }}
-          animate={inView3 ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="mb-20"
-        >
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-purple-900 dark:text-purple-300">
-            Our Technology Stack
-          </h2>
-          <div className="bg-white dark:bg-neutral-900 rounded-xl p-8 shadow-lg border border-purple-100 dark:border-neutral-800">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-              {[
-                { name: "React", color: "text-blue-500" },
-                { name: "Firebase", color: "text-yellow-500" },
-                { name: "Node.js", color: "text-green-500" },
-                { name: "Tailwind CSS", color: "text-cyan-400" },
-                { name: "Framer Motion", color: "text-pink-500" },
-                { name: "MongoDB", color: "text-green-600" },
-                { name: "AWS", color: "text-orange-500" },
-                { name: "AI Proctoring", color: "text-purple-500" }
-              ].map((tech, index) => (
-                <motion.div
-                  key={index}
-                  whileHover={{ scale: 1.1 }}
-                  className="p-4 rounded-lg bg-purple-50 dark:bg-neutral-800"
+                <p className="mt-3 text-sm sm:text-base text-neutral-600 dark:text-neutral-400 max-w-2xl leading-relaxed">
+                  How our assessment platform secures student testing with browser lockdown protocols, tab-switching detection, automated question randomization, and instant grading.
+                </p>
+              </div>
+
+              <div className="shrink-0 flex items-center gap-3">
+                <Link
+                  to="/About-Exam"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:bg-neutral-800 transition-colors shadow-xs"
                 >
-                  <span className={`font-medium ${tech.color}`}>{tech.name}</span>
-                </motion.div>
-              ))}
+                  <FileCheck className="w-3.5 h-3.5" />
+                  <span>Take An Assessment</span>
+                </Link>
+              </div>
             </div>
-          </div>
-        </motion.div>
 
-        {/* Parallax Section */}
-        <motion.div
-          ref={ref4}
-          initial={{ opacity: 0 }}
-          animate={inView4 ? { opacity: 1 } : {}}
-          transition={{ duration: 1 }}
-          className="relative h-96 rounded-xl overflow-hidden mb-20"
-        >
-          <div 
-            className="absolute inset-0 bg-[url('/exam-bg.jpg')] bg-cover bg-center bg-fixed opacity-70 dark:opacity-40"
-            style={{ 
-              backgroundAttachment: 'fixed',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              backgroundSize: 'cover'
-            }}
-          ></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-900/70 to-purple-600/70 dark:from-neutral-950/80 dark:to-neutral-900/80"></div>
-          <div className="relative h-full flex items-center justify-center text-center px-4">
-            <div>
-              <h3 className="text-3xl md:text-4xl font-bold text-white mb-6">Join Thousands of Successful Candidates</h3>
-              <p className="text-xl text-purple-100 max-w-3xl mx-auto">
-                Our platform has helped over 50,000 candidates achieve their certification goals with integrity and confidence.
+          </div>
+        </header>
+
+        {/* ── Content Sections ──────────────────────────────────────── */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12">
+
+          {/* Section 1: Overview & Key Features */}
+          <section
+            className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 sm:p-8 shadow-xs"
+            aria-labelledby="overview-heading"
+          >
+            <h2 id="overview-heading" className="text-lg font-bold text-neutral-900 dark:text-neutral-100 mb-4">
+              Engineered for Academic Rigor & Integrity
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+              <div className="md:col-span-7 space-y-4 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                <p>
+                  The SGS Exam Platform is a custom-built assessment architecture tailored for academic evaluations, coding quizzes, and developer certification exams.
+                </p>
+                <p>
+                  By deploying client-side activity listeners, full-screen lockdown enforcement, and cloud-synchronized question bank randomization, the platform eliminates exam evasion and preserves fairness for every student.
+                </p>
+                <p>
+                  Scores are calculated server-side immediately upon submission, preventing client-side script tampering and enabling automated digital certificate issuance.
+                </p>
+              </div>
+
+              <div className="md:col-span-5 p-5 rounded-lg border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-3 text-xs">
+                <h3 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
+                  System Capabilities
+                </h3>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <span>Active tab switching and window blur detection</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <span>Real-time countdown sync with grace period recovery</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <span>Randomized question and answer order per candidate</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <span>Instant verifiable certificate generation</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Section 2: How It Operates (6 Steps) */}
+          <section aria-labelledby="steps-heading">
+            <div className="text-center mb-10">
+              <h2 id="steps-heading" className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+                Examination Pipeline Architecture
+              </h2>
+              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1 max-w-lg mx-auto">
+                Step-by-step security enforcement throughout the assessment lifecycle.
               </p>
             </div>
-          </div>
-        </motion.div>
 
-        {/* Final CTA */}
-        <div className="text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-purple-900 dark:text-purple-300">
-            Ready to Experience the Future of Examinations?
-          </h2>
-          <p className="text-xl mb-8 max-w-3xl mx-auto text-black dark:text-white">
-            Contact us today to learn how SGS Exam Platform can transform your assessment process.
-          </p>
-          
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              
+              <div className="p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs">
+                <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+                  <Lock className="w-5 h-5 text-[#00ACF0]" />
+                </div>
+                <span className="text-[10px] font-mono text-neutral-400 block mb-1 uppercase tracking-wider">Step 01</span>
+                <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-1.5">
+                  Secure Authentication
+                </h3>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  Cryptographically verified session tokens ensure only registered and eligible students can start the exam.
+                </p>
+              </div>
+
+              <div className="p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs">
+                <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+                  <Eye className="w-5 h-5 text-indigo-500" />
+                </div>
+                <span className="text-[10px] font-mono text-neutral-400 block mb-1 uppercase tracking-wider">Step 02</span>
+                <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-1.5">
+                  Proctoring Monitors
+                </h3>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  Real-time event logging flags multiple monitor configurations, secondary window focus, and external clipboard copy attempts.
+                </p>
+              </div>
+
+              <div className="p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs">
+                <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+                  <ShieldAlert className="w-5 h-5 text-rose-500" />
+                </div>
+                <span className="text-[10px] font-mono text-neutral-400 block mb-1 uppercase tracking-wider">Step 03</span>
+                <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-1.5">
+                  Anti-Cheating Safeguards
+                </h3>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  Tab-switch warnings trigger strike penalties that automatically terminate the session upon repeated infractions.
+                </p>
+              </div>
+
+              <div className="p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs">
+                <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+                  <RefreshCw className="w-5 h-5 text-amber-500" />
+                </div>
+                <span className="text-[10px] font-mono text-neutral-400 block mb-1 uppercase tracking-wider">Step 04</span>
+                <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-1.5">
+                  Randomized Question Banks
+                </h3>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  Questions and option sequences are dynamically scrambled for each candidate to prevent peer collaboration.
+                </p>
+              </div>
+
+              <div className="p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs">
+                <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+                  <Zap className="w-5 h-5 text-emerald-500" />
+                </div>
+                <span className="text-[10px] font-mono text-neutral-400 block mb-1 uppercase tracking-wider">Step 05</span>
+                <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-1.5">
+                  Automated Grading
+                </h3>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  Submissions are graded instantly against authoritative answer matrices, delivering immediate score metrics.
+                </p>
+              </div>
+
+              <div className="p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs">
+                <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+                  <BarChart3 className="w-5 h-5 text-sky-500" />
+                </div>
+                <span className="text-[10px] font-mono text-neutral-400 block mb-1 uppercase tracking-wider">Step 06</span>
+                <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-1.5">
+                  Verifiable Certification
+                </h3>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  Passing candidates receive a tamper-resistant digital certificate with a unique verification code recognized on portfolios.
+                </p>
+              </div>
+
+            </div>
+          </section>
+
         </div>
-      </div>
-    </div>
+      </main>
     </Layout>
-   
   );
 };
 

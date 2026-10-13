@@ -19,18 +19,18 @@ export const gameService = {
     try {
       const q = query(gameCollection);
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
+      return snapshot.docs.map(docSnapshot => ({
+        id: docSnapshot.id,
+        ...docSnapshot.data()
       }));
     } catch (error) {
-      console.error("Error getting games:", error);
-      throw error;
+      throw new Error("Unable to retrieve game titles from database.");
     }
   },
 
   // Get single game by ID
   async getGameById(gameId) {
+    if (!gameId) return null;
     try {
       const gameDoc = doc(fireDB, "games", gameId);
       const snapshot = await getDoc(gameDoc);
@@ -39,35 +39,33 @@ export const gameService = {
       }
       return null;
     } catch (error) {
-      console.error("Error getting game:", error);
-      throw error;
+      throw new Error("Unable to retrieve game details.");
     }
   },
 
   // Upload image to storage
-  async uploadImage(file, gameId = null) {
+  async uploadImage(file) {
     try {
       const timestamp = Date.now();
-      const fileName = `${timestamp}_${file.name}`;
+      const cleanFileName = file.name ? file.name.replace(/[^a-zA-Z0-9._-]/g, "_") : "banner";
+      const fileName = `${timestamp}_${cleanFileName}`;
       const storageRef = ref(storage, `game-images/${fileName}`);
       await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(storageRef);
       return { url: downloadURL, fileName };
     } catch (error) {
-      console.error("Error uploading image:", error);
-      throw error;
+      throw new Error("Image upload failed.");
     }
   },
 
   // Delete image from storage
   async deleteImage(imageUrl) {
+    if (!imageUrl) return;
     try {
-      if (imageUrl) {
-        const imageRef = ref(storage, imageUrl);
-        await deleteObject(imageRef);
-      }
-    } catch (error) {
-      console.error("Error deleting image:", error);
+      const imageRef = ref(storage, imageUrl);
+      await deleteObject(imageRef);
+    } catch {
+      // Non-blocking cleanup failure
     }
   },
 
@@ -90,8 +88,7 @@ export const gameService = {
       const docRef = await addDoc(gameCollection, gameDoc);
       return { id: docRef.id, ...gameDoc };
     } catch (error) {
-      console.error("Error creating game:", error);
-      throw error;
+      throw new Error("Failed to create game record.");
     }
   },
 
@@ -100,10 +97,10 @@ export const gameService = {
     try {
       let bannerUrl = oldBannerUrl;
       
-      // Delete old image if new image is provided
+      // Replace old image if new image is provided
       if (newBannerImage) {
         await this.deleteImage(oldBannerUrl);
-        const imageResult = await this.uploadImage(newBannerImage, gameId);
+        const imageResult = await this.uploadImage(newBannerImage);
         bannerUrl = imageResult.url;
       }
 
@@ -118,25 +115,19 @@ export const gameService = {
       
       return { id: gameId, ...gameDoc };
     } catch (error) {
-      console.error("Error updating game:", error);
-      throw error;
+      throw new Error("Failed to update game record.");
     }
   },
 
   // Delete game
   async deleteGame(gameId, bannerImageUrl) {
     try {
-      // Delete banner image from storage
       await this.deleteImage(bannerImageUrl);
-      
-      // Delete game document
       const gameRef = doc(fireDB, "games", gameId);
       await deleteDoc(gameRef);
-      
       return true;
     } catch (error) {
-      console.error("Error deleting game:", error);
-      throw error;
+      throw new Error("Failed to delete game record.");
     }
   }
 };

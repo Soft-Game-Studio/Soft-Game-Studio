@@ -1,337 +1,378 @@
-import React, { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+// src/pages/CUSTOMER SERVICE/PrivacyPolicy.jsx
+import React, { useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { motion, useReducedMotion } from 'framer-motion';
 import Layout from '../../components/layout/Layout';
 import { Helmet } from 'react-helmet';
+import {
+  Shield,
+  Search,
+  Lock,
+  Target,
+  Activity,
+  Megaphone,
+  Mail,
+  ArrowRight,
+  CheckCircle2,
+  FileText,
+  SlidersHorizontal,
+  Server
+} from 'lucide-react';
 
 const PrivacyPolicy = () => {
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({ target: containerRef });
-  const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
+  const shouldReduceMotion = useReducedMotion();
+
+  const structuredData = useMemo(() => {
+    return JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebPage",
+          "@id": "https://softgamestudios.web.app/PrivacyPolicy#webpage",
+          "url": "https://softgamestudios.web.app/PrivacyPolicy",
+          "name": "Privacy Policy | Soft Game Studio",
+          "description": "Understand how Soft Game Studio protects user personal information, complies with privacy standards, and handles digital data.",
+          "isPartOf": {
+            "@type": "WebSite",
+            "@id": "https://softgamestudios.web.app/#website",
+            "name": "Soft Game Studio",
+            "url": "https://softgamestudios.web.app"
+          }
+        }
+      ]
+    });
+  }, []);
+
+  const pageTitle = "Privacy Policy | Soft Game Studio";
+  const pageDescription = "Learn how Soft Game Studio collects, uses, and safeguards your personal data, ensures data privacy, and enforces security protocols across our platform.";
+  const canonicalUrl = "https://softgamestudios.web.app/PrivacyPolicy";
 
   return (
     <Layout>
       <Helmet>
-        <title>Privacy Policy | Soft Game Studio</title>
-        <meta
-          name="description"
-          content="Read the privacy policy of Soft Game Studio to learn how we collect, use, and protect your personal information while you use our services and products."
-        />
-        <meta
-          name="keywords"
-          content="Privacy Policy, Data Protection, Soft Game Studio, User Privacy, Online Exam Security, GDPR, Information Use"
-        />
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta name="keywords" content="Privacy Policy, Data Protection, Soft Game Studio, User Privacy, Information Security, Digital Learning Privacy" />
         <meta name="author" content="Soft Game Studio" />
         <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={canonicalUrl} />
 
-        <meta property="og:title" content="Privacy Policy | Soft Game Studio" />
-        <meta
-          property="og:description"
-          content="Understand how Soft Game Studio handles your personal data, ensures privacy, and complies with regulations like GDPR."
-        />
+        {/* Open Graph */}
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://softgamestudios.web.app/PrivacyPolicy" />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:site_name" content="Soft Game Studio" />
         <meta property="og:image" content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" />
 
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Privacy Policy | Soft Game Studio" />
-        <meta
-          name="twitter:description"
-          content="Learn how Soft Game Studio protects your personal information and ensures your data privacy while using our services."
-        />
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
         <meta name="twitter:image" content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" />
 
-        <link rel="canonical" href="https://softgamestudios.web.app/PrivacyPolicy" />
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {structuredData}
+        </script>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-neutral-950 dark:to-gray-950 text-gray-800 dark:text-gray-200 overflow-hidden">
-        {/* Parallax background */}
-        <motion.div
-          className="absolute inset-0 opacity-20 dark:opacity-10"
-          style={{
-            y,
-            backgroundImage: "url('https://webjl26.web.app/static/media/stars.7d85fe42.png')",
-            backgroundSize: "cover"
-          }}
-        />
+      <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 selection:bg-neutral-800 selection:text-white dark:selection:bg-neutral-200 dark:selection:text-neutral-900">
+        
+        {/* ── Header ────────────────────────────────────────────────── */}
+        <header className="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 py-12 sm:py-16">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 mb-6">
+              <Link to="/" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
+                Home
+              </Link>
+              <span>/</span>
+              <span className="text-neutral-900 dark:text-neutral-200 font-medium">
+                Privacy Policy
+              </span>
+            </nav>
 
-        {/* Floating elements */}
-        <motion.div
-          className="absolute top-1/4 right-1/4 w-64 h-64 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.1, 0.3, 0.1]
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          style={{
-            background: "radial-gradient(circle, rgba(192, 132, 252, 0.4) 0%, transparent 70%)"
-          }}
-        />
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md text-xs font-mono font-medium tracking-wide uppercase bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 mb-4">
+                  <Shield className="w-3.5 h-3.5 text-[#00ACF0]" />
+                  <span>Data Protection & Privacy Policy</span>
+                </div>
 
-        <motion.div
-          className="absolute bottom-1/3 left-1/3 w-48 h-48 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.15, 1],
-            opacity: [0.15, 0.25, 0.15]
-          }}
-          transition={{
-            duration: 7,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1
-          }}
-          style={{
-            background: "radial-gradient(circle, rgba(129, 140, 248, 0.4) 0%, transparent 70%)"
-          }}
-        />
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 leading-tight">
+                  Privacy Policy
+                </h1>
 
-        {/* Content Container */}
-        <div className="relative max-w-5xl mx-auto px-4 py-16 z-10">
-          {/* Header with logo */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="flex flex-col items-center mb-12"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-full bg-purple-600 dark:bg-purple-700 overflow-hidden flex items-center justify-center">
-                <img loading="lazy" src="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" alt="" />
+                <p className="mt-3 text-sm sm:text-base text-neutral-600 dark:text-neutral-400 max-w-2xl leading-relaxed">
+                  How Soft Game Studio collects, utilizes, safeguards, and handles your personal information across all digital services and learning environments.
+                </p>
               </div>
-              <h1 className="text-3xl font-bold text-purple-800 dark:text-purple-400">Soft Game Studio</h1>
+
+              <div className="shrink-0 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/90 text-xs">
+                <span className="font-mono text-neutral-400 block uppercase tracking-wider text-[10px]">
+                  Document Status
+                </span>
+                <span className="font-semibold text-neutral-900 dark:text-neutral-100 block mt-0.5">
+                  Effective: June 7, 2025
+                </span>
+                <span className="text-neutral-500 dark:text-neutral-400 block text-[11px] mt-0.5">
+                  Governed by Indian IT Act, 2000
+                </span>
+              </div>
             </div>
 
-            <motion.h1
-              className="text-4xl md:text-5xl font-bold text-center text-gray-900 dark:text-white mb-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              Privacy Policy
-            </motion.h1>
-            <motion.p
-              className="text-lg text-purple-600 dark:text-purple-300"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              Effective: June 7, 2025
-            </motion.p>
-          </motion.div>
+          </div>
+        </header>
 
-          {/* Policy sections */}
-          <div className="space-y-10">
-            {/* Introduction */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="bg-white dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl dark:shadow-purple-900/10"
-            >
-              <h2 className="text-2xl font-bold mb-6 text-purple-700 dark:text-purple-400">Our Commitment to Your Privacy</h2>
-              <p className="mb-4">
-                At Soft Game Studio, we prioritize the protection of your personal information.
-                This Privacy Policy outlines how we collect, use, and safeguard your data when
-                you interact with our services and products.
-              </p>
-              <p className="mb-4">
-                This policy has been carefully crafted by our legal team to ensure compliance
-                with international privacy standards and to clearly communicate our practices.
-                We do not rely on automated policy generators - every aspect of this document
-                reflects our company's specific practices and values.
+        {/* ── Content Sections ──────────────────────────────────────── */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-10">
+
+          {/* Section 1: Introduction */}
+          <section
+            className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 sm:p-8 shadow-xs"
+            aria-labelledby="intro-heading"
+          >
+            <h2 id="intro-heading" className="text-lg font-bold text-neutral-900 dark:text-neutral-100 mb-4">
+              Our Commitment to Your Privacy
+            </h2>
+            <div className="space-y-4 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+              <p>
+                At Soft Game Studio, we consider user privacy and confidential data handling fundamental principles of our engineering culture. This policy details our precise data handling mechanisms when you browse our website, download study notes, take coding exams, purchase materials, or communicate with our staff.
               </p>
               <p>
-                By using our services, you consent to the data practices described in this policy.
+                Every segment of this document outlines actual operational practices. We do not sell personal data to marketing aggregators or unauthorized third parties under any circumstances.
               </p>
-            </motion.div>
+              <p className="text-neutral-800 dark:text-neutral-200 font-medium">
+                By accessing our platform or registering an account, you acknowledge and agree to the procedures outlined in this policy.
+              </p>
+            </div>
+          </section>
 
-            {/* Core Principles */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              viewport={{ once: true }}
-              className="bg-white dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl dark:shadow-purple-900/10"
-            >
-              <h2 className="text-2xl font-bold mb-6 text-purple-700 dark:text-purple-400">Our Core Privacy Principles</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[
-                  {
-                    title: "Transparency",
-                    icon: "🔍",
-                    desc: "We clearly communicate what data we collect and why we need it"
-                  },
-                  {
-                    title: "Minimal Data",
-                    icon: "📉",
-                    desc: "We only collect what's necessary to provide our services"
-                  },
-                  {
-                    title: "Security First",
-                    icon: "🔒",
-                    desc: "Industry-standard encryption and security protocols protect your data"
-                  }
-                ].map((item, index) => (
-                  <div
-                    key={index}
-                    className="p-5 bg-purple-50 dark:bg-gray-800 rounded-xl border border-purple-100 dark:border-gray-700"
-                  >
-                    <div className="text-3xl mb-3">{item.icon}</div>
-                    <h3 className="font-bold text-lg mb-2 text-purple-800 dark:text-purple-300">{item.title}</h3>
-                    <p className="text-sm">{item.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
+          {/* Section 2: Core Privacy Principles */}
+          <section
+            className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 sm:p-8 shadow-xs"
+            aria-labelledby="principles-heading"
+          >
+            <h2 id="principles-heading" className="text-lg font-bold text-neutral-900 dark:text-neutral-100 mb-6">
+              Core Principles of Data Governance
+            </h2>
 
-            {/* Data Collection */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              viewport={{ once: true }}
-              className="bg-white dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl dark:shadow-purple-900/10"
-            >
-              <h2 className="text-2xl font-bold mb-6 text-purple-700 dark:text-purple-400">Information We Collect</h2>
-
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-200">Personal Information</h3>
-                <p className="mb-4">
-                  When you register for an account, purchase our products, or contact support,
-                  we may collect:
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              <div className="p-5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
+                <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center mb-3.5">
+                  <Search className="w-5 h-5 text-[#00ACF0]" />
+                </div>
+                <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
+                  Absolute Transparency
+                </h3>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  We explicitly declare what information is requested, why it is necessary, and how it is retained.
                 </p>
-                <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-                  {[
-                    "Full name",
-                    "Email address",
-                    "Billing address",
-                    "Phone number",
-                    "Payment information",
-                    "Company details (if applicable)"
-                  ].map((item, index) => (
-                    <li key={index} className="flex items-start">
-                      <div className="mt-1 w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
-                      <span>{item}</span>
-                    </li>
-                  ))}
+              </div>
+
+              <div className="p-5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
+                <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center mb-3.5">
+                  <SlidersHorizontal className="w-5 h-5 text-emerald-500" />
+                </div>
+                <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
+                  Minimal Data Collection
+                </h3>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  We only request information directly relevant to authentication, examination integrity, or account services.
+                </p>
+              </div>
+
+              <div className="p-5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
+                <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center mb-3.5">
+                  <Lock className="w-5 h-5 text-indigo-500" />
+                </div>
+                <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
+                  Security-First Storage
+                </h3>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  Industry-standard TLS encryption in transit and parameterized database controls safeguard user records.
+                </p>
+              </div>
+
+            </div>
+          </section>
+
+          {/* Section 3: Information We Collect */}
+          <section
+            className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 sm:p-8 shadow-xs"
+            aria-labelledby="collection-heading"
+          >
+            <h2 id="collection-heading" className="text-lg font-bold text-neutral-900 dark:text-neutral-100 mb-6">
+              Information We Collect
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              
+              <div>
+                <h3 className="text-xs font-mono uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-3">
+                  Directly Provided Data
+                </h3>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-4 leading-relaxed">
+                  When you register, submit an inquiry, or complete a transaction, we collect:
+                </p>
+                <ul className="space-y-2 text-xs text-neutral-700 dark:text-neutral-300">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    <span>Full Legal or Chosen Name</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    <span>Verified Email Address</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    <span>Phone Number (for SMS notifications or order status)</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    <span>Billing Address (if purchasing commercial software/books)</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    <span>Academic Institution or College (optional for student verification)</span>
+                  </li>
                 </ul>
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-200">Automated Data Collection</h3>
-                <p className="mb-4">
-                  To improve our services and user experience, we automatically collect:
+                <h3 className="text-xs font-mono uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-3">
+                  System & Diagnostic Data
+                </h3>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-4 leading-relaxed">
+                  To ensure system performance, prevent duplicate submissions, and maintain quiz integrity:
                 </p>
-                <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {[
-                    "Device information (type, OS, browser)",
-                    "IP address and approximate location",
-                    "Usage patterns and interaction data",
-                    "Crash reports and performance metrics",
-                    "Game progress and achievements"
-                  ].map((item, index) => (
-                    <li key={index} className="flex items-start">
-                      <div className="mt-1 w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                      <span>{item}</span>
-                    </li>
-                  ))}
+                <ul className="space-y-2 text-xs text-neutral-700 dark:text-neutral-300">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#00ACF0] shrink-0" />
+                    <span>Device Specifications (Operating System, Browser Version)</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#00ACF0] shrink-0" />
+                    <span>IP Address and Geo-location region</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#00ACF0] shrink-0" />
+                    <span>Navigation timestamps and error logs</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#00ACF0] shrink-0" />
+                    <span>Quiz scores and certificate completion stamps</span>
+                  </li>
                 </ul>
               </div>
-            </motion.div>
 
-            {/* Data Usage */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              viewport={{ once: true }}
-              className="bg-white dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl dark:shadow-purple-900/10"
-            >
-              <h2 className="text-2xl font-bold mb-6 text-purple-700 dark:text-purple-400">How We Use Your Information</h2>
+            </div>
+          </section>
 
-              <div className="space-y-6">
-                <div className="flex items-start">
-                  <div className="bg-purple-100 dark:bg-purple-900/50 p-3 rounded-lg mr-4">
-                    <span className="text-xl">🎯</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-1">Service Delivery</h3>
-                    <p>To provide and maintain our services, process transactions, and authenticate users.</p>
-                  </div>
+          {/* Section 4: How We Use Data */}
+          <section
+            className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 sm:p-8 shadow-xs"
+            aria-labelledby="usage-heading"
+          >
+            <h2 id="usage-heading" className="text-lg font-bold text-neutral-900 dark:text-neutral-100 mb-6">
+              Purposes of Data Processing
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              
+              <div className="flex items-start gap-3.5 p-4 rounded-lg border border-neutral-100 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-800/30">
+                <div className="w-9 h-9 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
+                  <Target className="w-4 h-4 text-emerald-500" />
                 </div>
-
-                <div className="flex items-start">
-                  <div className="bg-purple-100 dark:bg-purple-900/50 p-3 rounded-lg mr-4">
-                    <span className="text-xl">📈</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-1">Product Improvement</h3>
-                    <p>To analyze usage patterns and enhance functionality, performance, and security.</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start">
-                  <div className="bg-purple-100 dark:bg-purple-900/50 p-3 rounded-lg mr-4">
-                    <span className="text-xl">📣</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-1">Communication</h3>
-                    <p>To respond to inquiries, provide updates, and share important service information.</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start">
-                  <div className="bg-purple-100 dark:bg-purple-900/50 p-3 rounded-lg mr-4">
-                    <span className="text-xl">🔐</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-1">Security & Compliance</h3>
-                    <p>To detect and prevent fraud, comply with legal obligations, and enforce our terms.</p>
-                  </div>
+                <div>
+                  <h3 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
+                    Service Delivery & Identity
+                  </h3>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 leading-relaxed">
+                    Authenticating accounts, delivering purchased digital modules, and managing quiz certifications.
+                  </p>
                 </div>
               </div>
-            </motion.div>
 
-            {/* Contact */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              viewport={{ once: true }}
-              className="bg-white dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl dark:shadow-purple-900/10 text-center"
-            >
-              <h2 className="text-2xl font-bold mb-4 text-purple-700 dark:text-purple-400">Contact Our Privacy Team</h2>
-              <p className="mb-6 max-w-2xl mx-auto">
-                If you have questions about this policy or your personal data,
-                our dedicated privacy team is ready to assist you.
-              </p>
-
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <a
-                  href="mailto:team.softgamestudio@gmail.com"
-                  className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
-                >
-                  Email Privacy Team
-                </a>
-                <a
-                  href="https://softgamestudios.web.app/ContactUs"
-                  className="px-6 py-3 bg-white dark:bg-gray-800 border border-purple-600 text-purple-600 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                >
-                  Contact Form
-                </a>
+              <div className="flex items-start gap-3.5 p-4 rounded-lg border border-neutral-100 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-800/30">
+                <div className="w-9 h-9 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
+                  <Activity className="w-4 h-4 text-[#00ACF0]" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
+                    Platform Reliability & Diagnostics
+                  </h3>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 leading-relaxed">
+                    Analyzing load latency, monitoring API throughput, and preventing DDoS attacks.
+                  </p>
+                </div>
               </div>
-            </motion.div>
-          </div>
 
+              <div className="flex items-start gap-3.5 p-4 rounded-lg border border-neutral-100 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-800/30">
+                <div className="w-9 h-9 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
+                  <Megaphone className="w-4 h-4 text-amber-500" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
+                    Direct Communications
+                  </h3>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 leading-relaxed">
+                    Replying to customer service inquiries, sending certificate verifications, and security alerts.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3.5 p-4 rounded-lg border border-neutral-100 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-800/30">
+                <div className="w-9 h-9 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
+                  <Lock className="w-4 h-4 text-indigo-500" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
+                    Security & Fraud Prevention
+                  </h3>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 leading-relaxed">
+                    Enforcing examination anti-cheat standards and detecting unauthorized account takeovers.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          {/* Section 5: Contact Desk */}
+          <section
+            className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-900 text-white p-6 sm:p-8 text-center shadow-xs"
+            aria-labelledby="contact-heading"
+          >
+            <h2 id="contact-heading" className="text-lg font-bold text-white mb-2">
+              Questions Regarding Your Privacy?
+            </h2>
+            <p className="text-xs sm:text-sm text-neutral-300 max-w-xl mx-auto mb-6 leading-relaxed">
+              If you wish to review, update, or request the deletion of your personal records from Soft Game Studio, reach out to our privacy officer.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <a
+                href="mailto:team.softgamestudio@gmail.com?subject=Privacy%20Data%20Request"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-semibold text-neutral-900 bg-white hover:bg-neutral-100 transition-colors shadow-xs"
+              >
+                <Mail className="w-4 h-4 text-[#00ACF0]" />
+                <span>Email Privacy Officer</span>
+              </a>
+              <Link
+                to="/ContactUs"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-medium border border-neutral-700 hover:bg-white/10 transition-colors"
+              >
+                <span>Support Contact Desk</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </section>
 
         </div>
-      </div>
+      </main>
     </Layout>
-
   );
 };
 

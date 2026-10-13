@@ -1,423 +1,426 @@
-import React, { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+// src/pages/CUSTOMER SERVICE/CookiesPolicy.jsx
+import React, { useMemo } from "react";
+import { Link } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
 import Layout from "../../components/layout/Layout";
 import { Helmet } from "react-helmet";
+import {
+  Cookie,
+  Info,
+  SlidersHorizontal,
+  Globe,
+  Settings,
+  Mail,
+  ArrowRight,
+  ExternalLink,
+  ShieldCheck,
+  CheckCircle2
+} from "lucide-react";
 
 const CookiesPolicy = () => {
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({ target: containerRef });
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+  const shouldReduceMotion = useReducedMotion();
 
   const cookieData = [
     {
       name: "termsAccepted",
-      purpose: "Remembers if the user accepted Terms & Conditions",
+      purpose: "Stores user acknowledgment of Terms and Conditions and Legal Notices",
       type: "First-party",
-      data: "true / false",
+      data: "true / false flag",
       duration: "1 year",
       essential: "Yes",
     },
     {
       name: "_ga, _gid",
-      purpose: "Tracks usage behavior via Google Analytics for site improvement",
+      purpose: "Aggregates anonymous traffic metrics via Google Analytics for performance optimization",
       type: "Third-party",
-      data: "Anonymous user ID and session data",
+      data: "Pseudonymous client identifier and session metrics",
       duration: "2 years / 24 hours",
       essential: "No",
     },
     {
       name: "firebase-auth",
-      purpose: "Maintains user login session using Firebase authentication (Email, Google, GitHub)",
+      purpose: "Maintains authenticated user session token using Firebase Authentication",
       type: "First-party",
-      data: "Firebase Auth ID token (JWT)",
-      duration: "Session (until browser close)",
+      data: "Encrypted Auth ID token (JWT)",
+      duration: "Session / Browser lifetime",
       essential: "Yes",
     },
     {
       name: "userProfile",
-      purpose: "Stores user information like name, email, phone, and address after login",
+      purpose: "Caches localized profile attributes (name, email) to reduce redundant queries",
       type: "First-party",
-      data: "User name, email, phone, address",
+      data: "User metadata object",
       duration: "1 year",
       essential: "Yes",
     },
     {
       name: "cartData",
-      purpose: "Stores selected product IDs and their quantity for shopping cart",
+      purpose: "Preserves selected course notes and educational products in shopping cart",
       type: "First-party",
-      data: "Array of product IDs, quantity, selected variants",
+      data: "Array of product identifiers and quantities",
       duration: "30 days",
       essential: "No",
     },
     {
       name: "orderHistory",
-      purpose: "Saves a temporary record of placed orders for confirmation and local reference",
+      purpose: "Stores temporary order reference keys for immediate receipt confirmation",
       type: "First-party",
-      data: "Order ID, items, payment status",
+      data: "Order identifier and verification status",
       duration: "30 days",
       essential: "No",
     },
     {
       name: "paymentSession",
-      purpose: "Tracks ongoing payment session details for Razorpay or other integrations",
-      type: "Third-party / First-party (depending on provider)",
-      data: "Transaction ID, status, session info",
+      purpose: "Tracks transaction token state during checkout execution",
+      type: "First-party",
+      data: "Transaction reference hash",
       duration: "Session",
       essential: "Yes",
     },
     {
       name: "theme",
-      purpose: "Remembers user’s selected UI theme (dark/light)",
+      purpose: "Remembers chosen interface mode (dark or light mode)",
       type: "First-party",
-      data: "dark / light",
+      data: "dark / light string",
       duration: "1 year",
       essential: "No",
     }
   ];
 
+  const structuredData = useMemo(() => {
+    return JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebPage",
+          "@id": "https://softgamestudios.web.app/CookiesPolicy#webpage",
+          "url": "https://softgamestudios.web.app/CookiesPolicy",
+          "name": "Cookies Policy | Soft Game Studio",
+          "description": "Inventory of first-party and third-party cookies utilized by Soft Game Studio for authentication, session handling, and analytics.",
+          "isPartOf": {
+            "@type": "WebSite",
+            "@id": "https://softgamestudios.web.app/#website",
+            "name": "Soft Game Studio",
+            "url": "https://softgamestudios.web.app"
+          }
+        }
+      ]
+    });
+  }, []);
+
+  const pageTitle = "Cookies Policy | Soft Game Studio";
+  const pageDescription = "Learn how Soft Game Studio utilizes cookies and local storage tokens for authentication, session security, and learning preferences.";
+  const canonicalUrl = "https://softgamestudios.web.app/CookiesPolicy";
 
   return (
     <Layout>
       <Helmet>
-        <title>Cookies Policy | Soft Game Studio</title>
-        <meta
-          name="description"
-          content="Learn how Soft Game Studio uses cookies to enhance your experience and manage your preferences on our website."
-        />
-        <meta
-          name="keywords"
-          content="Cookies Policy, Soft Game Studio, Cookie Usage, Website Cookies, Privacy, Tracking, Online Experience"
-        />
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta name="keywords" content="Cookies Policy, Soft Game Studio, Web Storage, Firebase Auth Cookies, Analytics Cookies, Cookie Table" />
         <meta name="author" content="Soft Game Studio" />
         <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={canonicalUrl} />
 
-        <meta property="og:title" content="Cookies Policy | Soft Game Studio" />
-        <meta
-          property="og:description"
-          content="Find out about the types of cookies used by Soft Game Studio and how they improve your browsing experience."
-        />
+        {/* Open Graph */}
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://softgamestudios.web.app/CookiesPolicy" />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:site_name" content="Soft Game Studio" />
         <meta property="og:image" content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" />
 
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Cookies Policy | Soft Game Studio" />
-        <meta
-          name="twitter:description"
-          content="Understand Soft Game Studio’s cookie usage and how it affects your online experience."
-        />
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
         <meta name="twitter:image" content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" />
 
-        <link rel="canonical" href="https://softgamestudios.web.app/CookiesPolicy" />
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {structuredData}
+        </script>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-gray-950 dark:to-neutral-950 text-gray-800 dark:text-gray-200 overflow-hidden">
-        {/* Parallax background */}
-        <motion.div
-          className="absolute inset-0 opacity-20 dark:opacity-10"
-          style={{
-            y,
-            backgroundImage: "url('https://webjl26.web.app/static/media/stars.7d85fe42.png')",
-            backgroundSize: "cover"
-          }}
-        />
+      <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 selection:bg-neutral-800 selection:text-white dark:selection:bg-neutral-200 dark:selection:text-neutral-900">
+        
+        {/* ── Header ────────────────────────────────────────────────── */}
+        <header className="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 py-12 sm:py-16">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 mb-6">
+              <Link to="/" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
+                Home
+              </Link>
+              <span>/</span>
+              <span className="text-neutral-900 dark:text-neutral-200 font-medium">
+                Cookies Policy
+              </span>
+            </nav>
 
-        {/* Floating cookies */}
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-12 h-12 rounded-full bg-amber-200 dark:bg-amber-400 opacity-80"
-            initial={{
-              y: Math.random() * 100,
-              x: Math.random() * 100,
-              scale: 0.8
-            }}
-            animate={{
-              y: [0, -30, 0],
-              rotate: [0, 15, 0],
-              x: [0, Math.random() > 0.5 ? 20 : -20, 0],
-            }}
-            transition={{
-              duration: 4 + Math.random() * 4,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: i * 0.5
-            }}
-            style={{
-              top: `${10 + i * 15}%`,
-              left: `${10 + i * 10}%`,
-              borderRadius: "30% 70% 70% 30% / 30% 30% 70% 70%",
-              boxShadow: "0 0 10px rgba(0,0,0,0.1)"
-            }}
-          >
-            <div className="absolute w-3 h-3 rounded-full bg-amber-400 dark:bg-amber-600 top-2 left-3"></div>
-            <div className="absolute w-3 h-3 rounded-full bg-amber-400 dark:bg-amber-600 top-2 right-3"></div>
-            <div className="absolute w-3 h-3 rounded-full bg-amber-400 dark:bg-amber-600 bottom-2 left-6"></div>
-          </motion.div>
-        ))}
-
-        {/* Content Container */}
-        <div className="relative max-w-5xl mx-auto px-4 py-16 z-10">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-12"
-          >
-            <motion.h1
-              className="text-4xl md:text-5xl font-bold mb-4 text-blue-600 dark:text-blue-400"
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              🍪 Cookie Policy
-            </motion.h1>
-            <motion.p
-              className="text-xl text-purple-600 dark:text-purple-300"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              Last Updated: June 7, 2025
-            </motion.p>
-          </motion.div>
-
-          <div className="space-y-10">
-            {/* Introduction */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="bg-white dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl"
-            >
-              <div className="flex items-center gap-4 mb-6">
-                <div className="bg-blue-100 dark:bg-blue-900/50 p-3 rounded-xl">
-                  <span className="text-3xl">ℹ️</span>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md text-xs font-mono font-medium tracking-wide uppercase bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 mb-4">
+                  <Cookie className="w-3.5 h-3.5 text-[#00ACF0]" />
+                  <span>Browser Storage & Transparency</span>
                 </div>
-                <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-400">Understanding Cookies</h2>
+
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 leading-tight">
+                  Cookies Policy
+                </h1>
+
+                <p className="mt-3 text-sm sm:text-base text-neutral-600 dark:text-neutral-400 max-w-2xl leading-relaxed">
+                  Clear accounting of cookies, session identifiers, and local browser storage mechanisms deployed across Soft Game Studio.
+                </p>
               </div>
-              <p className="mb-4">
-                At <strong className="text-blue-600 dark:text-blue-400">Soft Game Studio</strong>, we use cookies to enhance your experience,
-                analyze traffic, and deliver personalized content. This policy explains what
-                cookies we use and how they work.
+
+              <div className="shrink-0 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/90 text-xs">
+                <span className="font-mono text-neutral-400 block uppercase tracking-wider text-[10px]">
+                  Audit Date
+                </span>
+                <span className="font-semibold text-neutral-900 dark:text-neutral-100 block mt-0.5">
+                  Last Updated: June 7, 2025
+                </span>
+                <span className="text-neutral-500 dark:text-neutral-400 block text-[11px] mt-0.5">
+                  EU & India e-Privacy Compliant
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </header>
+
+        {/* ── Content Sections ──────────────────────────────────────── */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-10">
+
+          {/* Section 1: Overview */}
+          <section
+            className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 sm:p-8 shadow-xs"
+            aria-labelledby="overview-heading"
+          >
+            <div className="flex items-center gap-3.5 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center shrink-0">
+                <Info className="w-5 h-5 text-[#00ACF0]" />
+              </div>
+              <h2 id="overview-heading" className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
+                Understanding Browser Cookies
+              </h2>
+            </div>
+            <div className="space-y-3 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+              <p>
+                Cookies are compact data files saved in your local web browser when visiting websites. They allow our systems to recognize your logged-in session, persist your theme preferences (Dark vs. Light mode), and retain your items in the cart while navigating.
               </p>
               <p>
-                Cookies are small text files stored on your browser or device by websites
-                you visit. They help remember your preferences, login sessions, and improve
-                functionality.
+                Soft Game Studio strictly avoids intrusive third-party cross-site advertising beacons. The table below provides an exhaustive audit of all cookies and tokens used on our platform.
               </p>
-            </motion.div>
+            </div>
+          </section>
 
-            {/* Cookie Table */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              viewport={{ once: true }}
-              className="bg-white dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl overflow-hidden"
-            >
-              <div className="flex items-center gap-4 mb-6">
-                <div className="bg-purple-100 dark:bg-purple-900/50 p-3 rounded-xl">
-                  <span className="text-3xl">📋</span>
-                </div>
-                <h2 className="text-2xl font-bold text-purple-700 dark:text-purple-400">Cookies We Use</h2>
+          {/* Section 2: Complete Cookie Audit Table */}
+          <section
+            className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 sm:p-8 shadow-xs overflow-hidden"
+            aria-labelledby="table-heading"
+          >
+            <div className="flex items-center gap-3.5 mb-6">
+              <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center shrink-0">
+                <SlidersHorizontal className="w-5 h-5 text-emerald-500" />
               </div>
+              <div>
+                <h2 id="table-heading" className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
+                  Active Cookie Inventory
+                </h2>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  Detailed declaration of purpose, duration, and classification
+                </p>
+              </div>
+            </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-blue-50 dark:bg-gray-800">
+            <div className="overflow-x-auto -mx-6 sm:-mx-8">
+              <div className="inline-block min-w-full align-middle px-6 sm:px-8">
+                <table className="min-w-full text-left text-xs divide-y divide-neutral-200 dark:divide-neutral-800">
+                  <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-700 dark:text-neutral-300 font-mono text-[11px] uppercase tracking-wider">
                     <tr>
-                      <th className="p-3 border-b dark:border-gray-700 font-semibold text-blue-700 dark:text-blue-300">Cookie Name</th>
-                      <th className="p-3 border-b dark:border-gray-700 font-semibold text-blue-700 dark:text-blue-300">Purpose</th>
-                      <th className="p-3 border-b dark:border-gray-700 font-semibold text-blue-700 dark:text-blue-300">Type</th>
-                      <th className="p-3 border-b dark:border-gray-700 font-semibold text-blue-700 dark:text-blue-300">Stored Data</th>
-                      <th className="p-3 border-b dark:border-gray-700 font-semibold text-blue-700 dark:text-blue-300">Duration</th>
-                      <th className="p-3 border-b dark:border-gray-700 font-semibold text-blue-700 dark:text-blue-300">Essential</th>
+                      <th scope="col" className="py-3 px-4">Cookie / Key</th>
+                      <th scope="col" className="py-3 px-4">Functional Purpose</th>
+                      <th scope="col" className="py-3 px-4">Provider</th>
+                      <th scope="col" className="py-3 px-4">Retention</th>
+                      <th scope="col" className="py-3 px-4 text-center">Essential</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
                     {cookieData.map((cookie, idx) => (
-                      <motion.tr
+                      <tr 
                         key={idx}
-                        initial={{ opacity: 0, x: -20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.4, delay: idx * 0.1 }}
-                        viewport={{ once: true }}
-                        className="border-t dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-gray-800"
+                        className="hover:bg-neutral-50/80 dark:hover:bg-neutral-800/30 transition-colors"
                       >
-                        <td className="p-3 font-medium">{cookie.name}</td>
-                        <td className="p-3">{cookie.purpose}</td>
-                        <td className="p-3">
-                          <span className={`px-2 py-1 rounded-full text-xs ${cookie.type === "First-party"
-                              ? "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300"
-                              : "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300"
-                            }`}>
+                        <td className="py-3.5 px-4 font-mono font-semibold text-neutral-900 dark:text-neutral-100 whitespace-nowrap">
+                          {cookie.name}
+                        </td>
+                        <td className="py-3.5 px-4 text-neutral-600 dark:text-neutral-400 max-w-xs leading-relaxed">
+                          {cookie.purpose}
+                        </td>
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <span className="inline-block px-2 py-0.5 rounded text-[11px] font-mono border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
                             {cookie.type}
                           </span>
                         </td>
-                        <td className="p-3">{cookie.data}</td>
-                        <td className="p-3">{cookie.duration}</td>
-                        <td className="p-3">
-                          <span className={`px-2 py-1 rounded-full text-xs ${cookie.essential === "Yes"
-                              ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300"
-                              : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300"
-                            }`}>
-                            {cookie.essential}
-                          </span>
+                        <td className="py-3.5 px-4 font-mono text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
+                          {cookie.duration}
                         </td>
-                      </motion.tr>
+                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                          {cookie.essential === "Yes" ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              Required
+                            </span>
+                          ) : (
+                            <span className="text-[11px] text-neutral-400 dark:text-neutral-500">
+                              Optional
+                            </span>
+                          )}
+                        </td>
+                      </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-            </motion.div>
+            </div>
+          </section>
 
-            {/* Third-party Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              viewport={{ once: true }}
-              className="bg-white dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl"
-            >
-              <div className="flex items-center gap-4 mb-6">
-                <div className="bg-orange-100 dark:bg-orange-900/50 p-3 rounded-xl">
-                  <span className="text-3xl">🌐</span>
+          {/* Section 3: Third Party Providers */}
+          <section
+            className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 sm:p-8 shadow-xs"
+            aria-labelledby="third-party-heading"
+          >
+            <div className="flex items-center gap-3.5 mb-6">
+              <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center shrink-0">
+                <Globe className="w-5 h-5 text-indigo-500" />
+              </div>
+              <div>
+                <h2 id="third-party-heading" className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
+                  Infrastructure & Third-Party Services
+                </h2>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  Authenticated cloud services operating beneath our application layer
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              
+              <a
+                href="https://policies.google.com/technologies/cookies"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-4 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors group"
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <h3 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-[#00ACF0] transition-colors">
+                    Google Analytics & Cloud Services
+                  </h3>
+                  <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-orange-700 dark:text-orange-400">Third-Party Cookies</h2>
-              </div>
-              <p className="mb-4">
-                We use services like Google Analytics and Firebase. These services may set
-                their own cookies. Learn more at:
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                <a
-                  href="https://policies.google.com/technologies/cookies"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-4 bg-blue-50 dark:bg-gray-800 rounded-xl hover:bg-blue-100 dark:hover:bg-gray-700 transition-colors"
-                >
-                  <div className="bg-white dark:bg-gray-700 p-3 rounded-xl">
-                    <span className="text-3xl">🔍</span>
-                  </div>
-                  <div>
-                    <h3 className="font-bold">Google Cookie Policy</h3>
-                    <p className="text-sm opacity-80">policies.google.com</p>
-                  </div>
-                </a>
-                <a
-                  href="https://firebase.google.com/support/privacy"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-4 bg-orange-50 dark:bg-gray-800 rounded-xl hover:bg-orange-100 dark:hover:bg-gray-700 transition-colors"
-                >
-                  <div className="bg-white dark:bg-gray-700 p-3 rounded-xl">
-                    <span className="text-3xl">🔥</span>
-                  </div>
-                  <div>
-                    <h3 className="font-bold">Firebase Privacy Policy</h3>
-                    <p className="text-sm opacity-80">firebase.google.com</p>
-                  </div>
-                </a>
-              </div>
-            </motion.div>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  Used exclusively for calculating site performance and detecting network errors.
+                </p>
+              </a>
 
-            {/* Management Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              viewport={{ once: true }}
-              className="bg-white dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl"
-            >
-              <div className="flex items-center gap-4 mb-6">
-                <div className="bg-green-100 dark:bg-green-900/50 p-3 rounded-xl">
-                  <span className="text-3xl">⚙️</span>
+              <a
+                href="https://firebase.google.com/support/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-4 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors group"
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <h3 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-[#00ACF0] transition-colors">
+                    Firebase Authentication & Firestore
+                  </h3>
+                  <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-green-700 dark:text-green-400">Managing Cookies</h2>
-              </div>
-              <p className="mb-4">
-                You can control or disable cookies via your browser settings. However, some
-                essential features like login or quizzes may not work properly without
-                them.
-              </p>
-              <div className="mt-6 p-4 bg-green-50 dark:bg-gray-800 rounded-xl">
-                <h3 className="font-bold mb-2 flex items-center gap-2">
-                  <span>💡</span> Browser Cookie Settings
-                </h3>
-                <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <li className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    Chrome: Settings → Privacy → Cookies
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    Firefox: Options → Privacy → Cookies
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    Safari: Preferences → Privacy → Cookies
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    Edge: Settings → Cookies and permissions
-                  </li>
-                </ul>
-              </div>
-            </motion.div>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  Cryptographically verified token handling for safe student account logins.
+                </p>
+              </a>
 
-            {/* Contact Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              viewport={{ once: true }}
-              className="bg-white dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl"
-            >
-              <div className="flex items-center gap-4 mb-6">
-                <div className="bg-purple-100 dark:bg-purple-900/50 p-3 rounded-xl">
-                  <span className="text-3xl">📬</span>
+            </div>
+          </section>
+
+          {/* Section 4: Browser Management */}
+          <section
+            className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 sm:p-8 shadow-xs"
+            aria-labelledby="manage-heading"
+          >
+            <div className="flex items-center gap-3.5 mb-6">
+              <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center shrink-0">
+                <Settings className="w-5 h-5 text-amber-500" />
+              </div>
+              <div>
+                <h2 id="manage-heading" className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
+                  Managing & Disabling Cookies
+                </h2>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  You retain complete authority over your browser storage settings
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+              <p>
+                You can configure or block cookies at any time via your browser preferences. Please note that blocking essential authentication cookies may prevent you from logging in, accessing paid modules, or taking examination quizzes.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono">
+                <div className="p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40">
+                  <span className="font-semibold block text-neutral-900 dark:text-neutral-100">Google Chrome</span>
+                  <span className="text-[11px] text-neutral-500 mt-0.5 block">Settings &gt; Privacy &gt; Cookies</span>
                 </div>
-                <h2 className="text-2xl font-bold text-purple-700 dark:text-purple-400">Contact Us</h2>
+                <div className="p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40">
+                  <span className="font-semibold block text-neutral-900 dark:text-neutral-100">Mozilla Firefox</span>
+                  <span className="text-[11px] text-neutral-500 mt-0.5 block">Options &gt; Privacy &gt; Cookies</span>
+                </div>
+                <div className="p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40">
+                  <span className="font-semibold block text-neutral-900 dark:text-neutral-100">Apple Safari</span>
+                  <span className="text-[11px] text-neutral-500 mt-0.5 block">Preferences &gt; Privacy</span>
+                </div>
+                <div className="p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40">
+                  <span className="font-semibold block text-neutral-900 dark:text-neutral-100">Microsoft Edge</span>
+                  <span className="text-[11px] text-neutral-500 mt-0.5 block">Settings &gt; Site Permissions</span>
+                </div>
               </div>
-              <p className="mb-6">
-                If you have any questions regarding our use of cookies, please contact us:
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <a
-                  href="mailto:team.softgamestudio@gmail.com"
-                  className="flex items-center gap-4 p-4 bg-blue-50 dark:bg-gray-800 rounded-xl hover:bg-blue-100 dark:hover:bg-gray-700 transition-colors"
-                >
-                  <div className="bg-white dark:bg-gray-700 p-3 rounded-xl">
-                    <span className="text-3xl">📧</span>
-                  </div>
-                  <div>
-                    <h3 className="font-bold">Email Us</h3>
-                    <p className="text-sm opacity-80">team.softgamestudio@gmail.com</p>
-                  </div>
-                </a>
-                <a
-                  href="https://softgamestudios.web.app/ContactUs"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-4 bg-purple-50 dark:bg-gray-800 rounded-xl hover:bg-purple-100 dark:hover:bg-gray-700 transition-colors"
-                >
-                  <div className="bg-white dark:bg-gray-700 p-3 rounded-xl">
-                    <span className="text-3xl">🌐</span>
-                  </div>
-                  <div>
-                    <h3 className="font-bold">Contact Form</h3>
-                    <p className="text-sm opacity-80">softgamestudio.web.app</p>
-                  </div>
-                </a>
-              </div>
-            </motion.div>
-          </div>
+            </div>
+          </section>
 
+          {/* Section 5: Support */}
+          <section
+            className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-900 text-white p-6 sm:p-8 text-center shadow-xs"
+            aria-labelledby="contact-heading"
+          >
+            <h2 id="contact-heading" className="text-lg font-bold text-white mb-2">
+              Questions Regarding Our Cookie Architecture?
+            </h2>
+            <p className="text-xs sm:text-sm text-neutral-300 max-w-xl mx-auto mb-6 leading-relaxed">
+              Contact our engineering team with inquiries regarding browser storage, tokens, or security headers.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <a
+                href="mailto:team.softgamestudio@gmail.com?subject=Cookie%20Policy%20Inquiry"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-semibold text-neutral-900 bg-white hover:bg-neutral-100 transition-colors shadow-xs"
+              >
+                <Mail className="w-4 h-4 text-[#00ACF0]" />
+                <span>Contact Engineering Desk</span>
+              </a>
+              <Link
+                to="/ContactUs"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-medium border border-neutral-700 hover:bg-white/10 transition-colors"
+              >
+                <span>Support Portal</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </section>
 
         </div>
-      </div>
+      </main>
     </Layout>
   );
 };

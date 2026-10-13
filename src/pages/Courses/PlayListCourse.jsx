@@ -1,12 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import { Helmet } from 'react-helmet-async';
+import parse from 'html-react-parser';
+import { motion, useReducedMotion } from 'framer-motion';
+import { 
+  BookOpen, 
+  ListVideo, 
+  ChevronLeft, 
+  ChevronRight, 
+  Calendar, 
+  Layers, 
+  ExternalLink, 
+  AlertCircle, 
+  ArrowLeft,
+  Copy,
+  Check,
+  FileText
+} from 'lucide-react';
 import { fireDB } from '../../DataBase/firebaseConfig';
-import VideoPlayer from '../../components/Video Player/Videoplayer'
+import VideoPlayer from '../../components/Video Player/Videoplayer';
 import Layout from '../../components/layout/Layout';
-import { Helmet } from 'react-helmet';
 
 const PlayListCourse = () => {
   const { id } = useParams();
@@ -14,353 +28,492 @@ const PlayListCourse = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeChapter, setActiveChapter] = useState(0);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
+
+  const fetchCourse = useCallback(async () => {
+    if (!id) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const docRef = doc(fireDB, 'courses', id);
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setCourse({ id: docSnap.id, ...data });
+        // Clamp activeChapter if out of bounds
+        if (data.chapters && activeChapter >= data.chapters.length) {
+          setActiveChapter(0);
+        }
+      } else {
+        setError('Curriculum not found in database.');
+      }
+    } catch (err) {
+      setError('Unable to load curriculum content. Please verify your connection and try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, [id, activeChapter]);
 
   useEffect(() => {
-    const fetchCourse = async () => {
-      try {
-        const docRef = doc(fireDB, 'courses', id);
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-          setCourse({ id: docSnap.id, ...docSnap.data() });
-        } else {
-          setError('Course not found');
-        }
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching course:', err);
-        setError('Failed to load course data');
-        setLoading(false);
-      }
-    };
-
     fetchCourse();
-  }, [id]);
+  }, [fetchCourse]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-purple-100 dark:bg-neutral-950 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-purple-600"></div>
-      </div>
-    );
-  }
+  // Handle URL chapter share copy
+  const handleCopyLink = () => {
+    if (typeof window !== 'undefined') {
+      navigator.clipboard.writeText(window.location.href);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    }
+  };
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-purple-100 dark:bg-neutral-950 flex items-center justify-center">
-        <div className="text-center max-w-md p-6 bg-white dark:bg-neutral-800 rounded-xl shadow-lg">
-          <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Course Not Found</h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">{error}</p>
-          <Link 
-            to="/" 
-            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
-          >
-            Browse Courses
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  // Safe date formatter
+  const formattedDate = useMemo(() => {
+    if (!course?.createdAt) return null;
+    try {
+      if (typeof course.createdAt.toDate === 'function') {
+        return new Intl.DateTimeFormat('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        }).format(course.createdAt.toDate());
+      }
+      return new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      }).format(new Date(course.createdAt));
+    } catch {
+      return null;
+    }
+  }, [course]);
+
+  const chapters = useMemo(() => {
+    return Array.isArray(course?.chapters) ? course.chapters : [];
+  }, [course]);
+
+  const currentChapter = chapters[activeChapter] || null;
+
+  // JSON-LD Schema
+  const structuredData = useMemo(() => {
+    if (!course) return null;
+    return JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'Course',
+          '@id': `https://softgamestudios.web.app/PlayListCourse/${id}#course`,
+          name: course.title || 'Technical Curriculum',
+          description: course.description || 'Structured engineering playlist course.',
+          provider: {
+            '@type': 'Organization',
+            name: 'Soft Game Studio',
+            url: 'https://softgamestudios.web.app/'
+          },
+          hasCourseInstance: chapters.map((ch, idx) => ({
+            '@type': 'CourseInstance',
+            name: ch.title || `Chapter ${idx + 1}`,
+            position: idx + 1
+          }))
+        }
+      ]
+    });
+  }, [course, chapters, id]);
 
   return (
     <Layout>
-       <Helmet>
-        <title>Courses | Soft Game Studio</title>
+      <Helmet>
+        <html lang="en" />
+        <title>
+          {course?.title 
+            ? `${course.title} (Chapter ${activeChapter + 1} of ${chapters.length || 1}) | Soft Game Studio` 
+            : 'Playlist Course | Soft Game Studio'}
+        </title>
         <meta 
           name="description" 
-          content="Explore free and affordable courses offered by Soft Game Studio. Learn development, design, and career skills with expert-created content for students and professionals." 
+          content={course?.description || 'Explore modular technical course playlists on Soft Game Studio.'} 
         />
+        <link rel="canonical" href={`https://softgamestudios.web.app/PlayListCourse/${id}`} />
+        
+        {/* Open Graph */}
+        <meta property="og:type" content="video.other" />
+        <meta property="og:site_name" content="Soft Game Studio" />
         <meta 
-          name="keywords" 
-          content="Free Courses, Affordable Courses, Development Courses, Design Courses, Learn to Code, Online Learning, Student Courses, Soft Game Studio Courses, Career Building Courses" 
+          property="og:title" 
+          content={course?.title ? `${course.title} | Soft Game Studio` : 'Playlist Course'} 
         />
-        <meta name="author" content="Soft Game Studio" />
-      
-        {/* Open Graph / Social Sharing Tags */}
-        <meta property="og:title" content="Courses | Soft Game Studio" />
         <meta 
           property="og:description" 
-          content="Soft Game Studio offers a wide range of free and affordable online courses. Learn development, design, and career skills at your own pace." 
+          content={course?.description || 'Modular technical course playlists by Soft Game Studio.'} 
         />
-         <meta property="og:url" content="https://softgamestudios.web.app/OurCourse" />
-  <meta property="og:url" content="https://softgamestudios.web.app/OurCourse" /> 
-        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`https://softgamestudios.web.app/PlayListCourse/${id}`} />
+        {course?.thumbnail && <meta property="og:image" content={course.thumbnail} />}
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta 
+          name="twitter:title" 
+          content={course?.title ? `${course.title} | Soft Game Studio` : 'Playlist Course'} 
+        />
+        <meta 
+          name="twitter:description" 
+          content={course?.description || 'Modular technical course playlists by Soft Game Studio.'} 
+        />
+        {course?.thumbnail && <meta name="twitter:image" content={course.thumbnail} />}
+        
+        {structuredData && <script type="application/ld+json">{structuredData}</script>}
       </Helmet>
-<div className="min-h-screen bg-purple-100 dark:bg-neutral-950">
-      {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-purple-600 to-indigo-700 dark:from-purple-900 dark:to-indigo-900 pt-32 pb-24">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")" }}></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="flex flex-col md:flex-row items-center">
-            <div className="md:w-1/2 text-center md:text-left">
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">{course.title}</h1>
-              <p className="text-xl text-purple-200 max-w-2xl mb-8">{course.description}</p>
-              <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-                <span className="px-4 py-2 bg-purple-800 bg-opacity-30 rounded-full text-white text-sm font-medium">
-                  Playlist Course
-                </span>
-                <span className="px-4 py-2 bg-white bg-opacity-20 rounded-full text-white text-sm font-medium">
-                  {course.chapters?.length || 0} Chapters
-                </span>
-                <span className="px-4 py-2 bg-white bg-opacity-20 rounded-full text-white text-sm font-medium">
-                  Published: {course.createdAt?.toDate().toLocaleDateString()}
-                </span>
-              </div>
+
+      <main id="main-content" className="min-h-screen py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        {/* Breadcrumb Navigation */}
+        <nav aria-label="Breadcrumb" className="mb-6">
+          <ol className="flex items-center gap-2 text-xs font-mono text-neutral-500 dark:text-neutral-400">
+            <li>
+              <Link 
+                to="/OurCourse" 
+                className="hover:text-neutral-900 dark:hover:text-neutral-100 flex items-center gap-1 transition-colors"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>All Courses</span>
+              </Link>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li className="truncate max-w-[200px] sm:max-w-md text-neutral-900 dark:text-neutral-100 font-medium">
+              {course?.title || 'Curriculum'}
+            </li>
+          </ol>
+        </nav>
+
+        {/* Loading Skeleton */}
+        {loading && (
+          <div aria-busy="true" aria-label="Loading curriculum content" className="space-y-8 animate-pulse">
+            <div className="border-b border-neutral-200 dark:border-neutral-800 pb-6">
+              <div className="h-4 w-32 bg-neutral-200 dark:bg-neutral-800 rounded mb-3" />
+              <div className="h-8 w-2/3 bg-neutral-200 dark:bg-neutral-800 rounded mb-2" />
+              <div className="h-4 w-1/2 bg-neutral-200 dark:bg-neutral-800 rounded" />
             </div>
-            <div className="md:w-1/2 mt-10 md:mt-0 flex justify-center">
-              <div className="relative w-full max-w-md">
-                <div className="absolute inset-0 bg-purple-500 rounded-2xl transform rotate-3"></div>
-                <div className="relative bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl overflow-hidden">
-                  {course.thumbnail ? (
-                    <img loading="lazy" 
-                      src={course.thumbnail} 
-                      alt={course.title} 
-                      className="w-full h-64 object-cover"
-                    />
-                  ) : (
-                    <div className="bg-gradient-to-r from-purple-400 to-indigo-500 w-full h-64 flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-20 w-20 text-white opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                      </svg>
-                    </div>
-                  )}
-                  <div className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-medium text-gray-900 dark:text-white">Course Progress</h3>
-                        <div className="mt-2 w-full bg-gray-200 dark:bg-neutral-700 rounded-full h-2.5">
-                          <div className="bg-purple-600 h-2.5 rounded-full" style={{ width: '25%' }}></div>
-                        </div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">3 of {course.chapters?.length || 0} chapters completed</p>
-                      </div>
-                      <button className="w-12 h-12 rounded-full bg-purple-600 hover:bg-purple-700 flex items-center justify-center transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="lg:col-span-8 space-y-6">
+                <div className="aspect-video bg-neutral-200 dark:bg-neutral-800 rounded-lg" />
+                <div className="h-6 w-1/3 bg-neutral-200 dark:bg-neutral-800 rounded" />
+                <div className="space-y-2">
+                  <div className="h-4 w-full bg-neutral-200 dark:bg-neutral-800 rounded" />
+                  <div className="h-4 w-4/5 bg-neutral-200 dark:bg-neutral-800 rounded" />
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Course Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Chapters List */}
-          <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-lg overflow-hidden">
-              <div className="p-6 border-b border-gray-200 dark:border-neutral-700">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Course Chapters</h2>
-                <p className="text-gray-600 dark:text-gray-400 mt-2">{course.chapters?.length || 0} chapters in this playlist</p>
-              </div>
-              
-              <div className="divide-y divide-gray-200 dark:divide-neutral-700">
-                {course.chapters?.map((chapter, index) => (
-                  <div 
-                    key={index} 
-                    className={`p-6 cursor-pointer transition-colors ${
-                      index === activeChapter 
-                        ? 'bg-purple-50 dark:bg-purple-900/20' 
-                        : 'hover:bg-gray-50 dark:hover:bg-neutral-700'
-                    }`}
-                    onClick={() => setActiveChapter(index)}
-                  >
-                    <div className="flex items-start">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mr-4">
-                        <span className="font-medium text-purple-600 dark:text-purple-400">
-                          {index + 1}
-                        </span>
-                      </div>
-                      <div>
-                        <h3 className={`font-medium ${
-                          index === activeChapter 
-                            ? 'text-purple-600 dark:text-purple-400' 
-                            : 'text-gray-900 dark:text-white'
-                        }`}>
-                          {chapter.title || `Chapter ${index + 1}`}
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                          15 min • {index === 0 ? 'Free Preview' : 'Members Only'}
-                        </p>
-                      </div>
-                      <div className="ml-auto flex items-center">
-                        {index < 3 && (
-                          <span className="ml-3 px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full">
-                            Completed
-                          </span>
-                        )}
-                        {index === activeChapter && (
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-3 text-purple-600 dark:text-purple-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+              <div className="lg:col-span-4 rounded-lg border border-neutral-200 dark:border-neutral-800 p-5 space-y-4">
+                <div className="h-5 w-1/2 bg-neutral-200 dark:bg-neutral-800 rounded" />
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="h-12 w-full bg-neutral-200 dark:bg-neutral-800 rounded" />
                 ))}
               </div>
             </div>
-            
-           
           </div>
-          
-          {/* Chapter Content */}
-          <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-lg overflow-hidden">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {course.chapters?.[activeChapter]?.title || `Chapter ${activeChapter + 1}`}
-                  </h2>
-                  <div className="flex items-center">
-                    <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-700">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                      </svg>
-                    </button>
-                    <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-700 ml-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                
-                {/* Video Player */}
-                <div className="mb-8">
-                  <div className="aspect-w-16 aspect-h-9 bg-black rounded-xl overflow-hidden">
-                    {course.chapters?.[activeChapter]?.videoUrl ? (
-                      
-                        <VideoPlayer
-                                      videoId={`${course.chapters[activeChapter].videoUrl}`}
-                                    />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-white opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Notes */}
-                <div className="mb-8">
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Chapter Notes</h3>
-                  <div className="prose max-w-none dark:prose-invert prose-purple">
-                    {course.chapters?.[activeChapter]?.notes ? (
-                       <div
-  className="prose max-w-none dark:prose-invert prose-purple"
-  dangerouslySetInnerHTML={{ __html: course.notes }}
-/>
-                    ) : (
-                      <div className="text-gray-500 dark:text-gray-400 italic">
-                        No notes available for this chapter.
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Resources */}
-                {course.chapters?.[activeChapter]?.sourceLinks && course.chapters[activeChapter].sourceLinks.length > 0 && (
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Resources & Source Links</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {course.chapters[activeChapter].sourceLinks.map((link, index) => (
-                        <a 
-                          key={index}
-                          href={link} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="bg-gray-50 overflow-hidden dark:bg-neutral-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 p-4 rounded-lg border border-gray-200 dark:border-neutral-700 transition-colors group"
-                        >
-                          <div className="flex items-start">
-                            <div className="flex-shrink-0 w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mr-4">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                              </svg>
-                            </div>
-                            <div>
-                              <h4 className="font-medium text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors truncate">
-                                Resource {index + 1}
-                              </h4>
-                              <p className="text-sm text-gray-500 dark:text-gray-400 truncate mt-1">{link}</p>
-                            </div>
-                          </div>
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Navigation */}
-                <div className="mt-12 pt-8 border-t border-gray-200 dark:border-neutral-700 flex justify-between">
-                  {activeChapter > 0 && (
-                    <button 
-                      onClick={() => setActiveChapter(activeChapter - 1)}
-                      className="flex items-center px-6 py-3 bg-gray-100 dark:bg-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-600 rounded-lg transition-colors"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-gray-700 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                      Previous Chapter
-                    </button>
-                  )}
-                  
-                  {activeChapter < (course.chapters?.length - 1 || 0) && (
-                    <button 
-                      onClick={() => setActiveChapter(activeChapter + 1)}
-                      className="flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors ml-auto"
-                    >
-                      Next Chapter
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  )}
-                  
-                  {activeChapter === (course.chapters?.length - 1 || 0) && (
-                    <button className="flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors ml-auto">
-                      Complete Course
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-              </div>
+        )}
+
+        {/* Error State */}
+        {!loading && error && (
+          <div 
+            role="alert"
+            className="p-8 text-center rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 max-w-xl mx-auto my-12"
+          >
+            <AlertCircle className="w-10 h-10 text-neutral-500 mx-auto mb-3" aria-hidden="true" />
+            <h1 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Curriculum Unavailable</h1>
+            <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">{error}</p>
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={fetchCourse}
+                className="px-4 py-2 rounded-md bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-semibold hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
+              >
+                Retry
+              </button>
+              <Link
+                to="/OurCourse"
+                className="px-4 py-2 rounded-md border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              >
+                Browse Catalog
+              </Link>
             </div>
           </div>
-        </div>
-      </div>
-      
-      {/* Footer CTA */}
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-700 dark:from-purple-900 dark:to-indigo-900 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-6">Master your skills with our courses</h2>
-          <p className="text-xl text-purple-200 max-w-2xl mx-auto mb-8">
-            Join thousands of students who have advanced their careers with our learning platform.
-          </p>
-          <Link 
-            to="/OurCourse" 
-            className="inline-block px-8 py-4 bg-white text-purple-600 font-bold rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
-          >
-            Explore More Courses
-          </Link>
-        </div>
-      </div>
-    </div>
+        )}
+
+        {/* Main Content Area */}
+        {!loading && !error && course && (
+          <div>
+            {/* Header / Meta Bar */}
+            <header className="border-b border-neutral-200 dark:border-neutral-800 pb-6 mb-8">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div className="max-w-3xl">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700">
+                      <ListVideo className="w-3 h-3 text-cyan-500" aria-hidden="true" />
+                      PLAYLIST CURRICULUM
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-800">
+                      <Layers className="w-3 h-3" aria-hidden="true" />
+                      {chapters.length} {chapters.length === 1 ? 'Chapter' : 'Chapters'}
+                    </span>
+                    {formattedDate && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-800">
+                        <Calendar className="w-3 h-3" aria-hidden="true" />
+                        {formattedDate}
+                      </span>
+                    )}
+                  </div>
+                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+                    {course.title || 'Untitled Curriculum'}
+                  </h1>
+                  {course.description && (
+                    <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                      {course.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* Share action */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleCopyLink}
+                    aria-label="Copy course URL to clipboard"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-100"
+                  >
+                    {copiedLink ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                        <span>Copied Link</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+                        <span>Share Module</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </header>
+
+            {/* Layout Grid: Player & Notes (Col 8) + Chapter Sidebar (Col 4) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Left Column: Video Player & Chapter Content */}
+              <div className="lg:col-span-8 flex flex-col gap-6">
+                {/* Active Chapter Header */}
+                <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800 text-xs">
+                  <span className="font-mono text-neutral-500 dark:text-neutral-400">
+                    CHAPTER {activeChapter + 1} OF {chapters.length}
+                  </span>
+                  <span className="font-medium text-neutral-900 dark:text-neutral-100 truncate max-w-xs">
+                    {currentChapter?.title || `Chapter ${activeChapter + 1}`}
+                  </span>
+                </div>
+
+                {/* Video Player Container */}
+                <section aria-label="Video Player" className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-black overflow-hidden shadow-sm">
+                  {currentChapter?.videoUrl ? (
+                    <VideoPlayer videoId={String(currentChapter.videoUrl).trim()} />
+                  ) : (
+                    <div className="aspect-video flex flex-col items-center justify-center p-8 bg-neutral-900 text-neutral-400 text-center">
+                      <BookOpen className="w-10 h-10 mb-2 opacity-50" aria-hidden="true" />
+                      <p className="text-sm font-medium text-neutral-300">No video media linked for this chapter</p>
+                      <p className="text-xs text-neutral-500 mt-1">Review the notes and technical resources below.</p>
+                    </div>
+                  )}
+                </section>
+
+                {/* Chapter Navigation Controls */}
+                <div className="flex items-center justify-between gap-3 pt-2">
+                  <button
+                    type="button"
+                    disabled={activeChapter === 0}
+                    onClick={() => setActiveChapter(prev => Math.max(0, prev - 1))}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-100"
+                    aria-label="Navigate to previous chapter"
+                  >
+                    <ChevronLeft className="w-4 h-4" aria-hidden="true" />
+                    <span>Previous Chapter</span>
+                  </button>
+
+                  <span className="text-xs font-mono text-neutral-500 dark:text-neutral-400">
+                    {activeChapter + 1} / {chapters.length}
+                  </span>
+
+                  {activeChapter < chapters.length - 1 ? (
+                    <button
+                      type="button"
+                      onClick={() => setActiveChapter(prev => Math.min(chapters.length - 1, prev + 1))}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 text-xs font-semibold hover:bg-neutral-800 dark:hover:bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-100"
+                      aria-label="Navigate to next chapter"
+                    >
+                      <span>Next Chapter</span>
+                      <ChevronRight className="w-4 h-4" aria-hidden="true" />
+                    </button>
+                  ) : (
+                    <Link
+                      to="/OurCourse"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 text-xs font-semibold hover:bg-neutral-800 dark:hover:bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-100"
+                    >
+                      <span>Course Catalog</span>
+                      <ChevronRight className="w-4 h-4" aria-hidden="true" />
+                    </Link>
+                  )}
+                </div>
+
+                {/* Chapter Notes Section */}
+                <section 
+                  aria-labelledby="chapter-notes-title"
+                  className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-sm"
+                >
+                  <div className="flex items-center gap-2 border-b border-neutral-100 dark:border-neutral-800 pb-3 mb-4">
+                    <FileText className="w-4 h-4 text-neutral-500" aria-hidden="true" />
+                    <h2 id="chapter-notes-title" className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
+                      Chapter Notes &amp; Specification
+                    </h2>
+                  </div>
+
+                  <div className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
+                    {currentChapter?.notes ? (
+                      <div className="prose prose-neutral dark:prose-invert max-w-none prose-sm leading-relaxed">
+                        {parse(currentChapter.notes)}
+                      </div>
+                    ) : course.notes ? (
+                      <div className="prose prose-neutral dark:prose-invert max-w-none prose-sm leading-relaxed">
+                        {parse(course.notes)}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 italic">
+                        No supplementary written notes provided for this chapter. Follow along with the video instruction.
+                      </p>
+                    )}
+                  </div>
+                </section>
+
+                {/* Resources and Source Links */}
+                {((Array.isArray(currentChapter?.sourceLinks) && currentChapter.sourceLinks.length > 0) ||
+                  (Array.isArray(course?.sourceLinks) && course.sourceLinks.length > 0)) && (
+                  <section 
+                    aria-labelledby="chapter-resources-title"
+                    className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-sm"
+                  >
+                    <div className="flex items-center gap-2 border-b border-neutral-100 dark:border-neutral-800 pb-3 mb-4">
+                      <ExternalLink className="w-4 h-4 text-neutral-500" aria-hidden="true" />
+                      <h2 id="chapter-resources-title" className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
+                        Technical References &amp; Source Code
+                      </h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {(currentChapter?.sourceLinks?.length ? currentChapter.sourceLinks : course.sourceLinks).map((link, idx) => {
+                        let hostname = 'External Resource';
+                        try {
+                          hostname = new URL(link).hostname;
+                        } catch {
+                          hostname = link;
+                        }
+
+                        return (
+                          <a
+                            key={idx}
+                            href={link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group flex items-start gap-3 p-3 rounded-md border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors"
+                          >
+                            <ExternalLink className="w-4 h-4 text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-100 shrink-0 mt-0.5 transition-colors" aria-hidden="true" />
+                            <div className="min-w-0 flex-1">
+                              <span className="block text-xs font-medium text-neutral-900 dark:text-neutral-100 truncate group-hover:underline">
+                                Reference {idx + 1}: {hostname}
+                              </span>
+                              <span className="block text-[11px] font-mono text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
+                                {link}
+                              </span>
+                            </div>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </section>
+                )}
+              </div>
+
+              {/* Right Column: Playlist Chapter Selector (Sidebar) */}
+              <aside 
+                aria-label="Playlist chapter navigation" 
+                className="lg:col-span-4 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden shadow-sm sticky top-6"
+              >
+                <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-950/50 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                      Curriculum Index
+                    </h2>
+                    <p className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400 mt-0.5">
+                      {chapters.length} structured modules
+                    </p>
+                  </div>
+                  <span className="text-xs font-mono font-medium px-2 py-0.5 rounded bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+                    {Math.round(((activeChapter + 1) / Math.max(chapters.length, 1)) * 100)}% viewed
+                  </span>
+                </div>
+
+                <div 
+                  role="list"
+                  tabIndex={0}
+                  aria-label="Chapters in this curriculum"
+                  className="divide-y divide-neutral-100 dark:divide-neutral-800 max-h-[calc(100vh-220px)] overflow-y-auto focus:outline-none"
+                >
+                  {chapters.map((chapter, index) => {
+                    const isActive = index === activeChapter;
+
+                    return (
+                      <button
+                        key={index}
+                        type="button"
+                        role="listitem"
+                        aria-current={isActive ? 'step' : undefined}
+                        onClick={() => setActiveChapter(index)}
+                        className={`w-full text-left p-3.5 flex items-start gap-3 transition-colors text-xs focus:outline-none focus-visible:bg-neutral-100 dark:focus-visible:bg-neutral-800 ${
+                          isActive
+                            ? 'bg-neutral-100 dark:bg-neutral-800/80 font-medium border-l-2 border-neutral-900 dark:border-neutral-100'
+                            : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/40'
+                        }`}
+                      >
+                        {/* Index Indicator */}
+                        <span 
+                          className={`shrink-0 w-6 h-6 rounded flex items-center justify-center font-mono text-[11px] font-semibold border ${
+                            isActive
+                              ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 border-neutral-900 dark:border-neutral-100'
+                              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700'
+                          }`}
+                        >
+                          {index + 1}
+                        </span>
+
+                        <div className="flex-1 min-w-0">
+                          <p className={`truncate leading-snug ${
+                            isActive 
+                              ? 'text-neutral-900 dark:text-neutral-100 font-semibold' 
+                              : 'text-neutral-700 dark:text-neutral-300'
+                          }`}>
+                            {chapter.title || `Chapter ${index + 1}`}
+                          </p>
+                          <p className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400 mt-0.5">
+                            Module {index + 1}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </aside>
+            </div>
+          </div>
+        )}
+      </main>
     </Layout>
-    
   );
 };
 

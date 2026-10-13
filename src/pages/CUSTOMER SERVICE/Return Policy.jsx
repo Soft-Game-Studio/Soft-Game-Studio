@@ -1,301 +1,265 @@
-import React, { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+// src/pages/CUSTOMER SERVICE/Return Policy.jsx
+import React, { useMemo } from "react";
+import { Link } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
 import Layout from "../../components/layout/Layout";
 import { Helmet } from "react-helmet";
+import {
+  FileText,
+  RotateCcw,
+  BookOpen,
+  AlertTriangle,
+  Mail,
+  ArrowRight,
+  ShieldAlert,
+  Info
+} from "lucide-react";
+
 const ReturnPolicy = () => {
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({ target: containerRef });
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+  const shouldReduceMotion = useReducedMotion();
+
+  const structuredData = useMemo(() => {
+    return JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebPage",
+          "@id": "https://softgamestudios.web.app/ReturnPolicy#webpage",
+          "url": "https://softgamestudios.web.app/ReturnPolicy",
+          "name": "Return & Refund Policy | Soft Game Studio",
+          "description": "Commercial policies governing digital asset delivery, course notes access, and non-refundable service terms at Soft Game Studio.",
+          "isPartOf": {
+            "@type": "WebSite",
+            "@id": "https://softgamestudios.web.app/#website",
+            "name": "Soft Game Studio",
+            "url": "https://softgamestudios.web.app"
+          }
+        }
+      ]
+    });
+  }, []);
+
+  const pageTitle = "Return & Refund Policy | Soft Game Studio";
+  const pageDescription = "Read the official Return and Refund Policy of Soft Game Studio regarding instant digital goods, educational notes, and final sale conditions.";
+  const canonicalUrl = "https://softgamestudios.web.app/ReturnPolicy";
 
   return (
     <Layout>
       <Helmet>
-        <title>Return & Refund Policy | Soft Game Studio</title>
-        <meta
-          name="description"
-          content="Read Soft Game Studio’s Return and Refund Policy to understand our no-return, no-refund terms and how to contact our support team for any inquiries."
-        />
-        <meta
-          name="keywords"
-          content="Return Policy, Refund Policy, Soft Game Studio, No Returns, No Refunds, Customer Support, Purchase Terms"
-        />
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta name="keywords" content="Return Policy, Refund Policy, Soft Game Studio, Digital Goods Policy, No Refund Terms, Educational Purchases" />
         <meta name="author" content="Soft Game Studio" />
         <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={canonicalUrl} />
 
-        <meta property="og:title" content="Return & Refund Policy | Soft Game Studio" />
-        <meta
-          property="og:description"
-          content="Understand Soft Game Studio’s strict no-return, no-refund policy and learn how to reach out for any questions."
-        />
+        {/* Open Graph */}
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://softgamestudios.web.app/ReturnPolicy" />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:site_name" content="Soft Game Studio" />
         <meta property="og:image" content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" />
 
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Return & Refund Policy | Soft Game Studio" />
-        <meta
-          name="twitter:description"
-          content="Review Soft Game Studio’s Return and Refund Policy to know your purchase rights and our contact info."
-        />
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
         <meta name="twitter:image" content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" />
-        <meta name="twitter:site" content="@SoftGameStudio" />
 
-        <link rel="canonical" href="https://softgamestudios.web.app/ReturnPolicy" />
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {structuredData}
+        </script>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-gray-950 dark:to-neutral-950 text-gray-800 dark:text-gray-200 overflow-hidden">
-        {/* Parallax background */}
-        <motion.div
-          className="absolute inset-0 opacity-20 dark:opacity-10"
-          style={{
-            y,
-            backgroundImage: "url('https://webjl26.web.app/static/media/stars.7d85fe42.png')",
-            backgroundSize: "cover"
-          }}
-        />
+      <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 selection:bg-neutral-800 selection:text-white dark:selection:bg-neutral-200 dark:selection:text-neutral-900">
+        
+        {/* ── Header ────────────────────────────────────────────────── */}
+        <header className="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 py-12 sm:py-16">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 mb-6">
+              <Link to="/" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
+                Home
+              </Link>
+              <span>/</span>
+              <span className="text-neutral-900 dark:text-neutral-200 font-medium">
+                Return & Refund Policy
+              </span>
+            </nav>
 
-        {/* Floating elements */}
-        <motion.div
-          className="absolute top-[15%] left-[15%] w-64 h-64 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.1, 0.3, 0.1]
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          style={{
-            background: "radial-gradient(circle, rgba(192, 132, 252, 0.4) 0%, transparent 70%)"
-          }}
-        />
-
-        <motion.div
-          className="absolute bottom-[25%] right-[15%] w-48 h-48 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.15, 1],
-            opacity: [0.15, 0.25, 0.15]
-          }}
-          transition={{
-            duration: 7,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1
-          }}
-          style={{
-            background: "radial-gradient(circle, rgba(129, 140, 248, 0.4) 0%, transparent 70%)"
-          }}
-        />
-
-        {/* Content Container */}
-        <div className="relative max-w-5xl mx-auto px-4 py-16 z-10">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-12"
-          >
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-full bg-purple-600 dark:bg-purple-700 overflow-hidden flex items-center justify-center">
-                <img loading="lazy" src="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" alt="" />
-              </div>
-              <h1 className="text-3xl font-bold text-purple-800 dark:text-purple-400">Soft Game Studio</h1>
-            </div>
-
-            <motion.h1
-              className="text-4xl md:text-5xl font-bold text-center text-gray-900 dark:text-white mb-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              Return & Refund Policy
-            </motion.h1>
-            <motion.p
-              className="text-lg text-purple-600 dark:text-purple-300"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              Last Updated: January 09, 2025
-            </motion.p>
-          </motion.div>
-
-          {/* Policy sections */}
-          <div className="space-y-10">
-            {/* Introduction */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="bg-white dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl"
-            >
-              <div className="flex items-center gap-4 mb-6">
-                <div className="bg-blue-100 dark:bg-blue-900/50 p-3 rounded-xl">
-                  <span className="text-3xl">📝</span>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md text-xs font-mono font-medium tracking-wide uppercase bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 mb-4">
+                  <RotateCcw className="w-3.5 h-3.5 text-[#00ACF0]" />
+                  <span>Commercial Terms</span>
                 </div>
-                <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-400">Our Policy</h2>
-              </div>
-              <p className="mb-4">
-                Thank you for shopping at <strong className="text-blue-600 dark:text-blue-400">Soft Game Studio</strong>.
-              </p>
-              <p className="mb-4">
-                We hope that you are satisfied with your purchase. However, please
-                note that due to the nature of our products, all sales are final. We
-                do not accept returns or issue refunds under any circumstances.
-              </p>
-            </motion.div>
 
-            {/* Definitions */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              viewport={{ once: true }}
-              className="bg-white dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl"
-            >
-              <div className="flex items-center gap-4 mb-6">
-                <div className="bg-purple-100 dark:bg-purple-900/50 p-3 rounded-xl">
-                  <span className="text-3xl">📖</span>
-                </div>
-                <h2 className="text-2xl font-bold text-purple-700 dark:text-purple-400">Interpretation and Definitions</h2>
-              </div>
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 leading-tight">
+                  Return & Refund Policy
+                </h1>
 
-              <div className="mb-4">
-                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-gray-200">Interpretation</h3>
-                <p className="mb-4">
-                  The words, with the initial letter capitalized, have the meanings
-                  defined under the following conditions. These definitions shall
-                  apply regardless of whether they appear in the singular or plural.
+                <p className="mt-3 text-sm sm:text-base text-neutral-600 dark:text-neutral-400 max-w-2xl leading-relaxed">
+                  Understand how Soft Game Studio handles electronic orders, immediate digital delivery, and non-refundable digital goods.
                 </p>
               </div>
 
-              <div>
-                <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-gray-200">Definitions</h3>
-                <p className="mb-4">For the purposes of this Return and Refund Policy:</p>
-                <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3"></div>
-                    <div>
-                      <strong className="text-purple-700 dark:text-purple-300">Company</strong>
-                      <p>(referred to as "the Company," "We," "Us," or "Our") refers to SOFT GAME STUDIO.</p>
-                    </div>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3"></div>
-                    <div>
-                      <strong className="text-purple-700 dark:text-purple-300">Goods</strong>
-                      <p>Refer to the items offered for sale on the Service.</p>
-                    </div>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3"></div>
-                    <div>
-                      <strong className="text-purple-700 dark:text-purple-300">Orders</strong>
-                      <p>Mean a request by You to purchase Goods from Us.</p>
-                    </div>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3"></div>
-                    <div>
-                      <strong className="text-purple-700 dark:text-purple-300">Website</strong>
-                      <p>
-                        Refers to SOFT GAME STUDIO, accessible from{" "}
-                        <a
-                          href="https://softgamestudios.web.app"
-                          className="text-blue-600 dark:text-blue-400 underline hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          https://softgamestudios.web.app
-                        </a>
-                      </p>
-                    </div>
-                  </li>
-                </ul>
+              <div className="shrink-0 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/90 text-xs">
+                <span className="font-mono text-neutral-400 block uppercase tracking-wider text-[10px]">
+                  Policy Record
+                </span>
+                <span className="font-semibold text-neutral-900 dark:text-neutral-100 block mt-0.5">
+                  Last Updated: January 09, 2025
+                </span>
+                <span className="text-neutral-500 dark:text-neutral-400 block text-[11px] mt-0.5">
+                  Immediate Digital Provision
+                </span>
               </div>
-            </motion.div>
+            </div>
 
-            {/* No Return Policy */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              viewport={{ once: true }}
-              className="bg-white dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl"
-            >
-              <div className="flex items-center gap-4 mb-6">
-                <div className="bg-red-100 dark:bg-red-900/50 p-3 rounded-xl">
-                  <span className="text-3xl">🚫</span>
-                </div>
-                <h2 className="text-2xl font-bold text-red-700 dark:text-red-400">No Return and No Refund Policy</h2>
-              </div>
-
-              <p className="mb-4">
-                Once an order is placed and the product is delivered, the product
-                cannot be returned or refunded under any circumstances. Please
-                ensure that you carefully review your order before confirming your
-                purchase.
-              </p>
-
-              <div className="mt-6 p-4 bg-red-50 dark:bg-gray-800 rounded-xl border border-red-100 dark:border-gray-700">
-                <h3 className="font-bold mb-3 flex items-center gap-2 text-red-700 dark:text-red-400">
-                  <span>⚠️</span> Important Notice
-                </h3>
-                <p className="mb-3">By purchasing from us, you acknowledge and agree that:</p>
-                <ul className="space-y-2">
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3"></div>
-                    <span>No refunds will be issued under any conditions</span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3"></div>
-                    <span>No returns will be accepted after the product has been delivered</span>
-                  </li>
-                </ul>
-              </div>
-            </motion.div>
-
-            {/* Contact Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              viewport={{ once: true }}
-              className="bg-white dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl text-center"
-            >
-              <div className="flex items-center gap-4 mb-6 justify-center">
-                <div className="bg-blue-100 dark:bg-blue-900/50 p-3 rounded-xl">
-                  <span className="text-3xl">📬</span>
-                </div>
-                <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-400">Contact Us</h2>
-              </div>
-              <p className="mb-6 max-w-2xl mx-auto">
-                If you have any questions about our Return and Refund Policy, please contact our team:
-              </p>
-
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <a
-                  href="mailto:team.softgamestudio@gmail.com"
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                >
-                  Email Our Team
-                </a>
-                <a
-                  href="https://softgamestudios.web.app/ContactUs"
-                  className="px-6 py-3 bg-white dark:bg-gray-800 border border-blue-600 text-blue-600 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                >
-                  Contact Form
-                </a>
-              </div>
-            </motion.div>
           </div>
+        </header>
 
+        {/* ── Content Sections ──────────────────────────────────────── */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-10">
+
+          {/* Section 1: Overview */}
+          <section
+            className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 sm:p-8 shadow-xs"
+            aria-labelledby="overview-heading"
+          >
+            <div className="flex items-center gap-3.5 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center shrink-0">
+                <FileText className="w-5 h-5 text-[#00ACF0]" />
+              </div>
+              <h2 id="overview-heading" className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
+                1. Core Policy Overview
+              </h2>
+            </div>
+            <div className="space-y-3 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+              <p>
+                Thank you for utilizing the educational tools and publications offered by <strong>Soft Game Studio</strong>.
+              </p>
+              <p>
+                Because our commercial offerings consist predominantly of instantly delivered electronic content (including downloadable PDF notes, source code repositories, digital quiz exam keys, and online publications), <strong>all completed transactions are final</strong>. We do not provide cash refunds, credits, or return processing once access has been provisioned.
+              </p>
+            </div>
+          </section>
+
+          {/* Section 2: Definitions */}
+          <section
+            className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 sm:p-8 shadow-xs"
+            aria-labelledby="definitions-heading"
+          >
+            <div className="flex items-center gap-3.5 mb-6">
+              <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center shrink-0">
+                <BookOpen className="w-5 h-5 text-indigo-500" />
+              </div>
+              <h2 id="definitions-heading" className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
+                2. Interpretation & Definitions
+              </h2>
+            </div>
+
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
+              <div className="p-4 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
+                <dt className="font-semibold text-neutral-900 dark:text-neutral-100 mb-1">Company</dt>
+                <dd className="text-neutral-600 dark:text-neutral-400 leading-relaxed text-xs">
+                  Refers to Soft Game Studio, an MSME-registered enterprise based in Fazilka, Punjab, India.
+                </dd>
+              </div>
+
+              <div className="p-4 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
+                <dt className="font-semibold text-neutral-900 dark:text-neutral-100 mb-1">Digital Goods</dt>
+                <dd className="text-neutral-600 dark:text-neutral-400 leading-relaxed text-xs">
+                  Refers to electronic manuals, PDFs, code archives, and assessments delivered via web download or immediate portal access.
+                </dd>
+              </div>
+
+              <div className="p-4 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
+                <dt className="font-semibold text-neutral-900 dark:text-neutral-100 mb-1">Order</dt>
+                <dd className="text-neutral-600 dark:text-neutral-400 leading-relaxed text-xs">
+                  A formal user-initiated request to obtain premium digital items through our online payment pipeline.
+                </dd>
+              </div>
+
+              <div className="p-4 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
+                <dt className="font-semibold text-neutral-900 dark:text-neutral-100 mb-1">Service Platform</dt>
+                <dd className="text-neutral-600 dark:text-neutral-400 leading-relaxed text-xs">
+                  The web application hosted at https://softgamestudios.web.app and related official subdomains.
+                </dd>
+              </div>
+            </dl>
+          </section>
+
+          {/* Section 3: No-Return Notice */}
+          <section
+            className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 sm:p-8 shadow-xs"
+            aria-labelledby="terms-heading"
+          >
+            <div className="flex items-center gap-3.5 mb-6">
+              <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center shrink-0">
+                <ShieldAlert className="w-5 h-5 text-rose-500" />
+              </div>
+              <h2 id="terms-heading" className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
+                3. Final Sale Terms
+              </h2>
+            </div>
+
+            <div className="space-y-4 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+              <p>
+                Once payment is confirmed and digital content access has been granted, the transaction is irreversible. Users are strongly encouraged to inspect free preview modules, syllabus outlines, and sample notes available across our library before initiating purchase.
+              </p>
+
+              <div className="p-4 rounded-lg border border-rose-200 dark:border-rose-900/50 bg-rose-50/60 dark:bg-rose-950/20 text-neutral-800 dark:text-neutral-200">
+                <div className="flex items-start gap-2.5">
+                  <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="font-semibold text-xs text-rose-900 dark:text-rose-200">
+                      Binding Transaction Conditions
+                    </h3>
+                    <ul className="list-disc pl-4 space-y-1 mt-1 text-xs text-rose-800 dark:text-rose-300">
+                      <li>No refunds are issued under any standard circumstance once files are delivered.</li>
+                      <li>Returns cannot be processed for intangible software licenses, downloaded PDFs, or completed quiz evaluations.</li>
+                      <li>In the rare event of duplicate charges caused by gateway timeouts, contact our billing desk with proof of payment for resolution.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Section 4: Contact & Resolution */}
+          <section
+            className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-900 text-white p-6 sm:p-8 text-center shadow-xs"
+            aria-labelledby="contact-heading"
+          >
+            <h2 id="contact-heading" className="text-lg font-bold text-white mb-2">
+              Have an Order Ingestion Problem?
+            </h2>
+            <p className="text-xs sm:text-sm text-neutral-300 max-w-xl mx-auto mb-6 leading-relaxed">
+              If you experienced a failed download, corrupted file extraction, or gateway deduction issue, our technical team will assist you promptly.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <a
+                href="mailto:team.softgamestudio@gmail.com?subject=Billing%20or%20Order%20Assistance"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-semibold text-neutral-900 bg-white hover:bg-neutral-100 transition-colors shadow-xs"
+              >
+                <Mail className="w-4 h-4 text-[#00ACF0]" />
+                <span>Contact Billing Support</span>
+              </a>
+              <Link
+                to="/ContactUs"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-medium border border-neutral-700 hover:bg-white/10 transition-colors"
+              >
+                <span>Support Desk</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </section>
 
         </div>
-      </div>
+      </main>
     </Layout>
   );
 };

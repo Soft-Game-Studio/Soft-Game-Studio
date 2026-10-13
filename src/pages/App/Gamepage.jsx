@@ -1,69 +1,70 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Helmet } from 'react-helmet';
-import Layout from '../../components/layout/Layout';
+import { motion, useReducedMotion } from 'framer-motion';
+import { Helmet } from 'react-helmet-async';
 import { 
-  FaWindows, 
-  FaAndroid, 
-  FaGooglePlay, 
-  FaSearch, 
-  FaFilter,
-  FaGamepad,
-  FaCalendarAlt,
-  FaDownload,
-  FaFire,
-  FaStar,
-  FaSort,
-  FaTimes
-} from 'react-icons/fa';
+  Gamepad2, 
+  Search, 
+  Calendar, 
+  Download, 
+  AlertCircle, 
+  RefreshCw, 
+  ArrowRight,
+  Monitor,
+  Smartphone,
+  ExternalLink,
+  Layers,
+  Sparkles
+} from 'lucide-react';
+import Layout from '../../components/layout/Layout';
 import { gameService } from './gameService';
 
 const GamesListPage = () => {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPlatform, setSelectedPlatform] = useState('all');
-  const [sortBy, setSortBy] = useState('newest');
+  const [selectedPlatform, setSelectedPlatform] = useState('all'); // 'all' | 'windows' | 'android' | 'playstore'
+  const [sortBy, setSortBy] = useState('newest'); // 'newest' | 'oldest' | 'name-asc' | 'name-desc'
   const [error, setError] = useState(null);
+  const shouldReduceMotion = useReducedMotion();
 
-  useEffect(() => {
-    fetchGames();
-  }, []);
-
-  const fetchGames = async () => {
+  const fetchGames = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
       const gamesData = await gameService.getAllGames();
       setGames(gamesData);
-      setError(null);
     } catch (err) {
-      setError("Failed to load games. Please try again later.");
-      console.error(err);
+      setError("Unable to load game titles. Please verify your connection and try again.");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchGames();
+  }, [fetchGames]);
 
   // Filter and sort games
   const filteredGames = useMemo(() => {
     let filtered = [...games];
 
     // Search filter
-    if (searchTerm) {
+    const query = searchTerm.trim().toLowerCase();
+    if (query) {
       filtered = filtered.filter(game => 
-        game.gameName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        game.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        game.developerName?.toLowerCase().includes(searchTerm.toLowerCase())
+        (game.gameName && game.gameName.toLowerCase().includes(query)) ||
+        (game.description && game.description.toLowerCase().includes(query)) ||
+        (game.developerName && game.developerName.toLowerCase().includes(query))
       );
     }
 
     // Platform filter
     if (selectedPlatform !== 'all') {
       filtered = filtered.filter(game => {
-        if (selectedPlatform === 'windows') return game.windowsExeLink;
-        if (selectedPlatform === 'android') return game.androidApkLink;
-        if (selectedPlatform === 'playstore') return game.playStoreLink;
+        if (selectedPlatform === 'windows') return Boolean(game.windowsExeLink);
+        if (selectedPlatform === 'android') return Boolean(game.androidApkLink);
+        if (selectedPlatform === 'playstore') return Boolean(game.playStoreLink);
         return true;
       });
     }
@@ -72,13 +73,13 @@ const GamesListPage = () => {
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'newest':
-          return new Date(b.createdAt) - new Date(a.createdAt);
+          return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
         case 'oldest':
-          return new Date(a.createdAt) - new Date(b.createdAt);
+          return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
         case 'name-asc':
-          return a.gameName.localeCompare(b.gameName);
+          return (a.gameName || '').localeCompare(b.gameName || '');
         case 'name-desc':
-          return b.gameName.localeCompare(a.gameName);
+          return (b.gameName || '').localeCompare(a.gameName || '');
         default:
           return 0;
       }
@@ -87,21 +88,18 @@ const GamesListPage = () => {
     return filtered;
   }, [games, searchTerm, selectedPlatform, sortBy]);
 
-  const getPlatformIcons = (game) => {
-    const icons = [];
-    if (game.windowsExeLink) icons.push({ icon: <FaWindows />, color: 'text-blue-500', label: 'Windows' });
-    if (game.androidApkLink) icons.push({ icon: <FaAndroid />, color: 'text-green-500', label: 'Android' });
-    if (game.playStoreLink) icons.push({ icon: <FaGooglePlay />, color: 'text-yellow-500', label: 'Play Store' });
-    return icons;
-  };
-
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
+    if (!dateString) return 'Release Build';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    } catch {
+      return 'Release Build';
+    }
   };
 
   const clearFilters = () => {
@@ -110,436 +108,397 @@ const GamesListPage = () => {
     setSortBy('newest');
   };
 
-  if (loading) {
-    return (
-      <Layout>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600 dark:text-gray-300">Loading games...</p>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
+  // Structured Data JSON-LD
+  const structuredData = useMemo(() => {
+    return JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'CollectionPage',
+          '@id': 'https://softgamestudios.web.app/game#webpage',
+          url: 'https://softgamestudios.web.app/game',
+          name: 'Game Engineering & Interactive Titles | Soft Game Studio',
+          description: 'Explore and download interactive 2D games, physics engines, and playable titles developed by Soft Game Studio for Windows PC and Android.',
+          isPartOf: {
+            '@type': 'WebSite',
+            '@id': 'https://softgamestudios.web.app/#website',
+            name: 'Soft Game Studio',
+            url: 'https://softgamestudios.web.app/'
+          }
+        },
+        {
+          '@type': 'ItemList',
+          itemListElement: games.slice(0, 12).map((game, index) => ({
+            '@type': 'ListItem',
+            position: index + 1,
+            item: {
+              '@type': 'VideoGame',
+              name: game.gameName || 'Interactive Title',
+              description: game.description || '2D video game developed by Soft Game Studio.',
+              author: {
+                '@type': 'Organization',
+                name: game.developerName || 'Soft Game Studio'
+              },
+              operatingSystem: [
+                game.windowsExeLink ? 'Windows' : null,
+                game.androidApkLink ? 'Android' : null
+              ].filter(Boolean).join(', ') || 'Windows, Android',
+              url: `https://softgamestudios.web.app/game/${game.id}`
+            }
+          }))
+        }
+      ]
+    });
+  }, [games]);
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black">
-        <Helmet>
-          <html lang="en" />
-          <title>Game Library | Soft Game Studio</title>
-          <meta
-            name="description"
-            content="Browse our collection of games. Download free games for Windows and Android."
-          />
-          <meta
-            property="og:title"
-            content="Game Library - Soft Game Studio"
-          />
-          <meta
-            property="og:description"
-            content="Discover amazing games for all platforms. Free downloads available."
-          />
-        </Helmet>
+      <Helmet>
+        <html lang="en" />
+        <title>Game Engineering &amp; Interactive Titles | Soft Game Studio</title>
+        <meta
+          name="description"
+          content="Explore and download original 2D titles, real-time physics engines, and playable desktop/mobile builds engineered by Soft Game Studio."
+        />
+        <link rel="canonical" href="https://softgamestudios.web.app/game" />
 
-        {/* Hero Section */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-orange-500 via-red-500 to-purple-600 py-16 md:py-24">
-          <div className="absolute inset-0 bg-black/20"></div>
-          <div className="relative max-w-7xl mx-auto px-4 text-center">
-            <motion.h1
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-5xl md:text-7xl font-bold text-white mb-6"
-            >
-              Game Library
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-              className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto mb-8"
-            >
-              Discover amazing games crafted with passion
-            </motion.p>
-            
-            {/* Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto"
-            >
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                <div className="text-3xl font-bold text-white">{games.length}</div>
-                <div className="text-white/80">Total Games</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                <div className="text-3xl font-bold text-white">
-                  {games.filter(g => g.windowsExeLink).length}
-                </div>
-                <div className="text-white/80">Windows Games</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                <div className="text-3xl font-bold text-white">
-                  {games.filter(g => g.androidApkLink).length}
-                </div>
-                <div className="text-white/80">Android Games</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                <div className="text-3xl font-bold text-white">Free</div>
-                <div className="text-white/80">All Games</div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Soft Game Studio" />
+        <meta property="og:title" content="Game Engineering &amp; Interactive Titles | Soft Game Studio" />
+        <meta
+          property="og:description"
+          content="Explore and download original 2D titles and interactive game builds engineered by Soft Game Studio."
+        />
+        <meta property="og:url" content="https://softgamestudios.web.app/game" />
+        <meta
+          property="og:image"
+          content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media"
+        />
 
-        {/* Search and Filter Section */}
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-              {/* Search Bar */}
-              <div className="md:col-span-6">
-                <div className="relative">
-                  <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search games by name, description, or developer..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  />
-                  {searchTerm && (
-                    <button
-                      onClick={() => setSearchTerm('')}
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      <FaTimes />
-                    </button>
-                  )}
-                </div>
-              </div>
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Game Engineering &amp; Interactive Titles | Soft Game Studio" />
+        <meta
+          name="twitter:description"
+          content="Original 2D titles and playable desktop/mobile builds engineered by Soft Game Studio."
+        />
+        <meta
+          name="twitter:image"
+          content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media"
+        />
+        <script type="application/ld+json">{structuredData}</script>
+      </Helmet>
 
-              {/* Platform Filter */}
-              <div className="md:col-span-3">
-                <div className="relative">
-                  <FaFilter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <select
-                    value={selectedPlatform}
-                    onChange={(e) => setSelectedPlatform(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white appearance-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  >
-                    <option value="all">All Platforms</option>
-                    <option value="windows">Windows Only</option>
-                    <option value="android">Android Only</option>
-                    <option value="playstore">Play Store</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Sort By */}
-              <div className="md:col-span-3">
-                <div className="relative">
-                  <FaSort className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white appearance-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  >
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
-                    <option value="name-asc">Name A-Z</option>
-                    <option value="name-desc">Name Z-A</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Clear Filters Button */}
-              {(searchTerm || selectedPlatform !== 'all' || sortBy !== 'newest') && (
-                <div className="md:col-span-12 flex justify-end">
-                  <button
-                    onClick={clearFilters}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-red-500"
-                  >
-                    <FaTimes />
-                    Clear All Filters
-                  </button>
-                </div>
-              )}
+      <main id="main-content" className="min-h-screen py-10 sm:py-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        {/* Header Section */}
+        <header className="mb-10 sm:mb-12">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-neutral-200 dark:border-neutral-800 pb-8">
+            <div className="max-w-2xl">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 mb-3">
+                <Gamepad2 className="w-3.5 h-3.5" aria-hidden="true" />
+                GAME ENGINEERING
+              </span>
+              <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+                Interactive Titles &amp; 2D Engines
+              </h1>
+              <p className="mt-2 text-base text-neutral-600 dark:text-neutral-400">
+                Playable standalone builds, physics prototypes, and interactive experiences developed with Phaser 3, WebGL, and custom game loops.
+              </p>
             </div>
 
-            {/* Active Filters Display */}
-            <div className="flex flex-wrap gap-2 mt-4">
-              {searchTerm && (
-                <span className="inline-flex items-center gap-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm">
-                  Search: "{searchTerm}"
-                  <button onClick={() => setSearchTerm('')}>
-                    <FaTimes className="text-xs" />
-                  </button>
-                </span>
-              )}
-              {selectedPlatform !== 'all' && (
-                <span className="inline-flex items-center gap-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-3 py-1 rounded-full text-sm">
-                  Platform: {selectedPlatform}
-                  <button onClick={() => setSelectedPlatform('all')}>
-                    <FaTimes className="text-xs" />
-                  </button>
-                </span>
-              )}
-              {sortBy !== 'newest' && (
-                <span className="inline-flex items-center gap-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-3 py-1 rounded-full text-sm">
-                  Sort: {sortBy}
-                  <button onClick={() => setSortBy('newest')}>
-                    <FaTimes className="text-xs" />
-                  </button>
-                </span>
-              )}
+            {/* Quick Catalog Stats */}
+            <div className="hidden sm:flex items-center gap-3 text-xs font-mono text-neutral-500 dark:text-neutral-400">
+              <div className="px-3 py-2 rounded border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50">
+                <span className="text-neutral-900 dark:text-neutral-100 font-semibold">{games.length}</span> Published Titles
+              </div>
             </div>
           </div>
 
-          {/* Error State */}
-          {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center mb-8">
-              <p className="text-red-600 dark:text-red-400">{error}</p>
+          {/* Search, Filter & Sort Controls */}
+          <div className="mt-8 flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+            {/* Platform Segmented Filter */}
+            <div 
+              role="radiogroup" 
+              aria-label="Filter games by platform"
+              className="inline-flex p-1 rounded-md bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-x-auto"
+            >
               <button
-                onClick={fetchGames}
-                className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                type="button"
+                role="radio"
+                aria-checked={selectedPlatform === 'all'}
+                onClick={() => setSelectedPlatform('all')}
+                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
+                  selectedPlatform === 'all'
+                    ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
+                }`}
               >
-                Try Again
+                All Platforms ({games.length})
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={selectedPlatform === 'windows'}
+                onClick={() => setSelectedPlatform('windows')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
+                  selectedPlatform === 'windows'
+                    ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
+                }`}
+              >
+                <Monitor className="w-3.5 h-3.5" aria-hidden="true" />
+                Windows PC
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={selectedPlatform === 'android'}
+                onClick={() => setSelectedPlatform('android')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
+                  selectedPlatform === 'android'
+                    ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
+                }`}
+              >
+                <Smartphone className="w-3.5 h-3.5" aria-hidden="true" />
+                Android APK
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={selectedPlatform === 'playstore'}
+                onClick={() => setSelectedPlatform('playstore')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
+                  selectedPlatform === 'playstore'
+                    ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
+                }`}
+              >
+                <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
+                Play Store
               </button>
             </div>
-          )}
 
-          {/* Results Count */}
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              All Games ({filteredGames.length})
-            </h2>
-            <div className="text-gray-600 dark:text-gray-400 text-sm">
-              Showing {filteredGames.length} of {games.length} games
+            {/* Search Input & Sort Dropdown */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" aria-hidden="true" />
+                <input
+                  type="search"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search titles..."
+                  aria-label="Search game titles"
+                  className="w-full pl-9 pr-3 py-1.5 text-xs rounded-md bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-100 transition-colors"
+                />
+              </div>
+
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                aria-label="Sort titles"
+                className="px-3 py-1.5 text-xs rounded-md bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-100 transition-colors"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="name-asc">Title: A to Z</option>
+                <option value="name-desc">Title: Z to A</option>
+              </select>
             </div>
           </div>
+        </header>
 
-          {/* Games Grid */}
-          {filteredGames.length === 0 ? (
-            <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl shadow">
-              <div className="text-6xl mb-4">🎮</div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                No games found
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Try adjusting your search or filter criteria
-              </p>
+        {/* Loading Skeleton State */}
+        {loading && (
+          <div 
+            aria-busy="true" 
+            aria-label="Loading interactive titles"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {[...Array(6)].map((_, i) => (
+              <div 
+                key={i} 
+                className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden animate-pulse"
+              >
+                <div className="aspect-video bg-neutral-200 dark:bg-neutral-800" />
+                <div className="p-5 space-y-3">
+                  <div className="h-4 w-1/2 bg-neutral-200 dark:bg-neutral-800 rounded" />
+                  <div className="h-3.5 w-full bg-neutral-200 dark:bg-neutral-800 rounded" />
+                  <div className="h-3.5 w-3/4 bg-neutral-200 dark:bg-neutral-800 rounded" />
+                  <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
+                    <div className="h-3 w-20 bg-neutral-200 dark:bg-neutral-800 rounded" />
+                    <div className="h-7 w-20 bg-neutral-200 dark:bg-neutral-800 rounded-md" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Error State */}
+        {!loading && error && (
+          <div 
+            role="alert"
+            className="p-8 text-center rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 max-w-xl mx-auto my-8"
+          >
+            <AlertCircle className="w-10 h-10 text-neutral-500 mx-auto mb-3" aria-hidden="true" />
+            <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">Library Unavailable</h2>
+            <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">{error}</p>
+            <button
+              type="button"
+              onClick={fetchGames}
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-md bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-semibold hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-100"
+            >
+              <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
+              Retry Connection
+            </button>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && !error && filteredGames.length === 0 && (
+          <div className="py-16 text-center rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/50">
+            <Gamepad2 className="w-10 h-10 text-neutral-400 mx-auto mb-3" aria-hidden="true" />
+            <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">No game titles found</h2>
+            <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
+              {searchTerm 
+                ? `No titles matching "${searchTerm}". Try resetting search or platform filters.` 
+                : 'No games currently published under this category.'}
+            </p>
+            {(searchTerm || selectedPlatform !== 'all') && (
               <button
+                type="button"
                 onClick={clearFilters}
-                className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+                className="mt-4 px-3 py-1.5 text-xs font-medium rounded-md border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
               >
-                Clear All Filters
+                Reset All Filters
               </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredGames.map((game, index) => (
-                <motion.div
-                  key={game.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  whileHover={{ y: -8, transition: { duration: 0.2 } }}
-                  className="group"
-                >
-                  <Link to={`/game/${game.id}`}>
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-all duration-300">
-                      {/* Game Banner */}
-                      <div className="relative h-48 overflow-hidden">
-                        {game.bannerImageUrl ? (
-                          <img
-                            src={game.bannerImageUrl}
-                            alt={game.gameName}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
-                            <FaGamepad className="text-4xl text-gray-500 dark:text-gray-600" />
-                          </div>
-                        )}
-                        
-                        {/* Platform Badges */}
-                        <div className="absolute top-3 right-3 flex gap-1">
-                          {getPlatformIcons(game).map((platform, idx) => (
-                            <div
-                              key={idx}
-                              className={`bg-white/90 dark:bg-gray-900/90 p-2 rounded-full ${platform.color} backdrop-blur-sm`}
-                              title={platform.label}
-                            >
-                              {platform.icon}
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* New Badge */}
-                        {new Date(game.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) && (
-                          <div className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                            <FaFire /> NEW
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Game Info */}
-                      <div className="p-5">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="text-xl font-bold text-gray-900 dark:text-white truncate">
-                            {game.gameName}
-                          </h3>
-                          {game.playStoreLink && (
-                            <FaStar className="text-yellow-500" />
-                          )}
-                        </div>
-
-                        <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
-                          {game.description}
-                        </p>
-
-                        {/* Developer & Date */}
-                        <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400 mb-4">
-                          {game.developerName && (
-                            <div className="flex items-center gap-1">
-                              <FaGamepad className="text-xs" />
-                              <span>{game.developerName}</span>
-                            </div>
-                          )}
-                          <div className="flex items-center gap-1">
-                            <FaCalendarAlt className="text-xs" />
-                            <span>{formatDate(game.createdAt)}</span>
-                          </div>
-                        </div>
-
-                        {/* Features Preview */}
-                        {game.gameFeatures && game.gameFeatures.length > 0 && (
-                          <div className="mb-4">
-                            <div className="flex flex-wrap gap-2">
-                              {game.gameFeatures.slice(0, 3).map((feature, idx) => (
-                                <span
-                                  key={idx}
-                                  className="px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 rounded-lg text-xs"
-                                >
-                                  {feature.title}
-                                </span>
-                              ))}
-                              {game.gameFeatures.length > 3 && (
-                                <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-xs">
-                                  +{game.gameFeatures.length - 3} more
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Action Button */}
-                        <div className="flex items-center justify-between">
-                          <div className="flex gap-2">
-                            {game.windowsExeLink && (
-                              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                                <FaWindows className="text-blue-500" />
-                              </div>
-                            )}
-                            {game.androidApkLink && (
-                              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                                <FaAndroid className="text-green-500" />
-                              </div>
-                            )}
-                          </div>
-                          <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:opacity-90 transition-opacity">
-                            <FaDownload />
-                            Download
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
-          )}
-
-          {/* Featured Games Section */}
-          {games.length > 3 && (
-            <div className="mt-16">
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Featured Games</h2>
-                  <p className="text-gray-600 dark:text-gray-400">Our most popular downloads</p>
-                </div>
-                <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-full text-sm font-bold">
-                  TOP PICKS
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {games.slice(0, 3).map((game, index) => (
-                  <motion.div
-                    key={`featured-${game.id}`}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="group"
-                  >
-                    <Link to={`/game/${game.id}`}>
-                      <div className="bg-gradient-to-r from-gray-900 to-black rounded-2xl overflow-hidden shadow-2xl">
-                        <div className="relative h-64 overflow-hidden">
-                          {game.bannerImageUrl ? (
-                            <img
-                              src={game.bannerImageUrl}
-                              alt={game.gameName}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-r from-gray-800 to-gray-900 flex items-center justify-center">
-                              <FaGamepad className="text-6xl text-gray-600" />
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                          <div className="absolute bottom-4 left-4 right-4">
-                            <h3 className="text-2xl font-bold text-white mb-2">{game.gameName}</h3>
-                            <p className="text-gray-300 text-sm line-clamp-2">{game.description}</p>
-                          </div>
-                          <div className="absolute top-4 right-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-black px-3 py-1 rounded-full text-sm font-bold">
-                            #{index + 1} Trending
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Call to Action */}
-          <div className="mt-16 text-center">
-            <div className="bg-gradient-to-r from-gray-900 to-black rounded-3xl p-8 md:p-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                Ready to Play?
-              </h2>
-              <p className="text-gray-300 max-w-2xl mx-auto mb-8">
-                Download any of our games for free and start your gaming adventure today!
-              </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <button onClick={() => setSelectedPlatform("windows")} className="flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-blue-800 text-white py-3 px-8 rounded-xl hover:opacity-90">
-                  <FaWindows />
-                  Browse Windows Games
-                </button>
-                <button onClick={() => setSelectedPlatform("android")} className="flex items-center justify-center gap-3 bg-gradient-to-r from-green-600 to-green-800 text-white py-3 px-8 rounded-xl hover:opacity-90">
-                  <FaAndroid />
-                  Browse Android Games
-                </button>
-              </div>
-            </div>
+            )}
           </div>
-        </div>
-      </div>
+        )}
+
+        {/* Game Cards Grid */}
+        {!loading && !error && filteredGames.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredGames.map((game, index) => {
+              const targetUrl = `/game/${game.id}`;
+
+              return (
+                <motion.article
+                  key={game.id}
+                  initial={shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ 
+                    duration: shouldReduceMotion ? 0.01 : 0.35, 
+                    delay: shouldReduceMotion ? 0 : Math.min(index * 0.05, 0.3),
+                    ease: [0.22, 1, 0.36, 1]
+                  }}
+                  className="group flex flex-col rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors"
+                >
+                  {/* Banner Aspect Container */}
+                  <div className="relative aspect-video bg-neutral-100 dark:bg-neutral-800 overflow-hidden border-b border-neutral-100 dark:border-neutral-800">
+                    {game.bannerImageUrl ? (
+                      <img
+                        loading="lazy"
+                        src={game.bannerImageUrl}
+                        alt={game.gameName ? `Banner for ${game.gameName}` : 'Game banner'}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-neutral-100 dark:bg-neutral-800 text-neutral-400">
+                        <Gamepad2 className="w-8 h-8 mb-1.5 opacity-60" aria-hidden="true" />
+                        <span className="text-xs font-mono uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                          Interactive Build
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Platform Tag Indicators */}
+                    <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                      {game.windowsExeLink && (
+                        <span 
+                          className="px-2 py-0.5 rounded text-[10px] font-mono font-medium tracking-wide bg-neutral-900/85 text-white dark:bg-neutral-950/90 dark:text-neutral-200 backdrop-blur-sm border border-neutral-700/50 flex items-center gap-1"
+                          title="Windows Executable Available"
+                        >
+                          <Monitor className="w-3 h-3 text-cyan-400" aria-hidden="true" />
+                          WIN
+                        </span>
+                      )}
+                      {game.androidApkLink && (
+                        <span 
+                          className="px-2 py-0.5 rounded text-[10px] font-mono font-medium tracking-wide bg-neutral-900/85 text-white dark:bg-neutral-950/90 dark:text-neutral-200 backdrop-blur-sm border border-neutral-700/50 flex items-center gap-1"
+                          title="Android APK Available"
+                        >
+                          <Smartphone className="w-3 h-3 text-emerald-400" aria-hidden="true" />
+                          APK
+                        </span>
+                      )}
+                      {game.playStoreLink && (
+                        <span 
+                          className="px-2 py-0.5 rounded text-[10px] font-mono font-medium tracking-wide bg-neutral-900/85 text-white dark:bg-neutral-950/90 dark:text-neutral-200 backdrop-blur-sm border border-neutral-700/50 flex items-center gap-1"
+                          title="Google Play Store Link"
+                        >
+                          <ExternalLink className="w-3 h-3 text-amber-400" aria-hidden="true" />
+                          PLAY
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Body Content */}
+                  <div className="p-5 flex-1 flex flex-col">
+                    <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100 line-clamp-1 group-hover:text-neutral-950 dark:group-hover:text-white transition-colors">
+                      <Link 
+                        to={targetUrl}
+                        className="focus:outline-none focus-visible:underline"
+                        aria-label={`View specifications for ${game.gameName || 'Game'}`}
+                      >
+                        {game.gameName || 'Untitled Project'}
+                      </Link>
+                    </h2>
+
+                    <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-400 line-clamp-2 flex-1 leading-relaxed">
+                      {game.description || 'Original 2D interactive title engineered by Soft Game Studio.'}
+                    </p>
+
+                    {/* Features Preview Tags */}
+                    {Array.isArray(game.gameFeatures) && game.gameFeatures.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {game.gameFeatures.slice(0, 2).map((feat, idx) => (
+                          <span
+                            key={idx}
+                            className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 truncate max-w-[130px]"
+                          >
+                            {feat.title || 'Feature'}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Card Footer: Metadata & Primary Action */}
+                    <div className="mt-5 pt-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400 font-mono text-[11px]">
+                        <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
+                        <span>{formatDate(game.createdAt)}</span>
+                      </div>
+
+                      <Link
+                        to={targetUrl}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-900 dark:focus:ring-neutral-100"
+                        aria-label={`Open details for ${game.gameName || 'this game'}`}
+                      >
+                        <span>Details</span>
+                        <ArrowRight className="w-3 h-3" aria-hidden="true" />
+                      </Link>
+                    </div>
+                  </div>
+                </motion.article>
+              );
+            })}
+          </div>
+        )}
+      </main>
     </Layout>
   );
 };

@@ -25,7 +25,7 @@ export const Timeline = ({
 
   return (
     <div
-      className="w-full bg-purple-100 dark:bg-neutral-950 font-sans md:px-10"
+      className="w-full bg-neutral-50 dark:bg-neutral-950 font-sans md:px-10"
       ref={containerRef}>
       <div className="max-w-7xl mx-auto py-20 px-4 md:px-8 lg:px-10">
         <h2 className="text-lg md:text-4xl mb-4 text-black  dark:text-white max-w-4xl">
@@ -77,7 +77,7 @@ export const Timeline = ({
               height: heightTransform,
               opacity: opacityTransform,
             }}
-            className="absolute inset-x-0 top-0  w-[5px] bg-gradient-to-t from-purple-500 via-blue-500 to-transparent from-[0%] via-[10%] rounded-full" />
+            className="absolute inset-x-0 top-0 w-[5px] bg-gradient-to-t from-[#00ACF0] via-blue-600 to-transparent from-[0%] via-[10%] rounded-full" />
         </div>
       </div>
     </div>

@@ -28,7 +28,6 @@ const FOOTER_SECTIONS = [
     links: [
       { name: 'About Studio', path: '/About-SGS' },
       { name: 'Engineering Work', path: '/SGS-Projects' },
-      { name: 'Client Products', path: '/Project' },
       { name: 'Studio Team', path: '/OurMembers' },
       { name: 'Developer Community', path: '/OurCommunity' },
     ],
@@ -50,7 +49,7 @@ const FOOTER_SECTIONS = [
       { name: 'Send Feedback', path: '/Feedback' },
       { name: 'FAQs & Answers', path: '/FAQs' },
       { name: 'Exam Information', path: '/About-Exam' },
-      { name: 'Support the Studio', path: '/SuportUS' },
+      // { name: 'Support the Studio', path: '/SuportUS' },
     ],
   },
   {

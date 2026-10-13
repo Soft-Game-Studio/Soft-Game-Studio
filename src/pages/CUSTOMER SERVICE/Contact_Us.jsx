@@ -1,15 +1,25 @@
-// ContactPage.jsx
+// src/pages/CUSTOMER SERVICE/Contact_Us.jsx
 import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { Helmet } from "react-helmet";
 import Layout from "../../components/layout/Layout";
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import {ToastContainer, toast } from "react-toastify";
-import { Send, MapPin, Mail, Phone, Clock, AlertCircle, Info } from "lucide-react";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { ToastContainer, toast } from "react-toastify";
+import {
+  Send,
+  MapPin,
+  Mail,
+  Phone,
+  Clock,
+  AlertCircle,
+  Info,
+  CheckCircle2,
+  Building2
+} from "lucide-react";
 import { fireDB } from "../../DataBase/firebaseConfig";
 
-// Simple debounce function
+// Debounce helper
 const debounce = (func, wait) => {
   let timeout;
   return function executedFunction(...args) {
@@ -31,26 +41,26 @@ const CHARACTER_LIMITS = {
   message: 2000
 };
 
-// Disposable email domains (partial list)
+// Disposable email domains
 const DISPOSABLE_DOMAINS = [
-  'tempmail.com', 'mailinator.com', 'guerrillamail.com', 'sharklasers.com',
-  '10minutemail.com', 'throwawaymail.com', 'yopmail.com', 'fakeinbox.com',
-  'temp-mail.org', 'trashmail.com'
+  "tempmail.com", "mailinator.com", "guerrillamail.com", "sharklasers.com",
+  "10minutemail.com", "throwawaymail.com", "yopmail.com", "fakeinbox.com",
+  "temp-mail.org", "trashmail.com"
 ];
 
 const ContactPage = () => {
   const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_API;
   const [searchParams] = useSearchParams();
   const [isProjectEnquiry, setIsProjectEnquiry] = useState(false);
-  
+
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    mobile: '',
-    subject: '',
-    message: '',
-    status: 'pending',
-    honeypot: '' // Hidden field for bot detection
+    name: "",
+    email: "",
+    mobile: "",
+    subject: "",
+    message: "",
+    status: "pending",
+    honeypot: ""
   });
 
   const [errors, setErrors] = useState({});
@@ -58,396 +68,350 @@ const ContactPage = () => {
   const [touched, setTouched] = useState({});
   const [lastSubmissionTime, setLastSubmissionTime] = useState(0);
 
+  const shouldReduceMotion = useReducedMotion();
+  const { scrollY } = useScroll();
+  const parallaxY = useTransform(scrollY, [0, 300], shouldReduceMotion ? [0, 0] : [0, -30]);
+
   // Form validation rules
   const validateField = useCallback((name, value) => {
     switch (name) {
-      case 'name':
-        if (!value.trim()) return 'Name is required';
-        if (value.length < 2) return 'Name must be at least 2 characters';
-        if (value.length > CHARACTER_LIMITS.name) 
+      case "name":
+        if (!value.trim()) return "Full name is required";
+        if (value.length < 2) return "Name must be at least 2 characters";
+        if (value.length > CHARACTER_LIMITS.name)
           return `Name cannot exceed ${CHARACTER_LIMITS.name} characters`;
-        if (!/^[A-Za-z\s]+$/.test(value.trim())) return 'Name should contain only letters and spaces';
+        if (!/^[A-Za-z\s]+$/.test(value.trim()))
+          return "Name should contain letters and spaces only";
         break;
-      case 'email':
-        if (!value.trim()) return 'Email is required';
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Invalid email format';
+
+      case "email":
+        if (!value.trim()) return "Email address is required";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Enter a valid email address";
         if (value.length > CHARACTER_LIMITS.email)
           return `Email cannot exceed ${CHARACTER_LIMITS.email} characters`;
-        
-        // Check for disposable email domains
-        const domain = value.split('@')[1]?.toLowerCase();
-        if (domain && DISPOSABLE_DOMAINS.some(d => domain.includes(d))) {
-          return 'Please use a permanent email address';
+
+        const domain = value.split("@")[1]?.toLowerCase();
+        if (domain && DISPOSABLE_DOMAINS.some((d) => domain.includes(d))) {
+          return "Please provide a permanent, valid email address";
         }
         break;
-      case 'mobile':
-        if (!value.trim()) return 'Mobile number is required';
-        const cleanMobile = value.replace(/[^\d]/g, '');
-        if (cleanMobile.length < 10 || cleanMobile.length > 15) return 'Mobile number must be 10-15 digits';
+
+      case "mobile":
+        if (!value.trim()) return "Mobile number is required";
+        const cleanMobile = value.replace(/[^\d]/g, "");
+        if (cleanMobile.length < 10 || cleanMobile.length > 15)
+          return "Mobile number must be between 10 and 15 digits";
         if (cleanMobile.length > CHARACTER_LIMITS.mobile)
           return `Mobile number cannot exceed ${CHARACTER_LIMITS.mobile} digits`;
-        
-        // Enhanced phone validation
+
         const phoneRegex = /^(\+?91|0)?[6789]\d{9}$/;
-        if (!phoneRegex.test(cleanMobile) && !phoneRegex.test('+91' + cleanMobile)) {
-          return 'Please enter a valid Indian mobile number';
+        if (!phoneRegex.test(cleanMobile) && !phoneRegex.test("+91" + cleanMobile)) {
+          return "Please enter a valid 10-digit mobile number";
         }
         break;
-      case 'subject':
-        if (!value.trim()) return 'Subject is required';
-        if (value.length < 3) return 'Subject must be at least 3 characters';
+
+      case "subject":
+        if (!value.trim()) return "Subject is required";
+        if (value.length < 3) return "Subject must be at least 3 characters";
         if (value.length > CHARACTER_LIMITS.subject)
           return `Subject cannot exceed ${CHARACTER_LIMITS.subject} characters`;
         break;
-      case 'message':
-        if (!value.trim()) return 'Message is required';
-        if (value.length < 10) return 'Message must be at least 10 characters';
+
+      case "message":
+        if (!value.trim()) return "Message cannot be empty";
+        if (value.length < 10) return "Message must be at least 10 characters";
         if (value.length > CHARACTER_LIMITS.message)
           return `Message cannot exceed ${CHARACTER_LIMITS.message} characters`;
         break;
+
       default:
-        return '';
+        return "";
     }
-    return '';
+    return "";
   }, []);
 
-  // Debounced validation for performance
   const debouncedValidate = useCallback(
     debounce((name, value, setErrorsFunc) => {
       const error = validateField(name, value);
-      setErrorsFunc(prev => ({ ...prev, [name]: error }));
-    }, 300),
+      setErrorsFunc((prev) => ({ ...prev, [name]: error }));
+    }, 250),
     [validateField]
   );
 
-  // Handle input change with validation
-  const handleChange = useCallback((e) => {
-    const { name, value } = e.target;
-    
-    let processedValue = value;
-    
-    // Apply specific formatting/rules for each field
-    switch (name) {
-      case 'name':
-        // Allow only letters and spaces for name
-        processedValue = value.replace(/[^A-Za-z\s]/g, '');
-        if (processedValue.length > CHARACTER_LIMITS.name) {
-          processedValue = processedValue.slice(0, CHARACTER_LIMITS.name);
-        }
-        break;
-      case 'mobile':
-        // Allow only numbers, plus, minus, parentheses, and spaces
-        processedValue = value.replace(/[^\d\s+()-]/g, '');
-        // Format as user types
-        if (processedValue.replace(/[^\d]/g, '').length > 5) {
-          processedValue = processedValue.replace(/(\d{5})(\d+)/, '$1 $2');
-        }
-        if (processedValue.length > 20) {
-          processedValue = processedValue.slice(0, 20);
-        }
-        break;
-      case 'email':
-        // Limit email length
-        if (value.length > CHARACTER_LIMITS.email) {
-          processedValue = value.slice(0, CHARACTER_LIMITS.email);
-        } else {
-          processedValue = value;
-        }
-        break;
-      case 'subject':
-        if (value.length > CHARACTER_LIMITS.subject) {
-          processedValue = value.slice(0, CHARACTER_LIMITS.subject);
-        }
-        break;
-      case 'message':
-        if (value.length > CHARACTER_LIMITS.message) {
-          processedValue = value.slice(0, CHARACTER_LIMITS.message);
-        }
-        break;
-      default:
-        break;
-    }
-    
-    setFormData(prev => ({
-      ...prev,
-      [name]: processedValue
-    }));
-    
-    // Debounced real-time validation for touched fields
-    if (touched[name]) {
-      debouncedValidate(name, processedValue, setErrors);
-    }
-  }, [touched, debouncedValidate]);
+  const handleChange = useCallback(
+    (e) => {
+      const { name, value } = e.target;
+      let processedValue = value;
 
-  const handleBlur = useCallback((e) => {
-    const { name } = e.target;
-    setTouched(prev => ({
-      ...prev,
-      [name]: true
-    }));
-    
-    const error = validateField(name, formData[name]);
-    setErrors(prev => ({
-      ...prev,
-      [name]: error
-    }));
-  }, [formData, validateField]);
+      switch (name) {
+        case "name":
+          processedValue = value.replace(/[^A-Za-z\s]/g, "");
+          if (processedValue.length > CHARACTER_LIMITS.name) {
+            processedValue = processedValue.slice(0, CHARACTER_LIMITS.name);
+          }
+          break;
+        case "mobile":
+          processedValue = value.replace(/[^\d\s+()-]/g, "");
+          if (processedValue.replace(/[^\d]/g, "").length > 5) {
+            processedValue = processedValue.replace(/(\d{5})(\d+)/, "$1 $2");
+          }
+          if (processedValue.length > 20) {
+            processedValue = processedValue.slice(0, 20);
+          }
+          break;
+        case "email":
+          if (value.length > CHARACTER_LIMITS.email) {
+            processedValue = value.slice(0, CHARACTER_LIMITS.email);
+          }
+          break;
+        case "subject":
+          if (value.length > CHARACTER_LIMITS.subject) {
+            processedValue = value.slice(0, CHARACTER_LIMITS.subject);
+          }
+          break;
+        case "message":
+          if (value.length > CHARACTER_LIMITS.message) {
+            processedValue = value.slice(0, CHARACTER_LIMITS.message);
+          }
+          break;
+        default:
+          break;
+      }
 
-  // Save form draft to localStorage
+      setFormData((prev) => ({
+        ...prev,
+        [name]: processedValue
+      }));
+
+      if (touched[name]) {
+        debouncedValidate(name, processedValue, setErrors);
+      }
+    },
+    [touched, debouncedValidate]
+  );
+
+  const handleBlur = useCallback(
+    (e) => {
+      const { name } = e.target;
+      setTouched((prev) => ({ ...prev, [name]: true }));
+      const error = validateField(name, formData[name]);
+      setErrors((prev) => ({ ...prev, [name]: error }));
+    },
+    [formData, validateField]
+  );
+
+  // Save form draft
   useEffect(() => {
     const saveFormData = debounce(() => {
       try {
-        localStorage.setItem('contactFormDraft', JSON.stringify(formData));
+        localStorage.setItem("contactFormDraft", JSON.stringify(formData));
       } catch (error) {
-        console.error('Error saving form draft:', error);
+        console.error("Error saving form draft:", error);
       }
     }, 1000);
-    
+
     saveFormData();
-    
     return () => {
       if (saveFormData.cancel) saveFormData.cancel();
     };
   }, [formData]);
 
-  // Load form draft from localStorage on mount, OR auto-fill from URL params
+  // Load draft or prefill from query params
   useEffect(() => {
-    const subjectParam = searchParams.get('subject');
-    const projectName = searchParams.get('projectName');
-    const projectLink = searchParams.get('projectLink');
-    const projecturl = searchParams.get('projecturl');
-    const projectDesc = searchParams.get('projectDesc');
+    const subjectParam = searchParams.get("subject");
+    const projectName = searchParams.get("projectName");
+    const projectLink = searchParams.get("projectLink");
+    const projecturl = searchParams.get("projecturl");
+    const projectDesc = searchParams.get("projectDesc");
 
-    // If arriving from a project page with params, auto-fill the form
     if (subjectParam && projectName) {
-      const autoMessage = `I would like to request the source code for the project: ${projectName}.\nProject link: ${projectLink || 'N/A'}.\nProjecturl: ${projecturl || 'N/A'}. \n${projectDesc ? `Project details: ${projectDesc}\n` : ''}\nPlease share the source code details.`;
-      setFormData(prev => ({
+      const autoMessage = `I would like to request source code or information for project: ${projectName}.\nProject link: ${projectLink || "N/A"}.\nProject URL: ${projecturl || "N/A"}.${projectDesc ? `\nDetails: ${projectDesc}` : ""}\nPlease share details on access and licensing.`;
+      setFormData((prev) => ({
         ...prev,
         subject: subjectParam,
-        message: autoMessage,
+        message: autoMessage
       }));
       setIsProjectEnquiry(true);
-      // Clear the draft so auto-fill takes priority
-      localStorage.removeItem('contactFormDraft');
+      localStorage.removeItem("contactFormDraft");
       return;
     }
 
-    // Otherwise try to load saved draft
     try {
-      const savedDraft = localStorage.getItem('contactFormDraft');
+      const savedDraft = localStorage.getItem("contactFormDraft");
       if (savedDraft) {
         const draftData = JSON.parse(savedDraft);
         setFormData(draftData);
       }
     } catch (error) {
-      console.error('Error loading form draft:', error);
+      console.error("Error loading form draft:", error);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams]);
 
-  // Check form validity for submit button
   const formIsValid = useMemo(() => {
-    const requiredFields = ['name', 'email', 'mobile', 'subject', 'message'];
-    const hasErrors = Object.keys(errors).some(key => errors[key]);
-    const allFilled = requiredFields.every(field => formData[field].trim());
-    return !hasErrors && allFilled && formData.honeypot === '';
+    const requiredFields = ["name", "email", "mobile", "subject", "message"];
+    const hasErrors = Object.keys(errors).some((key) => errors[key]);
+    const allFilled = requiredFields.every((field) => formData[field].trim());
+    return !hasErrors && allFilled && formData.honeypot === "";
   }, [errors, formData]);
 
-  // Handle form submission
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      email: "",
+      mobile: "",
+      subject: "",
+      message: "",
+      status: "pending",
+      honeypot: ""
+    });
+    setErrors({});
+    setTouched({});
+    localStorage.removeItem("contactFormDraft");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Rate limiting: Prevent multiple submissions within 30 seconds
+
     const now = Date.now();
     if (now - lastSubmissionTime < 30000) {
-      toast.error('Please wait 30 seconds before submitting again');
+      toast.error("Please wait 30 seconds before submitting another request.");
       return;
     }
-    
-    // Honeypot check
+
     if (formData.honeypot) {
-      console.log('Bot detected via honeypot');
-      toast.success("Message sent successfully!");
+      toast.success("Message received successfully!");
       resetForm();
       return;
     }
-    
+
     setIsSubmitting(true);
-    
-    // Validate all fields
+
     const newErrors = {};
-    const fieldsToValidate = ['name', 'email', 'mobile', 'subject', 'message'];
-    
-    fieldsToValidate.forEach(field => {
+    const fieldsToValidate = ["name", "email", "mobile", "subject", "message"];
+
+    fieldsToValidate.forEach((field) => {
       const error = validateField(field, formData[field]);
       if (error) newErrors[field] = error;
     });
-    
+
     setErrors(newErrors);
-    
-    // Mark all fields as touched
+
     const allTouched = {};
-    fieldsToValidate.forEach(field => {
+    fieldsToValidate.forEach((field) => {
       allTouched[field] = true;
     });
     setTouched(allTouched);
-    
-    // Check for errors
+
     if (Object.keys(newErrors).length > 0) {
-      toast.error("Please fix the errors in the form");
+      toast.error("Please correct the marked errors before submitting.");
       setIsSubmitting(false);
       return;
     }
-    
+
     try {
-      // Prepare data for Firebase
       const submissionData = {
         name: formData.name.trim(),
         email: formData.email.trim(),
-        mobile: formData.mobile.replace(/\s/g, ''),
+        mobile: formData.mobile.replace(/\s/g, ""),
         subject: formData.subject.trim(),
         message: formData.message.trim(),
-        status: 'pending',
+        status: "pending",
         timestamp: serverTimestamp(),
         userAgent: navigator.userAgent,
         submittedAt: new Date().toISOString()
       };
-      
-      await addDoc(collection(fireDB, 'contacts'), submissionData);
-      
+
+      await addDoc(collection(fireDB, "contacts"), submissionData);
       setLastSubmissionTime(now);
-      
+
       toast.success(
-        <div className="p-2">
-          <p className="font-bold text-lg">🎉 Message sent successfully!</p>
+        <div className="flex items-center gap-2 p-1">
+          <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+          <span className="font-semibold text-sm">Message received! Our team will respond within 24 hours.</span>
         </div>,
-        {
-          autoClose: 10000,
-          closeOnClick: false
-        }
+        { autoClose: 6000 }
       );
-      
+
       resetForm();
-      
     } catch (error) {
-      console.error('Error saving contact form:', error);
-      toast.error(
-        <div>
-          <p>Failed to send message.</p>
-          <p className="text-sm mt-1">Please try again or email us directly.</p>
-        </div>
-      );
+      console.error("Error saving contact form:", error);
+      toast.error("Failed to send message. Please reach out via sgs.web.app@gmail.com directly.");
     } finally {
-    setTimeout(() => {
-      setIsSubmitting(false);
-    }, 2000); // stop loader after 5 sec
-      
+      setTimeout(() => {
+        setIsSubmitting(false);
+      }, 1500);
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      email: '',
-      mobile: '',
-      subject: '',
-      message: '',
-      status: 'pending',
-      honeypot: ''
-    });
-    setErrors({});
-    setTouched({});
-    localStorage.removeItem('contactFormDraft');
-  };
-
-  const { scrollY } = useScroll();
-  const parallaxY = useTransform(scrollY, [0, 300], [0, -50]);
-  const fadeIn = useTransform(scrollY, [0, 300], [1, 0.9]);
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
+  const contactSchema = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Contact Soft Game Studio",
+    "url": "https://softgamestudios.web.app/ContactUs",
+    "description": "Get in touch with Soft Game Studio for game development services, project source code, education, and support.",
+    "mainEntity": {
+      "@type": "LocalBusiness",
+      "name": "Soft Game Studio Pvt. Ltd.",
+      "telephone": ["+91 9914267704", "+91 6283400770"],
+      "email": "sgs.web.app@gmail.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "House No. 574, Street No. 5, Nai Abadi",
+        "addressLocality": "Abohar",
+        "addressRegion": "Punjab",
+        "postalCode": "152116",
+        "addressCountry": "IN"
       },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { y: 30, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { 
-        duration: 0.6, 
-        ease: [0.22, 1, 0.36, 1] 
-      },
-    },
-  };
-
-  const buttonVariants = {
-    initial: { scale: 1 },
-    hover: { 
-      scale: 1.02,
-      boxShadow: "0 10px 30px -10px rgba(124, 58, 237, 0.5)"
-    },
-    tap: { scale: 0.98 },
-    loading: {
-      scale: 0.98,
-      backgroundColor: "#4F46E5"
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        "opens": "09:00",
+        "closes": "17:00"
+      }
     }
   };
 
-  // Helper function to render input field
-  const renderInputField = (fieldName, label, type = 'text', placeholder = '', isTextarea = false) => {
-    const isError = errors[fieldName] && touched[fieldName];
+  const renderInputField = (fieldName, label, type = "text", placeholder = "", isTextarea = false) => {
+    const isError = Boolean(errors[fieldName] && touched[fieldName]);
     const charCount = formData[fieldName]?.length || 0;
     const charLimit = CHARACTER_LIMITS[fieldName];
-    const showCharCount = fieldName === 'message' || fieldName === 'subject';
-    
+    const showCharCount = fieldName === "message" || fieldName === "subject";
+
     return (
-      <div className="relative mb-6">
-        <label 
-          htmlFor={fieldName}
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-          id={`${fieldName}-label`}
-        >
-          {label}
-          <span className="text-red-500 ml-1">*</span>
+      <div className="relative mb-5">
+        <div className="flex justify-between items-center mb-1.5">
+          <label
+            htmlFor={fieldName}
+            className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300"
+            id={`${fieldName}-label`}
+          >
+            {label} <span className="text-rose-500">*</span>
+          </label>
           {showCharCount && (
-            <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-              {charCount}/{charLimit}
+            <span className="text-xs text-neutral-400 dark:text-neutral-500">
+              {charCount} / {charLimit}
             </span>
           )}
-        </label>
-        
+        </div>
+
         {isTextarea ? (
           <textarea
             id={fieldName}
             name={fieldName}
+            rows={5}
             value={formData[fieldName]}
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder={placeholder}
-            rows={5}
             aria-labelledby={`${fieldName}-label`}
             aria-describedby={isError ? `${fieldName}-error` : undefined}
-            aria-invalid={isError ? "true" : "false"}
-            className={`
-              w-full px-4 py-3 rounded-lg border transition-all duration-200
-              ${isError 
-                ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500' 
-                : 'border-gray-300 dark:border-gray-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-500'
-              }
-              bg-white/50 dark:bg-neutral-800/50 backdrop-blur-sm
-              text-gray-900 dark:text-gray-100
-              placeholder-gray-500 dark:placeholder-gray-400
-              focus:outline-none
-              resize-none
-            `}
+            aria-invalid={isError}
             required
+            className={`w-full px-4 py-3 rounded-xl border text-sm transition-colors duration-200 resize-y bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none ${
+              isError
+                ? "border-rose-500 focus:ring-2 focus:ring-rose-500/20"
+                : "border-neutral-300 dark:border-neutral-700 focus:border-[#00ACF0] focus:ring-2 focus:ring-[#00ACF0]/20"
+            }`}
           />
         ) : (
           <input
@@ -460,31 +424,25 @@ const ContactPage = () => {
             placeholder={placeholder}
             aria-labelledby={`${fieldName}-label`}
             aria-describedby={isError ? `${fieldName}-error` : undefined}
-            aria-invalid={isError ? "true" : "false"}
-            className={`
-              w-full px-4 py-3 rounded-lg border transition-all duration-200
-              ${isError 
-                ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500' 
-                : 'border-gray-300 dark:border-gray-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-500'
-              }
-              bg-white/50 dark:bg-neutral-800/50 backdrop-blur-sm
-              text-gray-900 dark:text-gray-100
-              placeholder-gray-500 dark:placeholder-gray-400
-              focus:outline-none
-            `}
+            aria-invalid={isError}
             required
+            className={`w-full px-4 py-3 rounded-xl border text-sm transition-colors duration-200 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none ${
+              isError
+                ? "border-rose-500 focus:ring-2 focus:ring-rose-500/20"
+                : "border-neutral-300 dark:border-neutral-700 focus:border-[#00ACF0] focus:ring-2 focus:ring-[#00ACF0]/20"
+            }`}
           />
         )}
-        
+
         {isError && (
-          <div 
+          <div
             id={`${fieldName}-error`}
-            className="mt-2 flex items-center text-sm text-red-600 dark:text-red-400"
             role="alert"
             aria-live="polite"
+            className="mt-1.5 flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400"
           >
-            <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
-            {errors[fieldName]}
+            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+            <span>{errors[fieldName]}</span>
           </div>
         )}
       </div>
@@ -493,389 +451,298 @@ const ContactPage = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-950 overflow-hidden relative">
-        <Helmet>
-          <title>Contact Us - Soft Game Studio | Game Development & Education</title>
-          <meta name="title" content="Contact Soft Game Studio - Game Development Experts" />
-          <meta name="description" content="Get in touch with Soft Game Studio for game development services, educational programs, and innovative tech solutions." />
-          <link rel="canonical" href="https://softgamestudios.web.app/ContactUs" />
-          <meta property="og:type" content="website" />
-          <meta property="og:url" content="https://softgamestudios.web.app/ContactUs" />
-          <meta property="og:title" content="Contact Our Team - Soft Game Studio" />
-          <meta property="og:description" content="Reach out to our game development experts. We specialize in Unity development, educational games, and interactive experiences." />
-          <meta property="og:image" content="https://firebasestorage.googleapis.com/v0/b/webjl26.appspot.com/o/SGS%20images%2FContact-Us-Soft-Game-Studio-Game-Development-Education-06-07-2025_02_26_PM.png?alt=media&token=3f0e04bb-be8a-46cf-b1f7-6c5d5de6745e" />
-          <meta property="og:image:width" content="1200" />
-          <meta property="og:image:height" content="630" />
-          <meta property="og:locale" content="en_US" />
-          <meta name="twitter:card" content="summary_large_image" />
-          <meta name="twitter:site" content="@SoftGameStudio" />
-          <meta name="twitter:creator" content="@SGS_Devs" />
-        </Helmet>
-
- <ToastContainer/>
-        {/* Animated Background Elements */}
-        <motion.div
-          className="absolute inset-0 z-0 overflow-hidden"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1 }}
-        >
-          <div className="absolute top-20 left-10 w-72 h-72 rounded-full bg-purple-200 dark:bg-purple-900/20 blur-3xl opacity-50" />
-          <div className="absolute bottom-40 right-20 w-64 h-64 rounded-full bg-indigo-200 dark:bg-indigo-900/20 blur-3xl opacity-40" />
-          <div className="absolute top-1/2 left-1/3 w-96 h-96 rounded-full bg-blue-100 dark:bg-blue-900/10 blur-3xl opacity-30" />
-        </motion.div>
-
-        {/* Floating Particles */}
-        <motion.div
-          className="absolute top-1/3 left-1/4 w-8 h-8 rounded-full bg-purple-500/20 backdrop-blur-sm"
-          animate={{
-            y: [0, -30, 0],
-            x: [0, 20, 0],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
+      <Helmet>
+        <title>Contact Us | Soft Game Studio</title>
+        <meta
+          name="description"
+          content="Get in touch with Soft Game Studio for game development services, project source code, educational materials, and technical consultations."
         />
-        <motion.div
-          className="absolute top-1/4 right-1/3 w-6 h-6 rounded-full bg-indigo-500/20 backdrop-blur-sm"
-          animate={{
-            y: [0, -40, 0],
-            x: [0, -15, 0],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.5,
-          }}
+        <link rel="canonical" href="https://softgamestudios.web.app/ContactUs" />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://softgamestudios.web.app/ContactUs" />
+        <meta property="og:title" content="Contact Our Team | Soft Game Studio" />
+        <meta
+          property="og:description"
+          content="Reach out to Soft Game Studio for Unity game development, educational courses, and project source code inquiries."
+        />
+        <meta
+          property="og:image"
+          content="https://firebasestorage.googleapis.com/v0/b/webjl26.appspot.com/o/SGS%20images%2FContact-Us-Soft-Game-Studio-Game-Development-Education-06-07-2025_02_26_PM.png?alt=media&token=3f0e04bb-be8a-46cf-b1f7-6c5d5de6745e"
+        />
+        <meta property="og:site_name" content="Soft Game Studio" />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@SoftGameStudio" />
+        <meta name="twitter:title" content="Contact Us | Soft Game Studio" />
+        <meta
+          name="twitter:description"
+          content="Connect with our development and education specialists. We respond within 24 hours."
+        />
+        <meta
+          name="twitter:image"
+          content="https://firebasestorage.googleapis.com/v0/b/webjl26.appspot.com/o/SGS%20images%2FContact-Us-Soft-Game-Studio-Game-Development-Education-06-07-2025_02_26_PM.png?alt=media&token=3f0e04bb-be8a-46cf-b1f7-6c5d5de6745e"
         />
 
-        {/* Main Content */}
-        <motion.section
-          style={{ y: parallaxY, opacity: fadeIn }}
-          className="min-h-screen relative z-10 text-gray-900 dark:text-gray-200 px-4 py-12 sm:py-16 md:py-20 transition-colors duration-500"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
-        >
-          <div className="max-w-7xl mx-auto">
-            {/* Header */}
-            <motion.div
-              className="text-center mb-12 sm:mb-16 md:mb-20"
-              initial={{ opacity: 0, y: -30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-            >
-              <motion.h1
-                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2, duration: 0.6 }}
-              >
-                Get in Touch
-              </motion.h1>
-              <motion.p
-                className="max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 px-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-              >
-                Have questions or want to work together? Reach out to our team and we'll respond within 24 hours.
-              </motion.p>
-            </motion.div>
+        {/* Structured Data */}
+        <script type="application/ld+json">{JSON.stringify(contactSchema)}</script>
+      </Helmet>
 
-            <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
-              {/* Contact Information */}
-              <motion.div
-                variants={containerVariants}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-50px" }}
-                className="lg:w-2/5 space-y-6 sm:space-y-8"
-              >
-                <motion.div variants={itemVariants}>
-                  <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-gray-900 dark:text-white">
-                    Contact Information
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-400 mb-6">
-                    Connect with us through any of these channels
-                  </p>
-                </motion.div>
+      <ToastContainer position="bottom-right" theme="colored" autoClose={4000} />
 
-                {/* Contact Cards */}
-                <motion.div variants={itemVariants} className="space-y-4">
-                  <motion.div
-                    className="group bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm p-5 sm:p-6 rounded-2xl shadow-lg border border-purple-200/50 dark:border-neutral-700/50 hover:border-purple-300 dark:hover:border-purple-500 transition-all duration-300 hover:shadow-xl"
-                    whileHover={{ y: -5, scale: 1.02 }}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="p-3 rounded-xl bg-purple-100 dark:bg-purple-900/30 group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors">
-                        <MapPin className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Address</h3>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-                          House No. 574, Street No. 5<br />
-                          Nai Abadi, Abohar<br />
-                          Punjab 152116
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
+      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
+        {/* Header Section */}
+        <header className="relative pt-24 pb-14 px-4 bg-gradient-to-b from-neutral-100 via-neutral-50 to-neutral-50 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
+          <motion.div
+            style={{ y: parallaxY }}
+            className="max-w-4xl mx-auto text-center"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase bg-sky-100 dark:bg-sky-950/60 text-[#00ACF0] dark:text-sky-400 border border-sky-200 dark:border-sky-900/50 mb-6">
+              <Building2 className="w-3.5 h-3.5" />
+              Direct Support & Inquiries
+            </div>
 
-                  <motion.div
-                    className="group bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm p-5 sm:p-6 rounded-2xl shadow-lg border border-indigo-200/50 dark:border-neutral-700/50 hover:border-indigo-300 dark:hover:border-indigo-500 transition-all duration-300 hover:shadow-xl"
-                    whileHover={{ y: -5, scale: 1.02 }}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="p-3 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 group-hover:bg-indigo-200 dark:group-hover:bg-indigo-900/50 transition-colors">
-                        <Mail className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Email</h3>
-                        <a
-                          href="mailto:sgs.web.app@gmail.com"
-                          className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors text-sm sm:text-base"
-                        >
-                          sgs.web.app@gmail.com
-                        </a>
-                      </div>
-                    </div>
-                  </motion.div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+              Get in Touch
+            </h1>
 
-                  <motion.div
-                    className="group bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm p-5 sm:p-6 rounded-2xl shadow-lg border border-blue-200/50 dark:border-neutral-700/50 hover:border-blue-300 dark:hover:border-blue-500 transition-all duration-300 hover:shadow-xl"
-                    whileHover={{ y: -5, scale: 1.02 }}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="p-3 rounded-xl bg-blue-100 dark:bg-blue-900/30 group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors">
-                        <Phone className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Phone</h3>
-                        <div className="space-y-1">
-                          <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-                            <span className="font-medium">Hindi:</span> +91 9914267704
-                          </p>
-                          <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-                            <span className="font-medium">English:</span> +91 6283400770
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
+            <p className="mt-4 text-base sm:text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
+              Have questions about our games, learning resources, or project source code? Our team is here to assist.
+            </p>
+          </motion.div>
+        </header>
 
-                  <motion.div
-                    className="group bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm p-5 sm:p-6 rounded-2xl shadow-lg border border-green-200/50 dark:border-neutral-700/50 hover:border-green-300 dark:hover:border-green-500 transition-all duration-300 hover:shadow-xl"
-                    whileHover={{ y: -5, scale: 1.02 }}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="p-3 rounded-xl bg-green-100 dark:bg-green-900/30 group-hover:bg-green-200 dark:group-hover:bg-green-900/50 transition-colors">
-                        <Clock className="w-6 h-6 text-green-600 dark:text-green-400" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Service Hours</h3>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-                          Monday – Saturday<br />
-                          9:00 AM – 5:00 PM
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
-                </motion.div>
+        {/* Main Content Layout */}
+        <main className="py-12 sm:py-16 px-4 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+            {/* Left Column: Contact Details & Location */}
+            <aside className="lg:col-span-5 space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                  Contact Information
+                </h2>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
+                  Connect directly with our headquarters in Abohar, Punjab.
+                </p>
+              </div>
 
-                {/* Google Maps */}
-                <motion.div variants={itemVariants} className="mt-6">
-                  <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-neutral-700 shadow-lg bg-white dark:bg-neutral-800 p-4">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                      <MapPin className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                      Our Location
+              {/* Verified Contact Cards */}
+              <div className="space-y-4">
+                {/* Physical Address */}
+                <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm flex items-start gap-4 hover:border-[#00ACF0]/40 transition">
+                  <div className="p-3 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-[#00ACF0] shrink-0">
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                      Registered Address
                     </h3>
-                    <div className="relative h-64 sm:h-72 md:h-80 rounded-xl overflow-hidden">
-                      {GOOGLE_MAPS_API_KEY ? (
-                        <iframe
-                          title="Soft Game Studio Location"
-                          width="100%"
-                          height="100%"
-                          style={{ border: 0 }}
-                          loading="lazy"
-                          allowFullScreen
-                          referrerPolicy="no-referrer-when-downgrade"
-                          src={`https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=Soft+Game+Studio,Abohar,Punjab&zoom=15`}
-                          className="absolute inset-0"
-                        />
+                    <address className="not-italic text-sm text-neutral-600 dark:text-neutral-400 mt-1 leading-relaxed">
+                      House No. 574, Street No. 5<br />
+                      Nai Abadi, Abohar<br />
+                      Punjab 152116, India
+                    </address>
+                  </div>
+                </div>
+
+                {/* Email Inquiries */}
+                <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm flex items-start gap-4 hover:border-[#00ACF0]/40 transition">
+                  <div className="p-3 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-[#00ACF0] shrink-0">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                      Official Email
+                    </h3>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                      General inquiries and project licensing
+                    </p>
+                    <a
+                      href="mailto:sgs.web.app@gmail.com"
+                      className="inline-block mt-1 text-sm font-medium text-[#00ACF0] hover:underline"
+                    >
+                      sgs.web.app@gmail.com
+                    </a>
+                  </div>
+                </div>
+
+                {/* Phone Lines */}
+                <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm flex items-start gap-4 hover:border-[#00ACF0]/40 transition">
+                  <div className="p-3 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-[#00ACF0] shrink-0">
+                    <Phone className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                      Direct Helplines
+                    </h3>
+                    <div className="mt-1 space-y-1 text-sm text-neutral-600 dark:text-neutral-400">
+                      <p>
+                        <span className="font-medium text-neutral-700 dark:text-neutral-300">Hindi Support:</span>{" "}
+                        <a href="tel:+919914267704" className="hover:text-[#00ACF0] transition">
+                          +91 9914267704
+                        </a>
+                      </p>
+                      <p>
+                        <span className="font-medium text-neutral-700 dark:text-neutral-300">English Support:</span>{" "}
+                        <a href="tel:+916283400770" className="hover:text-[#00ACF0] transition">
+                          +91 6283400770
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Operating Hours */}
+                <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm flex items-start gap-4 hover:border-[#00ACF0]/40 transition">
+                  <div className="p-3 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-[#00ACF0] shrink-0">
+                    <Clock className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                      Service Hours
+                    </h3>
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
+                      Monday to Saturday: 9:00 AM - 5:00 PM IST
+                    </p>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                      Sundays & Gazetted Holidays: Closed
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Google Maps Integration */}
+              <div className="rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 shadow-sm bg-white dark:bg-neutral-900 p-4">
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-white mb-3 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-[#00ACF0]" />
+                  Studio Location
+                </h3>
+                <div className="relative h-60 w-full rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                  {GOOGLE_MAPS_API_KEY ? (
+                    <iframe
+                      title="Soft Game Studio Location"
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      loading="lazy"
+                      allowFullScreen
+                      referrerPolicy="no-referrer-when-downgrade"
+                      src={`https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=Soft+Game+Studio,Abohar,Punjab&zoom=15`}
+                      className="absolute inset-0"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+                      <MapPin className="w-8 h-8 text-neutral-400 mb-2" />
+                      <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                        Abohar, Punjab 152116
+                      </p>
+                      <a
+                        href="https://maps.google.com/?q=Abohar,Punjab"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-[#00ACF0] underline mt-1"
+                      >
+                        Open in Google Maps
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </aside>
+
+            {/* Right Column: Interactive Contact Form */}
+            <section aria-labelledby="send-message-heading" className="lg:col-span-7">
+              <div className="p-6 sm:p-10 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm">
+                <div className="mb-8">
+                  <h2 id="send-message-heading" className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
+                    Send us a Message
+                  </h2>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
+                    Fill out the fields below. We typically review and respond within 24 hours.
+                  </p>
+                </div>
+
+                {isProjectEnquiry && (
+                  <div className="mb-6 flex items-start gap-3 p-4 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-sky-800 dark:text-sky-300 text-sm">
+                    <Info className="w-5 h-5 shrink-0 text-[#00ACF0] mt-0.5" />
+                    <div>
+                      <p className="font-semibold text-xs tracking-wide uppercase">Project Enquiry Prefilled</p>
+                      <p className="text-xs mt-1 text-neutral-600 dark:text-neutral-300">
+                        Subject and message details were auto-loaded from the project catalogue. You may edit them freely.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <form onSubmit={handleSubmit} noValidate>
+                  {/* Honeypot anti-spam trap */}
+                  <div className="hidden" aria-hidden="true">
+                    <label htmlFor="honeypot">Leave blank</label>
+                    <input
+                      type="text"
+                      id="honeypot"
+                      name="honeypot"
+                      value={formData.honeypot}
+                      onChange={handleChange}
+                      tabIndex="-1"
+                      autoComplete="off"
+                    />
+                  </div>
+
+                  {renderInputField("name", "Full Name", "text", "Enter your full name")}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
+                    {renderInputField("email", "Email Address", "email", "name@example.com")}
+                    {renderInputField("mobile", "Mobile Number", "tel", "10-digit mobile number")}
+                  </div>
+
+                  {renderInputField("subject", "Subject", "text", "What is this inquiry regarding?")}
+
+                  {renderInputField(
+                    "message",
+                    "Message",
+                    "text",
+                    "Describe your requirements, questions, or project inquiry...",
+                    true
+                  )}
+
+                  <div className="pt-4">
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || !formIsValid}
+                      className="w-full py-4 px-6 rounded-xl font-semibold text-white bg-[#00ACF0] hover:bg-[#0092cc] active:scale-[0.99] transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm text-base"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span>Sending Message...</span>
+                        </>
                       ) : (
-                        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-                          <p className="text-gray-500 dark:text-gray-400">Map unavailable</p>
-                        </div>
+                        <>
+                          <span>Send Message</span>
+                          <Send className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
+
+                    <div className="mt-4 text-center">
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                        Protected by honeypot anti-spam. Your contact details are stored securely.
+                      </p>
+                      {!formIsValid && !isSubmitting && (
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                          Please complete all required fields correctly to enable submission.
+                        </p>
                       )}
                     </div>
                   </div>
-                </motion.div>
-              </motion.div>
-
-              {/* Contact Form */}
-              <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                className="lg:w-3/5"
-              >
-                <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-200/50 dark:border-neutral-700/50 p-6 sm:p-8 lg:p-10">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="mb-8"
-                  >
-                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3">
-                      Send us a Message
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Fill out the form below and we'll get back to you as soon as possible.
-                    </p>
-                  </motion.div>
-
-                  <form onSubmit={handleSubmit} className="space-y-1">
-                    {/* Project enquiry info banner */}
-                    {isProjectEnquiry && (
-                      <div className="mb-6 flex items-start gap-3 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300">
-                        <Info className="w-5 h-5 shrink-0 mt-0.5" />
-                        <div>
-                          <p className="font-medium text-sm">Project Enquiry Auto-Filled</p>
-                          <p className="text-xs mt-1 opacity-80">The subject and message have been pre-filled with project details. You can edit them before submitting.</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Honeypot field for bot detection */}
-                    <div className="hidden" aria-hidden="true">
-                      <label htmlFor="honeypot">Leave this field empty</label>
-                      <input
-                        type="text"
-                        id="honeypot"
-                        name="honeypot"
-                        value={formData.honeypot}
-                        onChange={handleChange}
-                        tabIndex="-1"
-                        autoComplete="off"
-                        className="hidden"
-                      />
-                    </div>
-
-                    {/* Name Field */}
-                    <div>
-                      {renderInputField(
-                        'name',
-                        'Full Name',
-                        'text',
-                        'Enter your full name (letters only)'
-                      )}
-                    </div>
-
-                    {/* Email and Mobile in grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        {renderInputField(
-                          'email',
-                          'Email Address',
-                          'email',
-                          'Enter your email address'
-                        )}
-                      </div>
-                      
-                      <div>
-                        {renderInputField(
-                          'mobile',
-                          'Mobile Number',
-                          'tel',
-                          'Enter your mobile number'
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Subject Field */}
-                    <div>
-                      {renderInputField(
-                        'subject',
-                        'Subject',
-                        'text',
-                        'What is this regarding?'
-                      )}
-                    </div>
-
-                    {/* Message Field */}
-                    <div>
-                      {renderInputField(
-                        'message',
-                        'Message',
-                        'text',
-                        'Type your message here...',
-                        true
-                      )}
-                    </div>
-
-                    {/* Submit Button */}
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.6 }}
-                      className="pt-4"
-                    >
-                      <motion.button
-                        type="submit"
-                        disabled={isSubmitting || !formIsValid}
-                        variants={buttonVariants}
-                        initial="initial"
-                        whileHover={!isSubmitting && formIsValid ? "hover" : ""}
-                        whileTap={!isSubmitting && formIsValid ? "tap" : ""}
-                        animate={isSubmitting ? "loading" : ""}
-                        className={`
-                          w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 px-8 rounded-xl font-semibold text-lg 
-                          hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 
-                          disabled:opacity-50 disabled:cursor-not-allowed 
-                          flex items-center justify-center gap-3 shadow-lg
-                          ${!formIsValid && !isSubmitting ? 'opacity-70' : ''}
-                        `}
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <motion.div
-                              animate={{ rotate: 360 }}
-                              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                              className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                            />
-                            Sending...
-                          </>
-                        ) : (
-                          <>
-                            Send Message
-                            <Send className="w-5 h-5" />
-                          </>
-                        )}
-                      </motion.button>
-
-                      <div className="mt-4 text-center">
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          We typically respond within 24 hours
-                        </p>
-                        {!formIsValid && !isSubmitting && (
-                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
-                            Please fill in all required fields correctly
-                          </p>
-                        )}
-                      </div>
-                    </motion.div>
-                  </form>
-                </div>
-              </motion.div>
-            </div>
+                </form>
+              </div>
+            </section>
           </div>
-        </motion.section>
+        </main>
       </div>
     </Layout>
   );

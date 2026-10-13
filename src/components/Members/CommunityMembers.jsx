@@ -1,432 +1,469 @@
-import React, { useEffect, useState, useRef } from "react";
+// src/components/Members/CommunityMembers.jsx
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import {
   motion,
   useScroll,
   useTransform,
   AnimatePresence,
+  useReducedMotion
 } from "framer-motion";
-import { 
-  collection, 
-  getDocs, 
-  addDoc, 
-  updateDoc, 
-  doc, 
-  serverTimestamp, 
-  query, 
-  where,
-  deleteDoc
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  doc,
+  serverTimestamp,
+  query,
+  where
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { fireDB, storage } from "../../DataBase/firebaseConfig";
 import Layout from "../layout/Layout";
 import { Helmet } from "react-helmet";
-import { useAuth } from '../../AuthProvide';
+import { useAuth } from "../../AuthProvide";
 import { useNavigate } from "react-router-dom";
 import {
-  FiLinkedin,
-  FiGithub,
-  FiInstagram,
-  FiSearch,
-  FiArrowUp, 
-  FiX,
-  FiExternalLink,
-  FiUserPlus,
-  FiCheckCircle,
-  FiClock,
-  FiEdit,
-  FiUser,
-  FiSave,
-  FiMonitor,
-  FiSmartphone
-} from "react-icons/fi";
+  Linkedin,
+  Github,
+  Instagram,
+  Search,
+  ArrowUp,
+  X,
+  ExternalLink,
+  UserPlus,
+  CheckCircle2,
+  Clock,
+  Edit3,
+  User,
+  Save,
+  Monitor,
+  Smartphone,
+  Tablet,
+  Users,
+  Grid3X3,
+  List,
+  AlertCircle,
+  Upload,
+  Info,
+  ChevronDown
+} from "lucide-react";
 
-// Function to generate sequential community IDs
-
-
-
-
+// Platform-specific social link icon
 const SocialIcon = ({ platform, url }) => {
-  const icons = {
-    linkedin: <FiLinkedin className="w-5 h-5" />,
-    github: <FiGithub className="w-5 h-5" />,
-    instagram: <FiInstagram className="w-5 h-5" />,
+  const getIcon = () => {
+    switch (platform.toLowerCase()) {
+      case "linkedin":
+        return <Linkedin className="w-4 h-4" />;
+      case "github":
+        return <Github className="w-4 h-4" />;
+      case "instagram":
+        return <Instagram className="w-4 h-4" />;
+      default:
+        return <ExternalLink className="w-4 h-4" />;
+    }
   };
 
   return (
-    <motion.a
+    <a
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-indigo-100 dark:hover:bg-indigo-900 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all"
-      whileHover={{ y: -3, scale: 1.1 }}
-      whileTap={{ scale: 0.9 }}
-      title={platform}
+      aria-label={`Visit ${platform} profile`}
+      className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-sky-50 dark:hover:bg-sky-950/60 hover:text-[#00ACF0] dark:hover:text-sky-400 transition-colors"
     >
-      {icons[platform]}
-    </motion.a>
+      {getIcon()}
+    </a>
   );
 };
 
+// Clean status badge
 const StatusBadge = ({ status }) => {
-  const statusColors = {
-    accepted: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-    pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-    rejected: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+  const normalizedStatus = (status || "pending").toLowerCase();
+
+  const statusConfig = {
+    accepted: {
+      color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
+      icon: <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-600 dark:text-emerald-400" />,
+      label: "ACCEPTED"
+    },
+    pending: {
+      color: "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-800",
+      icon: <Clock className="w-3.5 h-3.5 mr-1 text-amber-600 dark:text-amber-400" />,
+      label: "IN REVIEW"
+    },
+    rejected: {
+      color: "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200 dark:border-rose-800",
+      icon: <AlertCircle className="w-3.5 h-3.5 mr-1 text-rose-600 dark:text-rose-400" />,
+      label: "REJECTED"
+    }
   };
 
-  const statusIcons = {
-    accepted: <FiCheckCircle className="w-4 h-4 mr-1" />,
-    pending: <FiClock className="w-4 h-4 mr-1" />,
-    rejected: <FiX className="w-4 h-4 mr-1" />,
-  };
+  const config = statusConfig[normalizedStatus] || statusConfig.pending;
 
   return (
-    <span
-      className={`px-3 py-1 rounded-full text-xs font-medium flex items-center ${statusColors[status] || statusColors.pending}`}
-    >
-      {statusIcons[status]} {status?.toUpperCase()}
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${config.color}`}>
+      {config.icon}
+      <span>{config.label}</span>
     </span>
   );
 };
 
+// Device indicator
 const DeviceBadge = ({ device }) => {
-  const deviceIcons = {
-    Desktop: <FiMonitor className="w-3 h-3 mr-1" />,
-    Mobile: <FiSmartphone className="w-3 h-3 mr-1" />,
-    Tablet: <FiTablet className="w-3 h-3 mr-1" />,
+  const getDeviceIcon = () => {
+    switch (device) {
+      case "Mobile":
+        return <Smartphone className="w-3 h-3 mr-1" />;
+      case "Tablet":
+        return <Tablet className="w-3 h-3 mr-1" />;
+      default:
+        return <Monitor className="w-3 h-3 mr-1" />;
+    }
   };
 
   return (
-    <span className="flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs">
-      {deviceIcons[device] || <FiMonitor className="w-3 h-3 mr-1" />}
-      {device}
+    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-mono">
+      {getDeviceIcon()}
+      {device || "Web"}
     </span>
   );
 };
 
-const MemberCard = ({ member, layoutType, onMemberClick, isCurrentUser = false, onEditClick }) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      viewport={{ once: true }}
-      className={`bg-white dark:bg-gray-800 rounded-2xl p-6 transform hover:-translate-y-2 transition-all duration-300 shadow-lg hover:shadow-xl dark:shadow-gray-900/30 border border-gray-100 dark:border-gray-700 overflow-hidden cursor-pointer ${
-        isCurrentUser ? "ring-2 ring-indigo-500 dark:ring-indigo-400" : ""
-      }`}
-      onClick={() => onMemberClick(member)}
-    >
-      {isCurrentUser && (
-        <div className="absolute top-4 right-4 flex gap-2">
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              onEditClick(member);
-            }}
-            className="px-2 py-1 bg-indigo-600 text-white text-xs rounded-full flex items-center gap-1 hover:bg-indigo-700"
-          >
-            <FiEdit className="w-3 h-3" /> Edit
-          </button>
-          <span className="px-2 py-1 bg-green-600 text-white text-xs rounded-full">
-            You
-          </span>
-        </div>
-      )}
-      
-      {layoutType === "grid" ? (
-        <div className="flex flex-col items-center text-center h-full">
-          <motion.div className="relative mb-6" whileHover={{ scale: 1.03 }}>
-            <div className="relative">
-              {member.photoUrl ? (
-                <img
-                  alt={member.name}
-                  className="w-32 h-32 object-cover rounded-full border-4 border-white dark:border-gray-800 shadow-lg"
-                  src={member.photoUrl}
-                />
-              ) : (
-                <div className="w-32 h-32 text-4xl rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold">
-                  {member.name.charAt(0)}
-                </div>
-              )}
-              <motion.div
-                className={`absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-16 h-1 rounded-full bg-indigo-500`}
-                whileHover={{ width: "100%" }}
+// Community member card
+const MemberCard = ({
+  member,
+  layoutType,
+  onMemberClick,
+  isCurrentUser = false,
+  onEditClick
+}) => {
+  if (layoutType === "grid") {
+    return (
+      <div
+        className={`group relative bg-white dark:bg-neutral-900 rounded-2xl p-6 border transition-all duration-300 cursor-pointer shadow-sm flex flex-col justify-between ${
+          isCurrentUser
+            ? "border-[#00ACF0] ring-1 ring-[#00ACF0]/40"
+            : "border-neutral-200 dark:border-neutral-800 hover:border-[#00ACF0]/40"
+        }`}
+        onClick={() => onMemberClick(member)}
+      >
+        {isCurrentUser && (
+          <div className="absolute top-4 right-4 flex items-center gap-1.5 z-10">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEditClick(member);
+              }}
+              className="px-2.5 py-1 bg-sky-50 dark:bg-sky-950/60 text-[#00ACF0] hover:bg-[#00ACF0] hover:text-white border border-sky-200 dark:border-sky-800 text-xs font-semibold rounded-lg flex items-center gap-1 transition"
+            >
+              <Edit3 className="w-3 h-3" /> Edit
+            </button>
+            <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold rounded-lg">
+              You
+            </span>
+          </div>
+        )}
+
+        <div className="flex flex-col items-center text-center">
+          <div className="relative mb-5 mt-2">
+            {member.photoUrl ? (
+              <img
+                alt={member.name}
+                loading="lazy"
+                className="w-24 h-24 object-cover rounded-full border-2 border-neutral-200 dark:border-neutral-700 shadow-sm group-hover:scale-105 transition-transform"
+                src={member.photoUrl}
               />
-            </div>
-          </motion.div>
-
-          <div className="flex flex-col gap-2 mb-3 w-full">
-            <StatusBadge status={member.status} />
-            <div className="flex justify-center gap-2">
-              <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full text-xs">
-                ID: {member.communityId}
-              </span>
-              {member.deviceInfo && (
-                <DeviceBadge device={member.deviceInfo.device} />
-              )}
-            </div>
-          </div>
-
-          <h3 className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 mb-1 mt-3">
-            {member.role || "Community Member"}
-          </h3>
-          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
-            {member.name}
-          </h2>
-
-          <p className="text-gray-600 dark:text-gray-300 mb-6 line-clamp-3">
-            {member.bio || `${member.role || "Member"} at Soft Game Studio Community`}
-          </p>
-
-          <div className="flex justify-center mb-4 gap-2 flex-wrap">
-            {member.skills && member.skills.split(',').map((skill, index) => (
-              <span key={index} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md text-sm">
-                {skill.trim()}
-              </span>
-            ))}
-          </div>
-
-          <div className="flex justify-center mt-4 gap-3">
-            {member.socialLinks && Object.entries(member.socialLinks).map(
-              ([platform, url]) =>
-                url && (
-                  <SocialIcon key={platform} platform={platform} url={url} />
-                )
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 flex items-center justify-center text-2xl font-bold text-[#00ACF0]">
+                {member.name ? member.name.charAt(0) : "C"}
+              </div>
             )}
           </div>
-        </div>
-      ) : (
-        <div className="flex flex-col md:flex-row gap-6">
-          <div className="flex-shrink-0">
-            <div className="relative">
-              {member.photoUrl ? (
-                <img
-                  alt={member.name}
-                  className="w-24 h-24 object-cover rounded-full border-4 border-white dark:border-gray-800 shadow-lg"
-                  src={member.photoUrl}
-                />
-              ) : (
-                <div className="w-24 h-24 text-2xl rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold">
-                  {member.name.charAt(0)}
-                </div>
-              )}
-              <motion.div
-                className={`absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 rounded-full bg-indigo-500`}
-                whileHover={{ width: "100%" }}
-              />
-            </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
+            <StatusBadge status={member.status} />
+            {member.communityId && (
+              <span className="px-2 py-0.5 rounded-full text-xs font-mono bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                {member.communityId}
+              </span>
+            )}
           </div>
 
-          <div className="flex-grow">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-4">
-              <div>
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white">
-                  {member.name}
-                </h2>
-                <div className="flex items-center gap-3 mt-2">
-                  <StatusBadge status={member.status} />
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    ID: {member.communityId}
-                  </span>
-                  {member.deviceInfo && (
-                    <DeviceBadge device={member.deviceInfo.device} />
-                  )}
-                </div>
-              </div>
-              <p className="text-indigo-600 dark:text-indigo-400 font-medium">
-                {member.role || "Community Member"}
-              </p>
-            </div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#00ACF0] mt-1">
+            {member.role || "Community Member"}
+          </p>
+          <h3 className="text-lg font-bold text-neutral-900 dark:text-white mt-0.5">
+            {member.name}
+          </h3>
 
-            <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
-              {member.bio || `${member.role || "Member"} at Soft Game Studio Community`}
-            </p>
+          <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-2 line-clamp-3 leading-relaxed">
+            {member.bio || `${member.role || "Member"} in the Soft Game Studio Community`}
+          </p>
 
-            <div className="flex flex-wrap gap-2 mb-4">
-              {member.skills && member.skills.split(',').map((skill, index) => (
-                <span key={index} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md text-sm">
+          {member.skills && (
+            <div className="flex justify-center flex-wrap gap-1.5 mt-4">
+              {member.skills.split(",").slice(0, 3).map((skill, index) => (
+                <span
+                  key={index}
+                  className="text-xs px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
+                >
                   {skill.trim()}
                 </span>
               ))}
             </div>
-
-            <div className="flex justify-between items-center">
-              <div className="flex gap-3">
-                {member.socialLinks && Object.entries(member.socialLinks).map(
-                  ([platform, url]) =>
-                    url && (
-                      <SocialIcon
-                        key={platform}
-                        platform={platform}
-                        url={url}
-                      />
-                    )
-                )}
-              </div>
-              <button className="text-indigo-600 dark:text-indigo-400 text-sm font-medium flex items-center gap-1">
-                View Details <FiExternalLink className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+          )}
         </div>
-      )}
-    </motion.div>
+
+        <div className="flex items-center justify-between pt-5 mt-5 border-t border-neutral-100 dark:border-neutral-800 w-full">
+          <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+            {member.socialLinks &&
+              Object.entries(member.socialLinks).map(
+                ([platform, url]) => url && <SocialIcon key={platform} platform={platform} url={url} />
+              )}
+          </div>
+          {member.deviceInfo && <DeviceBadge device={member.deviceInfo.device} />}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`group relative bg-white dark:bg-neutral-900 rounded-2xl p-6 border transition-all duration-300 cursor-pointer shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 ${
+        isCurrentUser
+          ? "border-[#00ACF0] ring-1 ring-[#00ACF0]/40"
+          : "border-neutral-200 dark:border-neutral-800 hover:border-[#00ACF0]/40"
+      }`}
+      onClick={() => onMemberClick(member)}
+    >
+      <div className="flex items-center gap-5">
+        <div className="relative shrink-0">
+          {member.photoUrl ? (
+            <img
+              alt={member.name}
+              loading="lazy"
+              className="w-16 h-16 object-cover rounded-full border-2 border-neutral-200 dark:border-neutral-700 shadow-sm group-hover:scale-105 transition-transform"
+              src={member.photoUrl}
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 flex items-center justify-center text-xl font-bold text-[#00ACF0]">
+              {member.name ? member.name.charAt(0) : "C"}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+              {member.name}
+            </h3>
+            <StatusBadge status={member.status} />
+            {member.communityId && (
+              <span className="text-xs font-mono text-neutral-400">
+                {member.communityId}
+              </span>
+            )}
+            {isCurrentUser && (
+              <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold rounded">
+                You
+              </span>
+            )}
+          </div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#00ACF0]">
+            {member.role || "Community Member"}
+          </p>
+          <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1 max-w-lg line-clamp-2 leading-relaxed">
+            {member.bio || `${member.role || "Member"} in the Soft Game Studio Community`}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
+        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          {member.socialLinks &&
+            Object.entries(member.socialLinks).map(
+              ([platform, url]) => url && <SocialIcon key={platform} platform={platform} url={url} />
+            )}
+        </div>
+        {isCurrentUser && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onEditClick(member);
+            }}
+            className="px-3 py-1.5 bg-sky-50 dark:bg-sky-950/60 text-[#00ACF0] hover:bg-[#00ACF0] hover:text-white border border-sky-200 dark:border-sky-800 text-xs font-semibold rounded-lg flex items-center gap-1 transition"
+          >
+            <Edit3 className="w-3.5 h-3.5" /> Edit
+          </button>
+        )}
+      </div>
+    </div>
   );
 };
 
+// Modal for full member details
 const MemberModal = ({ member, isOpen, onClose, onEditClick, isCurrentUser = false }) => {
   if (!isOpen || !member) return null;
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      <div
+        className="fixed inset-0 bg-neutral-950/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
         onClick={onClose}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="community-modal-title"
       >
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.2 }}
+          className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl max-w-xl w-full max-h-[90vh] overflow-y-auto border border-neutral-200 dark:border-neutral-800"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="p-6">
-            <div className="flex justify-between items-start mb-6">
-              <div className="flex items-center space-x-4">
+          <div className="p-6 sm:p-8">
+            <div className="flex justify-between items-start mb-6 pb-6 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center gap-4">
                 {member.photoUrl ? (
                   <img
                     alt={member.name}
-                    className="w-20 h-20 object-cover rounded-full border-4 border-white dark:border-gray-800 shadow-lg"
+                    className="w-16 h-16 object-cover rounded-full border-2 border-neutral-200 dark:border-neutral-700 shadow-sm"
                     src={member.photoUrl}
                   />
                 ) : (
-                  <div className="w-20 h-20 text-2xl rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold">
-                    {member.name.charAt(0)}
+                  <div className="w-16 h-16 rounded-full bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 flex items-center justify-center text-2xl font-bold text-[#00ACF0]">
+                    {member.name ? member.name.charAt(0) : "C"}
                   </div>
                 )}
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+                  <h2 id="community-modal-title" className="text-xl font-bold text-neutral-900 dark:text-white">
                     {member.name}
                   </h2>
-                  <p className="text-indigo-600 dark:text-indigo-400 font-medium">
+                  <p className="text-xs font-semibold text-[#00ACF0] uppercase tracking-wide">
                     {member.role || "Community Member"}
                   </p>
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-2 mt-1.5">
                     <StatusBadge status={member.status} />
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      ID: {member.communityId}
-                    </span>
-                  </div>
-                  {member.deviceInfo && (
-                    <div className="flex items-center gap-2 mt-1">
-                      <DeviceBadge device={member.deviceInfo.device} />
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {member.deviceInfo.browser}
+                    {member.communityId && (
+                      <span className="text-xs font-mono text-neutral-400">
+                        {member.communityId}
                       </span>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
-              <div className="flex gap-2">
+
+              <div className="flex items-center gap-2">
                 {isCurrentUser && (
                   <button
                     onClick={() => onEditClick(member)}
-                    className="p-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700"
+                    className="p-2 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-[#00ACF0] hover:bg-[#00ACF0] hover:text-white transition"
+                    aria-label="Edit Profile"
                   >
-                    <FiEdit className="w-4 h-4" />
+                    <Edit3 className="w-4 h-4" />
                   </button>
                 )}
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                  className="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
+                  aria-label="Close"
                 >
-                  <FiX className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-5">
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">About</h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  {member.bio || `${member.role || "Member"} at Soft Game Studio Community`}
+                <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1.5">
+                  About Member
+                </h3>
+                <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
+                  {member.bio || `${member.role || "Member"} in the Soft Game Studio Community`}
                 </p>
               </div>
 
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">Skills</h3>
-                <div className="flex flex-wrap gap-2">
-                  {member.skills && member.skills.split(',').map((skill, index) => (
-                    <span key={index} className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-md text-sm">
-                      {skill.trim()}
-                    </span>
-                  ))}
+              {member.skills && (
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2">
+                    Skills & Technologies
+                  </h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {member.skills.split(",").map((skill, index) => (
+                      <span
+                        key={index}
+                        className="px-2.5 py-1 text-xs rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
+                      >
+                        {skill.trim()}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {member.socialLinks && (
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2">
+                    Social & Portfolio
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    {Object.entries(member.socialLinks).map(
+                      ([platform, url]) => url && <SocialIcon key={platform} platform={platform} url={url} />
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">Social Links</h3>
-              <div className="flex gap-3">
-                {member.socialLinks && Object.entries(member.socialLinks).map(
-                  ([platform, url]) =>
-                    url && (
-                      <SocialIcon key={platform} platform={platform} url={url} />
-                    )
-                )}
-              </div>
-              
-            </div>
-
-            <div className="mt-6 flex justify-end">
+            <div className="mt-8 pt-4 border-t border-neutral-100 dark:border-neutral-800 flex justify-end">
               <button
                 onClick={onClose}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                className="px-4 py-2 text-xs font-semibold rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
               >
                 Close
               </button>
             </div>
           </div>
         </motion.div>
-      </motion.div>
+      </div>
     </AnimatePresence>
   );
 };
 
+// Profile update modal for authenticated owner
 const ProfileUpdateModal = ({ isOpen, onClose, memberData, onUpdate }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    skills: '',
-    bio: '',
-    contactInfo: '',
+    name: "",
+    skills: "",
+    bio: "",
+    contactInfo: "",
     socialLinks: {
-      linkedin: '',
-      github: '',
-      instagram: ''
+      linkedin: "",
+      github: "",
+      instagram: ""
     }
   });
   const [photo, setPhoto] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState('');
+  const [previewUrl, setPreviewUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ text: '', type: '' });
+  const [message, setMessage] = useState({ text: "", type: "" });
 
   useEffect(() => {
     if (memberData && isOpen) {
       setFormData({
-        name: memberData.name || '',
-        skills: memberData.skills || '',
-        bio: memberData.bio || '',
-        contactInfo: memberData.contactInfo || '',
+        name: memberData.name || "",
+        skills: memberData.skills || "",
+        bio: memberData.bio || "",
+        contactInfo: memberData.contactInfo || "",
         socialLinks: {
-          linkedin: memberData.socialLinks?.linkedin || '',
-          github: memberData.socialLinks?.github || '',
-          instagram: memberData.socialLinks?.instagram || ''
+          linkedin: memberData.socialLinks?.linkedin || "",
+          github: memberData.socialLinks?.github || "",
+          instagram: memberData.socialLinks?.instagram || ""
         }
       });
-      
+
       if (memberData.photoUrl) {
         setPreviewUrl(memberData.photoUrl);
       }
@@ -434,17 +471,17 @@ const ProfileUpdateModal = ({ isOpen, onClose, memberData, onUpdate }) => {
   }, [memberData, isOpen]);
 
   const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSocialLinkChange = (platform, url) => {
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       socialLinks: {
-        ...formData.socialLinks,
+        ...prev.socialLinks,
         [platform]: url
       }
-    });
+    }));
   };
 
   const handlePhotoChange = (e) => {
@@ -459,13 +496,13 @@ const ProfileUpdateModal = ({ isOpen, onClose, memberData, onUpdate }) => {
 
   const removePhoto = () => {
     setPhoto(null);
-    setPreviewUrl('');
+    setPreviewUrl("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage({ text: '', type: '' });
+    setMessage({ text: "", type: "" });
 
     try {
       let photoUrl = memberData.photoUrl;
@@ -479,31 +516,31 @@ const ProfileUpdateModal = ({ isOpen, onClose, memberData, onUpdate }) => {
           try {
             const oldPhotoRef = ref(storage, memberData.photoUrl);
             await deleteObject(oldPhotoRef);
-          } catch (error) {
-            console.log('Error deleting old photo:', error);
+          } catch (err) {
+            console.log("Old photo clean-up notice:", err);
           }
         }
       }
 
-      const memberRef = doc(fireDB, 'communityMembers', memberData.id);
+      const memberRef = doc(fireDB, "communityMembers", memberData.id);
       await updateDoc(memberRef, {
         ...formData,
         photoUrl,
         updatedAt: serverTimestamp()
       });
 
-      setMessage({ text: 'Profile updated successfully!', type: 'success' });
-      
+      setMessage({ text: "Profile updated successfully!", type: "success" });
+
       if (onUpdate) {
         onUpdate({ ...formData, photoUrl, id: memberData.id });
       }
 
       setTimeout(() => {
         onClose();
-      }, 2000);
+      }, 1500);
     } catch (error) {
-      console.error('Error updating profile:', error);
-      setMessage({ text: 'Error updating profile. Please try again.', type: 'error' });
+      console.error("Error updating profile:", error);
+      setMessage({ text: "Failed to update profile. Please try again.", type: "error" });
     } finally {
       setLoading(false);
     }
@@ -513,45 +550,43 @@ const ProfileUpdateModal = ({ isOpen, onClose, memberData, onUpdate }) => {
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      <div
+        className="fixed inset-0 bg-neutral-950/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        onClick={onClose}
       >
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl max-w-xl w-full max-h-[90vh] overflow-y-auto border border-neutral-200 dark:border-neutral-800"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-                Update Your Profile
+          <div className="p-6 sm:p-8">
+            <div className="flex justify-between items-center mb-6 pb-4 border-b border-neutral-100 dark:border-neutral-800">
+              <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
+                Update Profile
               </h2>
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
-              >
-                <FiX className="w-5 h-5" />
+              <button onClick={onClose} className="p-2 text-neutral-500 hover:text-neutral-900 dark:hover:text-white">
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             {message.text && (
-              <div className={`p-3 rounded-lg mb-4 ${
-                message.type === 'success' 
-                  ? 'bg-green-100 text-green-700' 
-                  : 'bg-red-100 text-red-700'
-              }`}>
-                {message.text}
+              <div
+                className={`p-3 rounded-xl mb-4 text-xs flex items-center gap-2 ${
+                  message.type === "success"
+                    ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200"
+                    : "bg-rose-50 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200"
+                }`}
+              >
+                {message.type === "success" ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+                <span>{message.text}</span>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                   Full Name *
                 </label>
                 <input
@@ -560,12 +595,12 @@ const ProfileUpdateModal = ({ isOpen, onClose, memberData, onUpdate }) => {
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-[#00ACF0]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                   Skills (comma separated) *
                 </label>
                 <input
@@ -574,28 +609,28 @@ const ProfileUpdateModal = ({ isOpen, onClose, memberData, onUpdate }) => {
                   value={formData.skills}
                   onChange={handleInputChange}
                   required
-                  placeholder="e.g., React, JavaScript, UI/UX Design"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="e.g. React, Unity, C#, 3D Modeling"
+                  className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-[#00ACF0]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  About Yourself *
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                  Bio / About Yourself *
                 </label>
                 <textarea
                   name="bio"
+                  rows={3}
                   value={formData.bio}
                   onChange={handleInputChange}
                   required
-                  rows={3}
-                  placeholder="Tell us about yourself..."
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Describe your background and interests..."
+                  className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-[#00ACF0] resize-y"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                   Contact Info *
                 </label>
                 <input
@@ -603,26 +638,26 @@ const ProfileUpdateModal = ({ isOpen, onClose, memberData, onUpdate }) => {
                   name="contactInfo"
                   value={formData.contactInfo}
                   onChange={handleInputChange}
-                  placeholder="phone number"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
                   required
+                  placeholder="Phone number or preferred contact"
+                  className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-[#00ACF0]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Social Links (Optional)
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
+                  Social Links
                 </label>
                 <div className="space-y-2">
                   {Object.entries(formData.socialLinks).map(([platform, url]) => (
                     <div key={platform} className="flex items-center gap-2">
-                      <SocialIcon platform={platform} url="#" />
+                      <span className="w-20 text-xs text-neutral-500 capitalize">{platform}</span>
                       <input
                         type="url"
-                        placeholder={`${platform.charAt(0).toUpperCase() + platform.slice(1)} URL`}
+                        placeholder={`https://${platform}.com/...`}
                         value={url}
                         onChange={(e) => handleSocialLinkChange(platform, e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                        className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-1 focus:ring-[#00ACF0]"
                       />
                     </div>
                   ))}
@@ -630,98 +665,369 @@ const ProfileUpdateModal = ({ isOpen, onClose, memberData, onUpdate }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                   Profile Photo
                 </label>
-                <div className="flex items-center space-x-4">
-                  <div className="flex-1">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoChange}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-                    />
-                  </div>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    className="flex-1 text-xs text-neutral-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-neutral-100 dark:file:bg-neutral-800 file:text-neutral-700 dark:file:text-neutral-300 hover:file:bg-neutral-200"
+                  />
                   {previewUrl && (
-                    <div className="relative">
-                      <img loading="lazy" src={previewUrl} alt="Preview" className="w-16 h-16 rounded-full object-cover border border-gray-300" />
+                    <div className="relative shrink-0">
+                      <img src={previewUrl} alt="Preview" className="w-12 h-12 rounded-full object-cover border" />
                       <button
                         type="button"
                         onClick={removePhoto}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                        className="absolute -top-1 -right-1 bg-rose-500 text-white rounded-full p-0.5 hover:bg-rose-600"
                       >
-                        <FiX className="w-3 h-3" />
+                        <X className="w-3 h-3" />
                       </button>
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
+                  className="flex-1 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 rounded-xl bg-[#00ACF0] hover:bg-[#0092cc] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition disabled:opacity-50"
                 >
-                  {loading ? 'Updating...' : (
-                    <>
-                      <FiSave /> Update Profile
-                    </>
-                  )}
+                  <Save className="w-3.5 h-3.5" />
+                  {loading ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </form>
           </div>
         </motion.div>
-      </motion.div>
+      </div>
     </AnimatePresence>
   );
 };
 
-
-
-
-
-
-
-
+// Sequential community ID generator
 const generateCommunityId = async () => {
   try {
     const querySnapshot = await getDocs(collection(fireDB, "communityMembers"));
-    const members = querySnapshot.docs.map(doc => doc.data());
-    
-    // Find the highest existing community ID
+    const members = querySnapshot.docs.map((d) => d.data());
+
     const communityIds = members
-      .map(member => member.communityId)
-      .filter(id => id && id.startsWith('SGSCOM'))
-      .map(id => {
-        const num = id.replace('SGSCOM', '');
-        return parseInt(num) || 0;
+      .map((m) => m.communityId)
+      .filter((id) => id && id.startsWith("SGSCOM"))
+      .map((id) => {
+        const num = id.replace("SGSCOM", "");
+        return parseInt(num, 10) || 0;
       });
-    
+
     const highestId = communityIds.length > 0 ? Math.max(...communityIds) : 0;
     const nextId = highestId + 1;
-    
-    // Format with leading zeros
-    return `SGSCOM${nextId.toString().padStart(3, '0')}`;
+    return `SGSCOM${nextId.toString().padStart(3, "0")}`;
   } catch (error) {
     console.error("Error generating community ID:", error);
-    // Fallback to timestamp-based ID
     return `SGSCOM${Date.now().toString().slice(-6)}`;
   }
 };
 
-function CommunityMembers() {
+// Modal for new applicants
+const ApplicationModal = ({ isOpen, onClose, onSubmit, userData, user }) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    skills: "",
+    bio: "",
+    contactInfo: "",
+    socialLinks: {
+      linkedin: "",
+      github: "",
+      instagram: ""
+    }
+  });
+  const [photo, setPhoto] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ text: "", type: "" });
+
+  useEffect(() => {
+    if (userData && isOpen) {
+      setFormData({
+        name: userData.name || "",
+        skills: userData.skills || "",
+        bio: userData.bio || "",
+        contactInfo: userData.phone || userData.contactInfo || "",
+        socialLinks: {
+          linkedin: userData.socialLinks?.linkedin || "",
+          github: userData.socialLinks?.github || "",
+          instagram: userData.socialLinks?.instagram || ""
+        }
+      });
+
+      if (userData.photoUrl) {
+        setPreviewUrl(userData.photoUrl);
+      }
+    }
+  }, [userData, isOpen]);
+
+  const handleInputChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSocialLinkChange = (platform, url) => {
+    setFormData((prev) => ({
+      ...prev,
+      socialLinks: {
+        ...prev.socialLinks,
+        [platform]: url
+      }
+    }));
+  };
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPhoto(file);
+      const reader = new FileReader();
+      reader.onload = () => setPreviewUrl(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removePhoto = () => {
+    setPhoto(null);
+    setPreviewUrl("");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage({ text: "", type: "" });
+
+    try {
+      let photoUrl = "";
+
+      if (photo) {
+        const storageRef = ref(storage, `community-members/${Date.now()}_${photo.name}`);
+        const snapshot = await uploadBytes(storageRef, photo);
+        photoUrl = await getDownloadURL(snapshot.ref);
+      }
+
+      const communityId = await generateCommunityId();
+
+      await addDoc(collection(fireDB, "communityMembers"), {
+        ...formData,
+        photoUrl,
+        communityId,
+        status: "pending",
+        appliedAt: serverTimestamp(),
+        userId: user?.uid,
+        userEmail: user?.email
+      });
+
+      setMessage({ text: "Application submitted! We will review your profile shortly.", type: "success" });
+
+      setTimeout(() => {
+        onSubmit();
+        onClose();
+      }, 1500);
+    } catch (error) {
+      console.error("Error submitting application:", error);
+      setMessage({ text: "Failed to submit application. Please try again.", type: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      <div
+        className="fixed inset-0 bg-neutral-950/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl max-w-xl w-full max-h-[90vh] overflow-y-auto border border-neutral-200 dark:border-neutral-800"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="p-6 sm:p-8">
+            <div className="flex justify-between items-center mb-6 pb-4 border-b border-neutral-100 dark:border-neutral-800">
+              <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
+                Join SGS Community
+              </h2>
+              <button onClick={onClose} className="p-2 text-neutral-500 hover:text-neutral-900 dark:hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {userData && (
+              <div className="mb-4 p-3 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-xs flex items-center gap-2 text-sky-800 dark:text-sky-300">
+                <Info className="w-4 h-4 shrink-0 text-[#00ACF0]" />
+                <span>Information pre-filled from your registered account.</span>
+              </div>
+            )}
+
+            {message.text && (
+              <div
+                className={`p-3 rounded-xl mb-4 text-xs flex items-center gap-2 ${
+                  message.type === "success"
+                    ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200"
+                    : "bg-rose-50 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200"
+                }`}
+              >
+                {message.type === "success" ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+                <span>{message.text}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Your full name"
+                  className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-[#00ACF0]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                  Skills (comma separated) *
+                </label>
+                <input
+                  type="text"
+                  name="skills"
+                  value={formData.skills}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="e.g. Unity, Unreal Engine, JavaScript, Pixel Art"
+                  className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-[#00ACF0]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                  Bio / Introduction *
+                </label>
+                <textarea
+                  name="bio"
+                  rows={3}
+                  value={formData.bio}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Tell us what you make and what you're working towards..."
+                  className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-[#00ACF0] resize-y"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                  Contact Number / WhatsApp *
+                </label>
+                <input
+                  type="text"
+                  name="contactInfo"
+                  value={formData.contactInfo}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="e.g. +91 9914267704"
+                  className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-[#00ACF0]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
+                  Social Links (Optional)
+                </label>
+                <div className="space-y-2">
+                  {Object.entries(formData.socialLinks).map(([platform, url]) => (
+                    <div key={platform} className="flex items-center gap-2">
+                      <span className="w-20 text-xs text-neutral-500 capitalize">{platform}</span>
+                      <input
+                        type="url"
+                        placeholder={`https://${platform}.com/...`}
+                        value={url}
+                        onChange={(e) => handleSocialLinkChange(platform, e.target.value)}
+                        className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-1 focus:ring-[#00ACF0]"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                  Profile Photo (Optional)
+                </label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    className="flex-1 text-xs text-neutral-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-neutral-100 dark:file:bg-neutral-800 file:text-neutral-700 dark:file:text-neutral-300 hover:file:bg-neutral-200"
+                  />
+                  {previewUrl && (
+                    <div className="relative shrink-0">
+                      <img src={previewUrl} alt="Preview" className="w-12 h-12 rounded-full object-cover border" />
+                      <button
+                        type="button"
+                        onClick={removePhoto}
+                        className="absolute -top-1 -right-1 bg-rose-500 text-white rounded-full p-0.5 hover:bg-rose-600"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 py-2.5 rounded-xl bg-[#00ACF0] hover:bg-[#0092cc] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition disabled:opacity-50"
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  {loading ? "Submitting..." : "Submit Application"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </motion.div>
+      </div>
+    </AnimatePresence>
+  );
+};
+
+export default function CommunityMembers() {
   const containerRef = useRef(null);
+  const shouldReduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: containerRef });
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const yParallax = useTransform(scrollYProgress, [0, 1], shouldReduceMotion ? ["0%", "0%"] : ["0%", "15%"]);
+
   const [communityMembers, setCommunityMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -734,96 +1040,103 @@ function CommunityMembers() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [currentUserMember, setCurrentUserMember] = useState(null);
   const [userData, setUserData] = useState(null);
-  const [userLoading, setUserLoading] = useState(true);
-  
+
   const { user } = useAuth();
   const navigate = useNavigate();
   const membersPerPage = 6;
 
+  // Fetch logged in user profile document
   useEffect(() => {
+    let isMounted = true;
     const fetchUserData = async () => {
       try {
-        if (!user?.email) {
-          setUserLoading(false);
-          return;
-        }
+        if (!user?.email) return;
 
-        const usersRef = collection(fireDB, 'users');
-        const q = query(usersRef, where('email', '==', user.email));
+        const usersRef = collection(fireDB, "users");
+        const q = query(usersRef, where("email", "==", user.email));
         const querySnapshot = await getDocs(q);
-        
-        if (!querySnapshot.empty) {
-          querySnapshot.forEach(doc => {
-            const data = doc.data();
-            setUserData({ id: doc.id, ...data });
+
+        if (!querySnapshot.empty && isMounted) {
+          querySnapshot.forEach((d) => {
+            setUserData({ id: d.id, ...d.data() });
           });
         }
       } catch (error) {
-        console.error('Error fetching user:', error);
-      } finally {
-        setUserLoading(false);
+        console.error("Error fetching user data:", error);
       }
     };
 
     fetchUserData();
-  }, [user, navigate]);
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
 
+  // Fetch community members
   const fetchCommunityMembers = async () => {
     try {
       const querySnapshot = await getDocs(collection(fireDB, "communityMembers"));
-      const membersData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
+      const membersData = querySnapshot.docs.map((d) => ({
+        id: d.id,
+        ...d.data()
       }));
-      
+
       const sortedMembers = membersData.sort((a, b) => {
-        if (a.status === 'accepted' && b.status !== 'accepted') return -1;
-        if (a.status !== 'accepted' && b.status === 'accepted') return 1;
-        return (b.appliedAt?.toDate() || 0) - (a.appliedAt?.toDate() || 0);
+        if (a.status === "accepted" && b.status !== "accepted") return -1;
+        if (a.status !== "accepted" && b.status === "accepted") return 1;
+        const timeA = a.appliedAt?.toDate ? a.appliedAt.toDate().getTime() : 0;
+        const timeB = b.appliedAt?.toDate ? b.appliedAt.toDate().getTime() : 0;
+        return timeB - timeA;
       });
-      
+
       setCommunityMembers(sortedMembers);
-      
-      // Find current user's member profile by matching Firebase UID
+
       if (user) {
-        const currentUserMemberProfile = membersData.find(member => 
-          member.userId === user.uid
-        );
-        setCurrentUserMember(currentUserMemberProfile);
+        const currentProfile = membersData.find((m) => m.userId === user.uid);
+        setCurrentUserMember(currentProfile || null);
       }
     } catch (error) {
       console.error("Error fetching community members:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
     fetchCommunityMembers();
-  }, [user]); // Add user as dependency
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   useEffect(() => {
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 300);
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const filteredMembers = communityMembers.filter((member) => {
-    const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (member.skills && member.skills.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (member.communityId && member.communityId.toLowerCase().includes(searchTerm.toLowerCase()));
-    return matchesSearch;
-  });
+  const filteredMembers = useMemo(() => {
+    const q = searchTerm.toLowerCase();
+    return communityMembers.filter((member) => {
+      const matchesSearch =
+        (member.name && member.name.toLowerCase().includes(q)) ||
+        (member.skills && member.skills.toLowerCase().includes(q)) ||
+        (member.communityId && member.communityId.toLowerCase().includes(q));
+      return matchesSearch;
+    });
+  }, [communityMembers, searchTerm]);
 
-  const displayMembers = filteredMembers.filter(member => 
-    member.status === 'accepted' || member.userId === user?.uid
-  );
+  // Display accepted members publicly, and show the user their own entry even if pending
+  const displayMembers = useMemo(() => {
+    return filteredMembers.filter(
+      (m) => m.status === "accepted" || m.userId === user?.uid
+    );
+  }, [filteredMembers, user]);
 
+  const totalPages = Math.ceil(displayMembers.length / membersPerPage);
   const indexOfLastMember = currentPage * membersPerPage;
   const indexOfFirstMember = indexOfLastMember - membersPerPage;
   const currentMembers = displayMembers.slice(indexOfFirstMember, indexOfLastMember);
-  const totalPages = Math.ceil(displayMembers.length / membersPerPage);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -842,10 +1155,9 @@ function CommunityMembers() {
   };
 
   const handleProfileUpdate = (updatedMember) => {
-    setCommunityMembers(prev => prev.map(member => 
-      member.id === updatedMember.id ? { ...member, ...updatedMember } : member
-    ));
-    // Also update currentUserMember if it's the same member
+    setCommunityMembers((prev) =>
+      prev.map((m) => (m.id === updatedMember.id ? { ...m, ...updatedMember } : m))
+    );
     if (currentUserMember && currentUserMember.id === updatedMember.id) {
       setCurrentUserMember(updatedMember);
     }
@@ -857,583 +1169,294 @@ function CommunityMembers() {
     setApplicationModalOpen(false);
   };
 
-  // Update ApplicationModal to include userId
-  const ApplicationModal = ({ isOpen, onClose, onSubmit, userData }) => {
-    const [formData, setFormData] = useState({
-      name: '',
-      skills: '',
-      bio: '',
-      contactInfo: '',
-      socialLinks: {
-        linkedin: '',
-        github: '',
-        instagram: ''
-      }
-    });
-    const [photo, setPhoto] = useState(null);
-    const [previewUrl, setPreviewUrl] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState({ text: '', type: '' });
-
-    useEffect(() => {
-      if (userData && isOpen) {
-        setFormData({
-          name: userData.name || '',
-          skills: userData.skills || '',
-          bio: userData.bio || '',
-          contactInfo: userData.phone || userData.contactInfo || '',
-          socialLinks: {
-            linkedin: userData.socialLinks?.linkedin || '',
-            github: userData.socialLinks?.github || '',
-            instagram: userData.socialLinks?.instagram || ''
-          }
-        });
-        
-        if (userData.photoUrl) {
-          setPreviewUrl(userData.photoUrl);
-        }
-      }
-    }, [userData, isOpen]);
-
-    const handleInputChange = (e) => {
-      setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSocialLinkChange = (platform, url) => {
-      setFormData({
-        ...formData,
-        socialLinks: {
-          ...formData.socialLinks,
-          [platform]: url
-        }
-      });
-    };
-
-    const handlePhotoChange = (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        setPhoto(file);
-        const reader = new FileReader();
-        reader.onload = () => setPreviewUrl(reader.result);
-        reader.readAsDataURL(file);
-      }
-    };
-
-    const removePhoto = () => {
-      setPhoto(null);
-      setPreviewUrl('');
-    };
-
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      setLoading(true);
-      setMessage({ text: '', type: '' });
-
-      try {
-        let photoUrl = '';
-
-        if (photo) {
-          const storageRef = ref(storage, `community-members/${Date.now()}_${photo.name}`);
-          const snapshot = await uploadBytes(storageRef, photo);
-          photoUrl = await getDownloadURL(snapshot.ref);
-        }
-
-        // Generate sequential community ID
-        const communityId = await generateCommunityId();
-        
-        await addDoc(collection(fireDB, 'communityMembers'), {
-          ...formData,
-          photoUrl,
-          communityId,
-          status: 'pending',
-          appliedAt: serverTimestamp(),
-          userId: user?.uid, // Store Firebase UID instead of user document ID
-          userEmail: user?.email // Also store email for reference
-        });
-
-        setMessage({ text: 'Application submitted successfully!', type: 'success' });
-        
-        setTimeout(() => {
-          onSubmit();
-          onClose();
-        }, 2000);
-      } catch (error) {
-        console.error('Error submitting application:', error);
-        setMessage({ text: 'Error submitting application. Please try again.', type: 'error' });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (!isOpen) return null;
-
-    return (
-      <AnimatePresence>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-        >
-          {/* ... (keep the rest of your ApplicationModal JSX the same) */}
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-                  Join Our Community
-                </h2>
-                <button
-                  onClick={onClose}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
-                >
-                  <FiX className="w-5 h-5" />
-                </button>
-              </div>
-
-              {userData && (
-                <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <p className="text-blue-600 dark:text-blue-400 text-sm">
-                    <strong>Auto-fill enabled:</strong> Your profile information has been pre-filled.
-                  </p>
-                </div>
-              )}
-
-              {message.text && (
-                <div className={`p-3 rounded-lg mb-4 ${
-                  message.type === 'success' 
-                    ? 'bg-green-100 text-green-700' 
-                    : 'bg-red-100 text-red-700'
-                }`}>
-                  {message.text}
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {/* ... (keep the rest of your form fields the same) */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Skills (comma separated) *
-                  </label>
-                  <input
-                    type="text"
-                    name="skills"
-                    value={formData.skills}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="e.g., React, JavaScript, UI/UX Design"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    About Yourself *
-                  </label>
-                  <textarea
-                    name="bio"
-                    value={formData.bio}
-                    onChange={handleInputChange}
-                    required
-                    rows={3}
-                    placeholder="Tell us about yourself..."
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Contact Info *
-                  </label>
-                  <input
-                    type="text"
-                    name="contactInfo"
-                    value={formData.contactInfo}
-                    onChange={handleInputChange}
-                    placeholder="phone number"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    Social Links (Optional)
-                  </label>
-                  <div className="space-y-2">
-                    {Object.entries(formData.socialLinks).map(([platform, url]) => (
-                      <div key={platform} className="flex items-center gap-2">
-                        <SocialIcon platform={platform} url="#" />
-                        <input
-                          type="url"
-                          placeholder={`${platform.charAt(0).toUpperCase() + platform.slice(1)} URL`}
-                          value={url}
-                          onChange={(e) => handleSocialLinkChange(platform, e.target.value)}
-                          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    Profile Photo
-                  </label>
-                  <div className="flex items-center space-x-4">
-                    <div className="flex-1">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhotoChange}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-                      />
-                    </div>
-                    {previewUrl && (
-                      <div className="relative">
-                        <img loading="lazy" src={previewUrl} alt="Preview" className="w-16 h-16 rounded-full object-cover border border-gray-300" />
-                        <button
-                          type="button"
-                          onClick={removePhoto}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                        >
-                          <FiX className="w-3 h-3" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {loading ? 'Submitting...' : (
-                      <>
-                        <FiUserPlus /> Apply Now
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </motion.div>
-        </motion.div>
-      </AnimatePresence>
-    );
+  const communitySchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Soft Game Studio Developer Community",
+    "url": "https://softgamestudios.web.app/OurCommunity",
+    "description": "Join our community of aspiring and professional game creators, designers, and students.",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Soft Game Studio Pvt. Ltd.",
+      "url": "https://softgamestudios.web.app"
+    }
   };
 
   return (
     <Layout>
       <Helmet>
-        <title>Community Members - Soft Game Studio | Join Our Growing Community</title>
+        <title>Community Members | Soft Game Studio</title>
         <meta
           name="description"
-          content="Join the Soft Game Studio community of game developers, designers, and enthusiasts. Apply to become a member and connect with like-minded individuals."
+          content="Connect with independent developers, designers, and learners in the Soft Game Studio community. Apply to join our growing network."
         />
+        <link rel="canonical" href="https://softgamestudios.web.app/OurCommunity" />
+
+        {/* Open Graph */}
+        <meta property="og:title" content="Developer Community | Soft Game Studio" />
+        <meta
+          property="og:description"
+          content="Connect with creators and enthusiasts in the Soft Game Studio community."
+        />
+        <meta property="og:url" content="https://softgamestudios.web.app/OurCommunity" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Soft Game Studio" />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@SoftGameStudio" />
+        <meta name="twitter:title" content="Community Members | Soft Game Studio" />
+        <meta
+          name="twitter:description"
+          content="Discover members and contributors in the Soft Game Studio ecosystem."
+        />
+
+        {/* Schema */}
+        <script type="application/ld+json">{JSON.stringify(communitySchema)}</script>
       </Helmet>
 
       <div
         ref={containerRef}
-        className="min-h-screen bg-gradient-to-b from-gray-50 to-blue-50 dark:from-gray-950 dark:to-gray-900 text-gray-900 dark:text-gray-100 overflow-hidden"
+        className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 transition-colors duration-300"
       >
-        <motion.div
-          className="absolute inset-0 opacity-10 dark:opacity-5"
-          style={{
-            y,
-            backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
-          }}
-        />
-
-        <section className="py-20 px-4 relative z-10">
-          <div className="max-w-7xl mx-auto text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <motion.h1
-                className="text-4xl md:text-6xl font-bold mb-4 text-gray-800 dark:text-white tracking-tight"
-                initial={{ scale: 0.9 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                COMMUNITY
-              </motion.h1>
-              <motion.div className="w-24 h-1 bg-indigo-600 mx-auto mb-6 rounded-full" />
-              <motion.h2
-                className="text-2xl md:text-4xl font-semibold text-gray-700 dark:text-gray-300"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-              >
-                JOIN OUR{" "}
-                <span className="text-indigo-600 dark:text-indigo-400">
-                  GROWING FAMILY
-                </span>
-              </motion.h2>
-              <motion.p
-                className="mt-4 max-w-2xl mx-auto text-lg text-gray-600 dark:text-gray-400"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-              >
-                Connect with passionate game developers, designers, and enthusiasts. 
-                Share knowledge, collaborate on projects, and grow together.
-              </motion.p>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-                {user && currentUserMember && (
-                  <motion.button
-                    onClick={() => handleEditClick(currentUserMember)}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-6 py-3 bg-green-600 text-white rounded-full font-semibold shadow-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-                  >
-                    <FiEdit className="w-5 h-5" />
-                    Update Profile
-                  </motion.button>
-                )}
-                
-                {user && !currentUserMember && (
-                  <motion.button
-                    onClick={() => setApplicationModalOpen(true)}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-6 py-3 bg-indigo-600 text-white rounded-full font-semibold shadow-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
-                  >
-                    <FiUserPlus className="w-5 h-5" />
-                    Apply to Join Community
-                  </motion.button>
-                )}
-
-                {!user && (
-                  <motion.button
-                    onClick={() => navigate('/login')}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-6 py-3 bg-indigo-600 text-white rounded-full font-semibold shadow-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
-                  >
-                    <FiUser className="w-5 h-5" />
-                    Login to Apply
-                  </motion.button>
-                )}
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {currentUserMember && currentUserMember.status === 'pending' && (
-          <section className="py-8 px-4 relative z-10 bg-yellow-50 dark:bg-yellow-900/20">
-            <div className="max-w-7xl mx-auto">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="text-center mb-6"
-              >
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-                  Your Application Status
-                </h2>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Your application is currently under review
-                </p>
-              </motion.div>
-              
-              <div className="max-w-2xl mx-auto">
-                <MemberCard
-                  member={currentUserMember}
-                  layoutType="list"
-                  onMemberClick={handleMemberClick}
-                  onEditClick={handleEditClick}
-                  isCurrentUser={true}
-                />
-              </div>
+        {/* Header Hero */}
+        <header className="relative pt-24 pb-14 px-4 bg-gradient-to-b from-neutral-100 via-neutral-50 to-neutral-50 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
+          <motion.div
+            style={{ y: yParallax }}
+            className="max-w-4xl mx-auto text-center relative z-10"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase bg-sky-100 dark:bg-sky-950/60 text-[#00ACF0] dark:text-sky-400 border border-sky-200 dark:border-sky-900/50 mb-6">
+              <Users className="w-3.5 h-3.5" />
+              Creator Network
             </div>
-          </section>
-        )}
 
-        <section className="py-16 px-4 relative z-10">
-          <div className="max-w-7xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg mb-8 border border-gray-100 dark:border-gray-700"
-            >
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+              Community Members
+            </h1>
+
+            <p className="mt-4 text-base sm:text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
+              Collaborate with fellow game creators, developers, and educators. Share your skills and projects.
+            </p>
+
+            {/* Action Bar */}
+            <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
+              {user && currentUserMember && (
+                <button
+                  onClick={() => handleEditClick(currentUserMember)}
+                  className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-[#00ACF0] hover:bg-[#0092cc] text-white shadow-sm flex items-center gap-2 transition"
+                >
+                  <Edit3 className="w-4 h-4" />
+                  Update Your Profile
+                </button>
+              )}
+
+              {user && !currentUserMember && (
+                <button
+                  onClick={() => setApplicationModalOpen(true)}
+                  className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-[#00ACF0] hover:bg-[#0092cc] text-white shadow-sm flex items-center gap-2 transition"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  Apply to Join Community
+                </button>
+              )}
+
+              {!user && (
+                <button
+                  onClick={() => navigate("/login")}
+                  className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-[#00ACF0] hover:bg-[#0092cc] text-white shadow-sm flex items-center gap-2 transition"
+                >
+                  <User className="w-4 h-4" />
+                  Login to Apply
+                </button>
+              )}
+            </div>
+          </motion.div>
+        </header>
+
+        {/* Current User Pending Notification Banner */}
+        {currentUserMember && currentUserMember.status === "pending" && (
+          <aside aria-label="Application Status" className="py-6 px-4 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900/50">
+            <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3 text-center sm:text-left">
+                <Clock className="w-6 h-6 text-amber-600 shrink-0" />
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-                    Community Members ({displayMembers.length})
+                  <h2 className="text-sm font-bold text-amber-900 dark:text-amber-200">
+                    Application Under Review
                   </h2>
-                  <p className="text-gray-600 dark:text-gray-400 mt-1">
-                    Connect with our amazing community members
+                  <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+                    Your community profile has been submitted and is awaiting approval by the SGS moderation team.
                   </p>
                 </div>
-
-                <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-                  <div className="relative flex-1 md:w-64">
-                    <FiSearch className="absolute left-3 top-3.5 text-gray-400 dark:text-gray-500" />
-                    <input
-                      type="text"
-                      placeholder="Search members..."
-                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      value={searchTerm}
-                      onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                    />
-                  </div>
-
-                  <div className="flex gap-2">
-                    <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-                      <button
-                        onClick={() => setLayoutType("grid")}
-                        className={`p-2 rounded-md ${
-                          layoutType === "grid"
-                            ? "bg-white dark:bg-gray-600 shadow-sm"
-                            : "hover:bg-gray-50 dark:hover:bg-gray-600"
-                        }`}
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => setLayoutType("list")}
-                        className={`p-2 rounded-md ${
-                          layoutType === "list"
-                            ? "bg-white dark:bg-gray-600 shadow-sm"
-                            : "hover:bg-gray-50 dark:hover:bg-gray-600"
-                        }`}
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
               </div>
-            </motion.div>
-
-            {loading ? (
-              <div className="flex justify-center py-12">
-                <div className="w-12 h-12 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin"></div>
-              </div>
-            ) : displayMembers.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                className="text-center py-12 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+              <button
+                onClick={() => handleEditClick(currentUserMember)}
+                className="px-3.5 py-1.5 rounded-lg border border-amber-300 dark:border-amber-700 text-xs font-semibold text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition shrink-0"
               >
-                <FiUserPlus className="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-gray-400 mt-4 mb-6">
-                  {searchTerm
-                    ? "No matching community members found."
-                    : "No community members yet. Be the first to join!"}
+                Edit Pending Profile
+              </button>
+            </div>
+          </aside>
+        )}
+
+        {/* Main Directory Area */}
+        <main className="py-12 px-4 max-w-7xl mx-auto">
+          {/* Search & Layout Bar */}
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-neutral-200 dark:border-neutral-800 shadow-sm mb-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
+                  Member Directory
+                </h2>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  {displayMembers.length} active member{displayMembers.length === 1 ? "" : "s"} listed
                 </p>
-                {user && (
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setApplicationModalOpen(true)}
-                    className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg font-medium shadow-md hover:bg-indigo-700 transition-colors"
-                  >
-                    Apply to Join
-                  </motion.button>
-                )}
-              </motion.div>
-            ) : (
-              <>
-                <div className={layoutType === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col gap-4"}>
-                  {currentMembers.map((member, index) => (
-                    <MemberCard
-                      key={member.id || index}
-                      member={member}
-                      layoutType={layoutType}
-                      onMemberClick={handleMemberClick}
-                      onEditClick={handleEditClick}
-                      isCurrentUser={member.userId === user?.uid}
-                    />
-                  ))}
+              </div>
+
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="relative flex-1 sm:w-64">
+                  <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-neutral-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by name, skill, ID..."
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#00ACF0] focus:border-transparent transition"
+                  />
                 </div>
 
-                {totalPages > 1 && (
-                  <div className="flex justify-center mt-12">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                        className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      >
-                        Previous
-                      </button>
-                      {Array.from({ length: totalPages }, (_, i) => (
-                        <button
-                          key={i + 1}
-                          onClick={() => setCurrentPage(i + 1)}
-                          className={`px-4 py-2 rounded-lg ${
-                            currentPage === i + 1
-                              ? "bg-indigo-600 text-white"
-                              : "border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          }`}
-                        >
-                          {i + 1}
-                        </button>
-                      ))}
-                      <button
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                        className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      >
-                        Next
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
+                <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl shrink-0">
+                  <button
+                    onClick={() => setLayoutType("grid")}
+                    aria-label="Grid layout"
+                    className={`p-2 rounded-lg transition ${
+                      layoutType === "grid"
+                        ? "bg-white dark:bg-neutral-700 text-[#00ACF0] shadow-sm"
+                        : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <Grid3X3 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setLayoutType("list")}
+                    aria-label="List layout"
+                    className={`p-2 rounded-lg transition ${
+                      layoutType === "list"
+                        ? "bg-white dark:bg-neutral-700 text-[#00ACF0] shadow-sm"
+                        : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-        </section>
 
+          {/* Members List or Empty State */}
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <div className="w-10 h-10 rounded-full border-2 border-[#00ACF0] border-t-transparent animate-spin" />
+            </div>
+          ) : displayMembers.length === 0 ? (
+            <div className="text-center py-16 px-4 bg-white dark:bg-neutral-900 rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-800 max-w-lg mx-auto">
+              <Users className="w-12 h-12 mx-auto text-neutral-400 mb-3" />
+              <h3 className="text-lg font-bold text-neutral-800 dark:text-neutral-200">
+                No matching members found
+              </h3>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1 mb-5">
+                {searchTerm
+                  ? "Try searching for a different skill, name, or community ID."
+                  : "Be the first creator to join our community network!"}
+              </p>
+              {user && (
+                <button
+                  onClick={() => setApplicationModalOpen(true)}
+                  className="px-4 py-2 rounded-xl text-sm font-semibold bg-[#00ACF0] text-white hover:bg-[#0092cc] transition"
+                >
+                  Apply to Join
+                </button>
+              )}
+            </div>
+          ) : (
+            <>
+              <div
+                className={
+                  layoutType === "grid"
+                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                    : "space-y-4"
+                }
+              >
+                {currentMembers.map((member) => (
+                  <MemberCard
+                    key={member.id}
+                    member={member}
+                    layoutType={layoutType}
+                    onMemberClick={handleMemberClick}
+                    onEditClick={handleEditClick}
+                    isCurrentUser={member.userId === user?.uid}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-12">
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-neutral-300 dark:border-neutral-700 disabled:opacity-40 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
+                  >
+                    Previous
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+                    <button
+                      key={num}
+                      onClick={() => setCurrentPage(num)}
+                      className={`w-9 h-9 text-xs font-semibold rounded-lg transition ${
+                        currentPage === num
+                          ? "bg-[#00ACF0] text-white shadow-sm"
+                          : "border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                      }`}
+                    >
+                      {num}
+                    </button>
+                  ))}
+
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-neutral-300 dark:border-neutral-700 disabled:opacity-40 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </main>
+
+        {/* Floating Scroll to Top */}
+        {showScrollTop && (
+          <button
+            onClick={scrollToTop}
+            aria-label="Scroll back to top"
+            className="fixed bottom-6 right-6 z-40 p-3 bg-[#00ACF0] text-white rounded-full shadow-lg hover:bg-[#0092cc] active:scale-95 transition"
+          >
+            <ArrowUp className="w-5 h-5" />
+          </button>
+        )}
+
+        {/* Modals */}
         <ApplicationModal
           isOpen={applicationModalOpen}
           onClose={() => setApplicationModalOpen(false)}
           onSubmit={handleApplicationSubmit}
           userData={userData}
+          user={user}
         />
 
         <ProfileUpdateModal
@@ -1450,22 +1473,7 @@ function CommunityMembers() {
           onEditClick={handleEditClick}
           isCurrentUser={selectedMember?.userId === user?.uid}
         />
-
-        {showScrollTop && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={scrollToTop}
-            className="fixed bottom-6 right-6 z-50 p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700"
-          >
-            <FiArrowUp className="w-5 h-5" />
-          </motion.button>
-        )}
       </div>
     </Layout>
   );
 }
-
-export default CommunityMembers;

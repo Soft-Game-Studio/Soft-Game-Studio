@@ -1,314 +1,526 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
-
+import { Helmet } from 'react-helmet-async';
+import parse from 'html-react-parser';
+import axios from 'axios';
+import { 
+  Video, 
+  Calendar, 
+  Clock, 
+  Eye, 
+  ThumbsUp, 
+  ExternalLink, 
+  AlertCircle, 
+  ArrowLeft,
+  Copy,
+  Check,
+  FileText,
+  BookOpen,
+  Info
+} from 'lucide-react';
 import { fireDB } from '../../DataBase/firebaseConfig';
 import VideoPlayer from '../../components/Video Player/Videoplayer';
 import Layout from '../../components/layout/Layout';
-import { Helmet } from 'react-helmet';
-import axios from "axios";
 
 const SingleCourse = () => {
   const { id } = useParams();
   const [course, setCourse] = useState(null);
-  const [videoId, setvideoId] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [courseLoading, setCourseLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [copiedLink, setCopiedLink] = useState(false);
 
-
-  const API_KEY = import.meta.env.VITE_GOOGLE_API; // Replace with your actual API key
-
+  // YouTube API details state (decoupled from core course render for reliability)
   const [videoDetails, setVideoDetails] = useState(null);
+  const [videoDetailsLoading, setVideoDetailsLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchCourse = async () => {
-      try {
-        console.log("Fetching course with ID:", id);
-        const docRef = doc(fireDB, 'courses', id);
-        const docSnap = await getDoc(docRef);
+  const API_KEY = import.meta.env.VITE_GOOGLE_API;
 
-        if (docSnap.exists()) {
-          const courseData = { id: docSnap.id, ...docSnap.data() };
-          console.log("Fetched course:", courseData);
-          setCourse(courseData);
-          setvideoId(courseData.videoUrl)
-        } else {
-          console.warn('Course not found in Firestore');
-          setError('Course not found');
-        }
-      } catch (err) {
-        console.error('Error fetching course:', err);
-        setError('Failed to load course data');
-      } finally {
-        setLoading(false);
+  const fetchCourse = useCallback(async () => {
+    if (!id) return;
+    setCourseLoading(true);
+    setError(null);
+    try {
+      const docRef = doc(fireDB, 'courses', id);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const courseData = { id: docSnap.id, ...docSnap.data() };
+        setCourse(courseData);
+      } else {
+        setError('The requested course could not be found.');
       }
-    };
-
-    fetchCourse();
+    } catch (err) {
+      setError('Unable to load course data. Please check your internet connection.');
+    } finally {
+      setCourseLoading(false);
+    }
   }, [id]);
 
   useEffect(() => {
-    const fetchVideoDetails = async () => {
-      try {
-        const response = await axios.get(
-          `https://www.googleapis.com/youtube/v3/videos`,
-          {
-            params: {
-              part: "snippet,contentDetails,statistics",
-              id: videoId,
-              key: API_KEY,
-            },
-          }
-        );
+    fetchCourse();
+  }, [fetchCourse]);
+
+  // Fetch optional YouTube metadata independently
+  useEffect(() => {
+    const videoId = course?.videoUrl ? String(course.videoUrl).trim() : null;
+    if (!videoId || !API_KEY) return;
+
+    let isMounted = true;
+    setVideoDetailsLoading(true);
+
+    axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
+      params: {
+        part: 'snippet,contentDetails,statistics',
+        id: videoId,
+        key: API_KEY,
+      },
+    })
+    .then((response) => {
+      if (isMounted && response.data?.items?.[0]) {
         setVideoDetails(response.data.items[0]);
-      } catch (error) {
-        console.error("Error fetching video data", error);
       }
+    })
+    .catch(() => {
+      // Graceful degradation: silently ignore YouTube API errors so course stays accessible
+    })
+    .finally(() => {
+      if (isMounted) setVideoDetailsLoading(false);
+    });
+
+    return () => {
+      isMounted = false;
     };
+  }, [course?.videoUrl, API_KEY]);
 
-    if (videoId) {
-      fetchVideoDetails();
-    }
-  }, [videoId]);
-
+  // Format ISO 8601 duration string (e.g. PT15M33S -> 15m 33s)
   const formatDuration = (isoDuration) => {
-    const match = isoDuration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
-    const hours = (match[1] || "0H").slice(0, -1);
-    const minutes = (match[2] || "0M").slice(0, -1);
-    const seconds = (match[3] || "0S").slice(0, -1);
-    return `${hours !== "0" ? hours + "h " : ""}${minutes}m ${seconds}s`;
+    if (!isoDuration) return 'Standard Module';
+    const match = isoDuration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    if (!match) return 'Standard Module';
+    const hours = match[1] ? `${match[1]}h ` : '';
+    const minutes = match[2] ? `${match[2]}m ` : '';
+    const seconds = match[3] ? `${match[3]}s` : '';
+    return `${hours}${minutes}${seconds}`.trim() || 'Standard Module';
   };
-  
 
+  // Safe date formatter for Firestore timestamps
+  const formattedDate = useMemo(() => {
+    if (!course?.createdAt) return null;
+    try {
+      if (typeof course.createdAt.toDate === 'function') {
+        return new Intl.DateTimeFormat('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        }).format(course.createdAt.toDate());
+      }
+      return new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      }).format(new Date(course.createdAt));
+    } catch {
+      return null;
+    }
+  }, [course]);
 
+  // Handle URL share copy
+  const handleCopyLink = () => {
+    if (typeof window !== 'undefined') {
+      navigator.clipboard.writeText(window.location.href);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    }
+  };
 
-  
-
-  if (loading || !videoDetails) {
-    return (
-      <div className="min-h-screen bg-purple-100 dark:bg-neutral-950 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-purple-600"></div>
-      </div>
-    );
-  }
-  const { snippet, statistics, contentDetails } = videoDetails;
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-purple-100 dark:bg-neutral-950 flex items-center justify-center">
-        <div className="text-center max-w-md p-6 bg-white dark:bg-neutral-800 rounded-xl shadow-lg">
-          <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Course Not Found</h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">{error}</p>
-          <Link 
-            to="/" 
-            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
-          >
-            Browse Courses
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  // Structured Data JSON-LD
+  const structuredData = useMemo(() => {
+    if (!course) return null;
+    return JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'Course',
+          '@id': `https://softgamestudios.web.app/SingleCourse/${id}#course`,
+          name: course.title || 'Technical Course Module',
+          description: course.description || 'Focused technical course by Soft Game Studio.',
+          provider: {
+            '@type': 'Organization',
+            name: 'Soft Game Studio',
+            url: 'https://softgamestudios.web.app/'
+          },
+          url: `https://softgamestudios.web.app/SingleCourse/${id}`
+        }
+      ]
+    });
+  }, [course, id]);
 
   return (
     <Layout>
       <Helmet>
-        <title>Courses | Soft Game Studio</title>
+        <html lang="en" />
+        <title>
+          {course?.title 
+            ? `${course.title} | Soft Game Studio` 
+            : 'Course Module | Soft Game Studio'}
+        </title>
         <meta 
           name="description" 
-          content="Explore free and affordable courses offered by Soft Game Studio. Learn development, design, and career skills with expert-created content for students and professionals." 
+          content={course?.description || 'Focused software engineering video instruction by Soft Game Studio.'} 
         />
+        <link rel="canonical" href={`https://softgamestudios.web.app/SingleCourse/${id}`} />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="video.other" />
+        <meta property="og:site_name" content="Soft Game Studio" />
         <meta 
-          name="keywords" 
-          content="Free Courses, Affordable Courses, Development Courses, Design Courses, Learn to Code, Online Learning, Student Courses, Soft Game Studio Courses, Career Building Courses" 
+          property="og:title" 
+          content={course?.title ? `${course.title} | Soft Game Studio` : 'Course Module'} 
         />
-        <meta name="author" content="Soft Game Studio" />
-        <meta property="og:title" content="Courses | Soft Game Studio" />
         <meta 
           property="og:description" 
-          content="Soft Game Studio offers a wide range of free and affordable online courses. Learn development, design, and career skills at your own pace." 
+          content={course?.description || 'Focused software engineering video instruction.'} 
         />
-     <meta property="og:url" content="https://softgamestudios.web.app/OurCourse" />
-  <meta property="og:url" content="https://softgamestudios.web.app/OurCourse" /> 
-        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`https://softgamestudios.web.app/SingleCourse/${id}`} />
+        {course?.thumbnail && <meta property="og:image" content={course.thumbnail} />}
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta 
+          name="twitter:title" 
+          content={course?.title ? `${course.title} | Soft Game Studio` : 'Course Module'} 
+        />
+        <meta 
+          name="twitter:description" 
+          content={course?.description || 'Focused software engineering video instruction.'} 
+        />
+        {course?.thumbnail && <meta name="twitter:image" content={course.thumbnail} />}
+
+        {structuredData && <script type="application/ld+json">{structuredData}</script>}
       </Helmet>
 
-      <div className="min-h-screen bg-purple-100 dark:bg-neutral-950">
-        {/* Hero */}
-        <div className="relative bg-gradient-to-r from-purple-600 to-indigo-700 dark:from-purple-900 dark:to-indigo-900 pt-32 pb-24">
-          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")" }}></div>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-            <div className="flex flex-col md:flex-row items-center">
-              <div className="md:w-1/2 text-center md:text-left">
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">{course?.title || "Untitled Course"}</h1>
-                <p className="text-xl text-purple-200 max-w-2xl mb-8">{course?.description || "No description provided."}</p>
-                <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-                  <span className="px-4 py-2 bg-purple-800 bg-opacity-30 rounded-full text-white text-sm font-medium">
-                    Single Course
-                  </span>
-                  <span className="px-4 py-2 bg-white bg-opacity-20 rounded-full text-white text-sm font-medium">
-                    Published: {course?.createdAt?.toDate?.().toLocaleDateString?.() || "Unknown"}
-                  </span>
+      <main id="main-content" className="min-h-screen py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        {/* Breadcrumb Navigation */}
+        <nav aria-label="Breadcrumb" className="mb-6">
+          <ol className="flex items-center gap-2 text-xs font-mono text-neutral-500 dark:text-neutral-400">
+            <li>
+              <Link 
+                to="/OurCourse" 
+                className="hover:text-neutral-900 dark:hover:text-neutral-100 flex items-center gap-1 transition-colors"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>All Courses</span>
+              </Link>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li className="truncate max-w-[200px] sm:max-w-md text-neutral-900 dark:text-neutral-100 font-medium">
+              {course?.title || 'Module'}
+            </li>
+          </ol>
+        </nav>
+
+        {/* Loading Skeleton */}
+        {courseLoading && (
+          <div aria-busy="true" aria-label="Loading course module" className="space-y-8 animate-pulse">
+            <div className="border-b border-neutral-200 dark:border-neutral-800 pb-6">
+              <div className="h-4 w-32 bg-neutral-200 dark:bg-neutral-800 rounded mb-3" />
+              <div className="h-8 w-2/3 bg-neutral-200 dark:bg-neutral-800 rounded mb-2" />
+              <div className="h-4 w-1/2 bg-neutral-200 dark:bg-neutral-800 rounded" />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="lg:col-span-8 space-y-6">
+                <div className="aspect-video bg-neutral-200 dark:bg-neutral-800 rounded-lg" />
+                <div className="h-6 w-1/3 bg-neutral-200 dark:bg-neutral-800 rounded" />
+                <div className="space-y-2">
+                  <div className="h-4 w-full bg-neutral-200 dark:bg-neutral-800 rounded" />
+                  <div className="h-4 w-4/5 bg-neutral-200 dark:bg-neutral-800 rounded" />
                 </div>
               </div>
-              <div className="md:w-1/2 mt-10 md:mt-0 flex justify-center">
-                <div className="relative w-full max-w-md">
-                  <div className="absolute inset-0 bg-purple-500 rounded-2xl transform rotate-3"></div>
-                  <div className="relative bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl overflow-hidden">
-                    {course?.thumbnail ? (
-                      <img loading="lazy" 
-                        src={course.thumbnail} 
-                        alt={course.title} 
-                        className="w-full h-64 object-cover"
-                      />
-                    ) : (
-                      <div className="bg-gradient-to-r from-purple-400 to-indigo-500 w-full h-64 flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-20 w-20 text-white opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
-                        </svg>
-                      </div>
-                    )}
-                    <div className="p-6">
-                      <div className="flex justify-center">
-                        <button className="w-16 h-16 rounded-full bg-purple-600 hover:bg-purple-700 flex items-center justify-center transition-all transform hover:scale-105">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white ml-1" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div className="lg:col-span-4 rounded-lg border border-neutral-200 dark:border-neutral-800 p-5 space-y-4">
+                <div className="h-5 w-1/2 bg-neutral-200 dark:bg-neutral-800 rounded" />
+                <div className="h-20 w-full bg-neutral-200 dark:bg-neutral-800 rounded" />
               </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Course Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-lg overflow-hidden">
-                <div className="p-6">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Course Content</h2>
-                  
-                  <div className="mb-8">
-                    <div className="aspect-w-16 aspect-h-9 bg-black rounded-xl overflow-hidden">
-                      {course?.videoUrl ? (
-                        <VideoPlayer
-                          videoId={String(course.videoUrl).trim()}
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-white opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
+        {/* Error State */}
+        {!courseLoading && error && (
+          <div 
+            role="alert"
+            className="p-8 text-center rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 max-w-xl mx-auto my-12"
+          >
+            <AlertCircle className="w-10 h-10 text-neutral-500 mx-auto mb-3" aria-hidden="true" />
+            <h1 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Module Unavailable</h1>
+            <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">{error}</p>
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={fetchCourse}
+                className="px-4 py-2 rounded-md bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-semibold hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
+              >
+                Retry
+              </button>
+              <Link
+                to="/OurCourse"
+                className="px-4 py-2 rounded-md border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              >
+                Browse Catalog
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Main Content View */}
+        {!courseLoading && !error && course && (
+          <div>
+            {/* Header Section */}
+            <header className="border-b border-neutral-200 dark:border-neutral-800 pb-6 mb-8">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div className="max-w-3xl">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700">
+                      <Video className="w-3 h-3 text-emerald-500" aria-hidden="true" />
+                      SINGLE MODULE
+                    </span>
+                    {formattedDate && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-800">
+                        <Calendar className="w-3 h-3" aria-hidden="true" />
+                        {formattedDate}
+                      </span>
+                    )}
                   </div>
-
-                  <div className="mb-8">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Course Notes</h3>
-                    <div className="prose max-w-none dark:prose-invert prose-purple">
-                      {course?.notes ? (
-                        <div
-  className="prose max-w-none dark:prose-invert prose-purple"
-  dangerouslySetInnerHTML={{ __html: course.notes }}
-/>
-                      ) : (
-                        <div className="text-gray-500 dark:text-gray-400 italic">
-                          No notes available for this course.
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {Array.isArray(course?.sourceLinks) && course.sourceLinks.length > 0 && (
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Resources & Source Links</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {course.sourceLinks.map((link, index) => (
-                          <a 
-                            key={index}
-                            href={link} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="bg-gray-50 dark:bg-neutral-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 p-4 rounded-lg border border-gray-200 dark:border-neutral-700 transition-colors group overflow-hidden "
-                          >
-                            <div className="flex items-start">
-                              <div className="flex-shrink-0 w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mr-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                </svg>
-                              </div>
-                              <div>
-                                <h4 className="font-medium text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors truncate">
-                                  Resource {index + 1}
-                                </h4>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 truncate mt-1">{link}</p>
-                              </div>
-                            </div>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
+                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+                    {course.title || 'Untitled Module'}
+                  </h1>
+                  {course.description && (
+                    <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                      {course.description}
+                    </p>
                   )}
                 </div>
-              </div>
-            </div>
 
-            {/* Sidebar */}
-            <div>
-              <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-lg overflow-hidden sticky top-6">
-                <div className="p-6 border-b border-gray-200 dark:border-neutral-700">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Course Details</h3>
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <span className="text-gray-600 dark:text-gray-400">Duration</span>
-                    <span className="font-medium text-gray-900 dark:text-white">{formatDuration(contentDetails.duration)}</span>
-                  </div>
-                  <div className="flex items-center justify-between mb-6">
-                    <span className="text-gray-600 dark:text-gray-400">Views : <span className="font-medium text-gray-900 dark:text-white">{statistics.viewCount}</span> </span>
-                    
-                    <span className="text-gray-600 dark:text-gray-400">Likes : <span className="font-medium text-gray-900 dark:text-white">{statistics.likeCount}</span></span>
-                    
-                  </div>
-                  <div className="flex items-center justify-between mb-6">
-                    <span className="text-gray-600 dark:text-gray-400">Uploaded on</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {new Date(snippet.publishedAt).toLocaleDateString()}
-                    </span>
-                  </div>
+                {/* Share action */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleCopyLink}
+                    aria-label="Copy course link to clipboard"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-100"
+                  >
+                    {copiedLink ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                        <span>Copied Link</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+                        <span>Share Module</span>
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
+            </header>
+
+            {/* Layout Grid: Video + Notes (Col 8) + Metadata Sidebar (Col 4) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Primary Content: Video & Notes */}
+              <div className="lg:col-span-8 flex flex-col gap-6">
+                {/* Video Container */}
+                <section aria-label="Video Player" className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-black overflow-hidden shadow-sm">
+                  {course.videoUrl ? (
+                    <VideoPlayer videoId={String(course.videoUrl).trim()} />
+                  ) : (
+                    <div className="aspect-video flex flex-col items-center justify-center p-8 bg-neutral-900 text-neutral-400 text-center">
+                      <BookOpen className="w-10 h-10 mb-2 opacity-50" aria-hidden="true" />
+                      <p className="text-sm font-medium text-neutral-300">Video source is not specified</p>
+                      <p className="text-xs text-neutral-500 mt-1">Check the technical notes and specifications below.</p>
+                    </div>
+                  )}
+                </section>
+
+                {/* Course Notes Section */}
+                <section 
+                  aria-labelledby="course-notes-title"
+                  className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-sm"
+                >
+                  <div className="flex items-center gap-2 border-b border-neutral-100 dark:border-neutral-800 pb-3 mb-4">
+                    <FileText className="w-4 h-4 text-neutral-500" aria-hidden="true" />
+                    <h2 id="course-notes-title" className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
+                      Module Notes &amp; Instructions
+                    </h2>
+                  </div>
+
+                  <div className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
+                    {course.notes ? (
+                      <div className="prose prose-neutral dark:prose-invert max-w-none prose-sm leading-relaxed">
+                        {parse(course.notes)}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 italic">
+                        No supplementary written notes provided for this module. Follow along with the video instruction.
+                      </p>
+                    )}
+                  </div>
+                </section>
+
+                {/* Resources and Source Links */}
+                {Array.isArray(course.sourceLinks) && course.sourceLinks.length > 0 && (
+                  <section 
+                    aria-labelledby="course-resources-title"
+                    className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 shadow-sm"
+                  >
+                    <div className="flex items-center gap-2 border-b border-neutral-100 dark:border-neutral-800 pb-3 mb-4">
+                      <ExternalLink className="w-4 h-4 text-neutral-500" aria-hidden="true" />
+                      <h2 id="course-resources-title" className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
+                        Technical References &amp; Source Code
+                      </h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {course.sourceLinks.map((link, idx) => {
+                        let hostname = 'External Resource';
+                        try {
+                          hostname = new URL(link).hostname;
+                        } catch {
+                          hostname = link;
+                        }
+
+                        return (
+                          <a
+                            key={idx}
+                            href={link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group flex items-start gap-3 p-3 rounded-md border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors"
+                          >
+                            <ExternalLink className="w-4 h-4 text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-100 shrink-0 mt-0.5 transition-colors" aria-hidden="true" />
+                            <div className="min-w-0 flex-1">
+                              <span className="block text-xs font-medium text-neutral-900 dark:text-neutral-100 truncate group-hover:underline">
+                                Reference {idx + 1}: {hostname}
+                              </span>
+                              <span className="block text-[11px] font-mono text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
+                                {link}
+                              </span>
+                            </div>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </section>
+                )}
+              </div>
+
+              {/* Sidebar: Module Details & Video Statistics */}
+              <aside 
+                aria-label="Module Specifications"
+                className="lg:col-span-4 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden shadow-sm sticky top-6"
+              >
+                <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-950/50">
+                  <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                    Module Specifications
+                  </h2>
+                  <p className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400 mt-0.5">
+                    Metadata &amp; Technical Details
+                  </p>
+                </div>
+
+                <div className="p-5 space-y-4 text-xs">
+                  {/* Format */}
+                  <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                    <span className="text-neutral-500 dark:text-neutral-400">Format</span>
+                    <span className="font-mono font-medium text-neutral-900 dark:text-neutral-100">Single Video</span>
+                  </div>
+
+                  {/* Date */}
+                  {formattedDate && (
+                    <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                      <span className="text-neutral-500 dark:text-neutral-400">Published</span>
+                      <span className="font-mono font-medium text-neutral-900 dark:text-neutral-100">{formattedDate}</span>
+                    </div>
+                  )}
+
+                  {/* YouTube Data (When Available) */}
+                  {videoDetails && (
+                    <>
+                      {videoDetails.contentDetails?.duration && (
+                        <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                          <span className="text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5" aria-hidden="true" />
+                            Duration
+                          </span>
+                          <span className="font-mono font-medium text-neutral-900 dark:text-neutral-100">
+                            {formatDuration(videoDetails.contentDetails.duration)}
+                          </span>
+                        </div>
+                      )}
+
+                      {videoDetails.statistics?.viewCount && (
+                        <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                          <span className="text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5">
+                            <Eye className="w-3.5 h-3.5" aria-hidden="true" />
+                            Views
+                          </span>
+                          <span className="font-mono font-medium text-neutral-900 dark:text-neutral-100">
+                            {Number(videoDetails.statistics.viewCount).toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+
+                      {videoDetails.statistics?.likeCount && (
+                        <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                          <span className="text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5">
+                            <ThumbsUp className="w-3.5 h-3.5" aria-hidden="true" />
+                            Likes
+                          </span>
+                          <span className="font-mono font-medium text-neutral-900 dark:text-neutral-100">
+                            {Number(videoDetails.statistics.likeCount).toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* YouTube Details Loading skeleton if pending */}
+                  {videoDetailsLoading && (
+                    <div className="space-y-2 animate-pulse py-2">
+                      <div className="h-3 w-3/4 bg-neutral-200 dark:bg-neutral-800 rounded" />
+                      <div className="h-3 w-1/2 bg-neutral-200 dark:bg-neutral-800 rounded" />
+                    </div>
+                  )}
+
+                  {/* Studio Tag */}
+                  <div className="pt-2">
+                    <div className="rounded p-3 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/60 dark:border-neutral-700/60">
+                      <div className="flex items-start gap-2">
+                        <Info className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" aria-hidden="true" />
+                        <p className="text-[11px] text-neutral-600 dark:text-neutral-400 leading-normal">
+                          Engineered and provided by <strong className="text-neutral-900 dark:text-neutral-200 font-semibold">Soft Game Studio</strong>. Open curriculum for students and developers.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Back to Catalog CTA */}
+                  <div className="pt-3">
+                    <Link
+                      to="/OurCourse"
+                      className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-100"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+                      <span>Back to All Courses</span>
+                    </Link>
+                  </div>
+                </div>
+              </aside>
             </div>
           </div>
-        </div>
-       
-
-        {/* Footer CTA */}
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-700 dark:from-purple-900 dark:to-indigo-900 py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold text-white mb-6">Ready to learn more?</h2>
-            <p className="text-xl text-purple-200 max-w-2xl mx-auto mb-8">
-              Explore our full catalog of courses to advance your skills and career.
-            </p>
-            <Link 
-              to="/OurCourse" 
-              className="inline-block px-8 py-4 bg-white text-purple-600 font-bold rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
-            >
-              Browse All Courses
-            </Link>
-          </div>
-        </div>
-      </div>
+        )}
+      </main>
     </Layout>
   );
 };

@@ -1,232 +1,300 @@
-import { motion } from 'framer-motion';
-import React from 'react';
-import { FaGithub } from 'react-icons/fa';
+// src/pages/CUSTOMER SERVICE/AboutDevelopment.jsx
+import React, { useMemo } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import Layout from '../../components/layout/Layout';
 import { Helmet } from 'react-helmet';
+import {
+  Code,
+  Layers,
+  Cpu,
+  ShieldCheck,
+  CheckCircle2,
+  ExternalLink,
+  ArrowRight,
+  GitBranch,
+  Terminal,
+  Zap
+} from 'lucide-react';
+import { FaGithub } from 'react-icons/fa';
 
 const DevelopmentPage = () => {
+  const shouldReduceMotion = useReducedMotion();
+
+  // Authentic Soft Game Studio open projects & architectural systems
   const projects = [
     {
       id: 1,
-      title: "Project Aurora",
-      description: "Next-gen cloud infrastructure management platform",
-      technologies: ["React", "Node.js", "MongoDB", "Kubernetes"],
-      github: "https://github.com/sgs/aurora"
+      title: "SGS Web Engine & Learning Portal",
+      description: "Production React 18 single-page application powering developer notes, interactive KaTeX math rendering, and multi-format curriculum viewers.",
+      technologies: ["React", "TailwindCSS", "Framer Motion", "KaTeX", "Vite"],
+      link: "/Notes&Books"
     },
     {
       id: 2,
-      title: "Nebula API Gateway",
-      description: "Secure and scalable API management solution",
-      technologies: ["Go", "gRPC", "Redis", "Docker"],
-      github: "https://github.com/sgs/nebula"
+      title: "Real-Time Assessment & Proctoring System",
+      description: "Secure, real-time assessment framework featuring browser lockdown protection, tab switching detection, and instant scoring analytics.",
+      technologies: ["Firebase Firestore", "JavaScript", "Cloud Functions", "TailwindCSS"],
+      link: "/About-Exam"
     },
     {
       id: 3,
-      title: "Quantum Analytics",
-      description: "Real-time data visualization dashboard",
-      technologies: ["TypeScript", "D3.js", "Python", "PostgreSQL"],
-      github: "https://github.com/sgs/quantum"
+      title: "Interactive E-Book & PDF Compilation Engine",
+      description: "High-performance client-side document processing engine that compiles complex KaTeX formulas and technical manuals into downloadable PDF archives.",
+      technologies: ["html2pdf.js", "JSZip", "FileSaver", "KaTeX"],
+      link: "/E-Books"
     }
   ];
 
+  const structuredData = useMemo(() => {
+    return JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebPage",
+          "@id": "https://softgamestudios.web.app/AboutDevelopmet#webpage",
+          "url": "https://softgamestudios.web.app/AboutDevelopmet",
+          "name": "Software Engineering & Development Services | Soft Game Studio",
+          "description": "Learn about the engineering philosophy, architecture standards, and active projects built by Soft Game Studio.",
+          "isPartOf": {
+            "@type": "WebSite",
+            "@id": "https://softgamestudios.web.app/#website",
+            "name": "Soft Game Studio",
+            "url": "https://softgamestudios.web.app"
+          }
+        }
+      ]
+    });
+  }, []);
+
+  const pageTitle = "Engineering & Development Services | Soft Game Studio";
+  const pageDescription = "Explore the engineering practices, architectural standards, and technical projects developed by Soft Game Studio.";
+  const canonicalUrl = "https://softgamestudios.web.app/AboutDevelopmet";
+
   return (
     <Layout>
-     <Helmet>
-  <title>Development Services | Soft Game Studio</title>
-  <meta 
-    name="description" 
-    content="Soft Game Studio offers professional development services including website development, app development, and custom software solutions tailored for startups, students, and businesses." 
-  />
-  <meta 
-    name="keywords" 
-    content="Web Development, App Development, Software Development, Custom Software, Startup Development, Full Stack Development, Frontend Backend Services, Soft Game Studio Development Services" 
-  />
-  <meta name="author" content="Soft Game Studio" />
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta name="keywords" content="Soft Game Studio Development, Web Development, Software Engineering, Cloud Architecture, DevOps, Clean Code" />
+        <meta name="author" content="Soft Game Studio" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={canonicalUrl} />
 
-  {/* Open Graph / Social Media */}
-  <meta property="og:title" content="Development Services | Soft Game Studio" />
-  <meta 
-    property="og:description" 
-    content="Explore web, app, and software development services by Soft Game Studio. Scalable and affordable solutions for your digital needs." 
-  />
-  <meta property="og:url" content="https://softgamestudios.web.app/AboutDevelopmet" />
-  <meta property="og:type" content="website" />
-</Helmet>
+        {/* Open Graph */}
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Soft Game Studio" />
 
-    <div className=" bg-purple-100 dark:bg-neutral-950 text-gray-800 dark:text-gray-200 min-h-screen">
-      {/* Hero Section with Parallax */}
-      <div className="relative h-screen overflow-hidden">
-        <motion.div 
-          className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80')] bg-cover bg-center"
-          initial={{ y: 0 }}
-          animate={{ y: -20 }}
-          transition={{ 
-            duration: 10,
-            repeat: Infinity,
-            repeatType: "reverse"
-          }}
-        />
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {structuredData}
+        </script>
+      </Helmet>
+
+      <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 selection:bg-neutral-800 selection:text-white dark:selection:bg-neutral-200 dark:selection:text-neutral-900">
         
-        <div className="absolute inset-0 bg-black/60  " />
-        
-        <div className=" text-gray-200 relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
-          <motion.h1 
-            className="text-5xl md:text-7xl font-bold mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            SGS Development
-          </motion.h1>
-          
-          <motion.p 
-            className="text-xl md:text-2xl max-w-3xl mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            Innovating tomorrow's solutions today
-          </motion.p>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            <div className="bg-black/20 backdrop-blur-sm rounded-xl p-8 max-w-2xl">
-              <h2 className="text-2xl font-semibold mb-4">Engineering Excellence</h2>
-              <p className="mb-4">
-                We specialize in building scalable, high-performance applications 
-                using cutting-edge technologies and modern development practices.
-              </p>
-              <div className="flex flex-wrap justify-center gap-4 mt-6">
-                {["Cloud Architecture", "DevOps", "AI/ML", "Web3", "Cybersecurity", "IoT"].map((item, i) => (
-                  <span 
-                    key={i}
-                    className="px-4 py-2 bg-purple-500/20 dark:bg-purple-600/30 rounded-full text-sm font-medium"
-                  >
-                    {item}
-                  </span>
-                ))}
+        {/* ── Header ────────────────────────────────────────────────── */}
+        <header className="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 py-12 sm:py-16">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 mb-6">
+              <Link to="/" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
+                Home
+              </Link>
+              <span>/</span>
+              <span className="text-neutral-900 dark:text-neutral-200 font-medium">
+                Development Philosophy
+              </span>
+            </nav>
+
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md text-xs font-mono font-medium tracking-wide uppercase bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 mb-4">
+                  <Terminal className="w-3.5 h-3.5 text-[#00ACF0]" />
+                  <span>Engineering Architecture</span>
+                </div>
+
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 leading-tight">
+                  Software Engineering & Architecture
+                </h1>
+
+                <p className="mt-3 text-sm sm:text-base text-neutral-600 dark:text-neutral-400 max-w-2xl leading-relaxed">
+                  How Soft Game Studio designs, constructs, and deploys high-performance web systems, proctored testing engines, and educational technologies.
+                </p>
+              </div>
+
+              <div className="shrink-0 flex items-center gap-3">
+                <Link
+                  to="/SGS-Projects"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:bg-neutral-800 transition-colors shadow-xs"
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  <span>Explore Projects</span>
+                </Link>
               </div>
             </div>
-          </motion.div>
-        </div>
-      </div>
 
-      {/* About Section */}
-      <section className="py-20 px-4 max-w-6xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl font-bold mb-4">Our Development Philosophy</h2>
-          <div className="h-1 w-24 bg-purple-500 mx-auto rounded-full"></div>
-        </motion.div>
+          </div>
+        </header>
 
-        <div className="grid md:grid-cols-3 gap-10">
-          {[
-            {
-              title: "Clean Code",
-              description: "We prioritize maintainable, well-documented code following industry best practices and SOLID principles."
-            },
-            {
-              title: "Agile Delivery",
-              description: "Iterative development with continuous feedback loops ensures we build exactly what you need."
-            },
-            {
-              title: "DevSecOps",
-              description: "Security integrated throughout our development lifecycle from design to deployment."
-            }
-          ].map((item, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: i * 0.2 }}
-              viewport={{ once: true }}
-              className="bg-white/50 dark:bg-neutral-900/50 backdrop-blur-sm p-6 rounded-xl border border-purple-200/50 dark:border-neutral-700 shadow-lg"
-            >
-              <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-              <p>{item.description}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
+        {/* ── Content Sections ──────────────────────────────────────── */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12">
 
-      {/* Projects Section */}
-      <section className="py-20 bg-gradient-to-br from-purple-200/30 to-indigo-200/30 dark:from-neutral-900 dark:to-black px-4">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl font-bold mb-4">Our Projects</h2>
-            <p className="text-lg max-w-2xl mx-auto">
-              Explore our open-source contributions and innovative solutions
-            </p>
-          </motion.div>
+          {/* Section 1: Core Engineering Principles */}
+          <section aria-labelledby="principles-heading">
+            <div className="text-center mb-10">
+              <h2 id="principles-heading" className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+                Core Development Principles
+              </h2>
+              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1 max-w-lg mx-auto">
+                Standards guiding our codebase maintainability, security, and performance.
+              </p>
+            </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {projects.map((project) => (
-              <motion.div
-                key={project.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                whileHover={{ y: -10, transition: { duration: 0.3 } }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-                className="bg-white dark:bg-neutral-900 rounded-xl overflow-hidden shadow-xl border border-gray-200 dark:border-neutral-800"
-              >
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-xl font-bold">{project.title}</h3>
-                    <div className="bg-purple-500 text-white px-3 py-1 rounded-full text-sm">
-                      Active
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              <div className="p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs">
+                <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+                  <Code className="w-5 h-5 text-[#00ACF0]" />
+                </div>
+                <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
+                  Maintainable & Clean Code
+                </h3>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  We enforce SOLID design principles, modular component architecture, and comprehensive inline documentation across our front-end and back-end stacks.
+                </p>
+              </div>
+
+              <div className="p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs">
+                <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+                  <Zap className="w-5 h-5 text-amber-500" />
+                </div>
+                <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
+                  Performance & Core Web Vitals
+                </h3>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  We benchmark code against stringent Core Web Vitals: sub-second Largest Contentful Paint (LCP), low layout shift (CLS), and instantaneous interaction paint (INP).
+                </p>
+              </div>
+
+              <div className="p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs">
+                <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+                  <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                </div>
+                <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
+                  Security-First Architecture
+                </h3>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  We implement input sanitization, rate-limiting, least-privilege Firestore rules, and anti-cheating browser monitors to preserve system integrity.
+                </p>
+              </div>
+
+            </div>
+          </section>
+
+          {/* Section 2: Flagship Systems Showcase */}
+          <section aria-labelledby="showcase-heading">
+            <div className="mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
+              <div>
+                <h2 id="showcase-heading" className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
+                  Featured Platform Architecture
+                </h2>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  Production systems actively serving thousands of student developers
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {projects.map((project) => (
+                <div
+                  key={project.id}
+                  className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 flex flex-col justify-between shadow-xs hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400">
+                        Production Live
+                      </span>
                     </div>
-                  </div>
-                  <p className="text-gray-600 dark:text-gray-300 mb-5">
-                    {project.description}
-                  </p>
-                  
-                  <div className="mb-6">
-                    <h4 className="font-medium mb-2">Technologies:</h4>
-                    <div className="flex flex-wrap gap-2">
+
+                    <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-2 leading-snug">
+                      {project.title}
+                    </h3>
+
+                    <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-4 leading-relaxed">
+                      {project.description}
+                    </p>
+
+                    <div className="flex flex-wrap gap-1.5 mb-6">
                       {project.technologies.map((tech, i) => (
-                        <span 
+                        <span
                           key={i}
-                          className="px-3 py-1 bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300 rounded-full text-sm"
+                          className="px-2 py-0.5 rounded text-[10px] font-mono border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/60 text-neutral-600 dark:text-neutral-400"
                         >
                           {tech}
                         </span>
                       ))}
                     </div>
                   </div>
-                  
-                  <a 
-                    href={project.github} 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 w-full py-3 bg-gray-800 hover:bg-black dark:bg-neutral-800 dark:hover:bg-neutral-700 text-white rounded-lg transition-colors"
+
+                  <Link
+                    to={project.link}
+                    className="inline-flex items-center justify-center gap-1.5 w-full py-2 rounded-lg text-xs font-medium border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 transition-colors"
                   >
-                    <FaGithub className="text-xl" />
-                    <span>View Repository</span>
-                  </a>
+                    <span>View Component</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Section 3: Technical Skills Matrix */}
+          <section
+            className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-6 sm:p-8 shadow-xs"
+            aria-labelledby="skills-heading"
+          >
+            <h2 id="skills-heading" className="text-sm font-mono uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-4">
+              Core Engineering Stack & Tooling
+            </h2>
+
+            <div className="flex flex-wrap gap-2 text-xs">
+              {[
+                "React 18",
+                "TypeScript",
+                "TailwindCSS",
+                "Firebase Firestore",
+                "Node.js",
+                "Framer Motion",
+                "Vite",
+                "Git & GitHub",
+                "RESTful APIs",
+                "KaTeX Engine",
+                "Cloud Storage",
+                "Lighthouse SEO"
+              ].map((skill, idx) => (
+                <span
+                  key={idx}
+                  className="px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 text-neutral-700 dark:text-neutral-300 font-mono"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </section>
+
         </div>
-      </section>
-    </div>
+      </main>
     </Layout>
-   
   );
 };
 
