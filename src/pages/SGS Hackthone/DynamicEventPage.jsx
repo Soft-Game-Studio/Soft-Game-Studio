@@ -1,26 +1,63 @@
 // src/pages/SGS Hackthone/DynamicEventPage.jsx
-// UI-UX Pro Max: Futuristic Cyberpunk + OLED Glassmorphism | Space Grotesk + DM Sans
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { fireDB } from "../../DataBase/firebaseConfig";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import Layout from "../../components/layout/Layout";
+import { Helmet } from "react-helmet";
 import {
-  Lightbulb, Users, CalendarDays, Award, ChevronDown, CheckCircle2, Clock,
-  MapPin, BookOpen, MessageCircle, Star, Zap, Trophy, Target, Globe, ChevronUp,
-  Shield, Tag, Share2, Rocket, ExternalLink, Calendar, Copy, Check, X,
-  Building, ArrowRight, Info, AlertTriangle, Sparkles, HelpCircle, Phone, Mail
+  Lightbulb,
+  Users,
+  CalendarDays,
+  Award,
+  ChevronDown,
+  CheckCircle2,
+  Clock,
+  MapPin,
+  BookOpen,
+  Trophy,
+  Target,
+  Globe,
+  ChevronUp,
+  Shield,
+  Tag,
+  Share2,
+  Rocket,
+  ExternalLink,
+  Calendar,
+  Copy,
+  Check,
+  X,
+  Building,
+  ArrowRight,
+  AlertTriangle,
+  Sparkles,
+  HelpCircle,
+  Mail,
+  Medal
 } from "lucide-react";
 import RegistrationForm from "./RegistrationForm";
 import { QRCodeSVG } from "qrcode.react";
 
 const EMPTY_EVENT = {
   basic: {
-    title: "", tagline: "", shortDescription: "", longDescription: "", coverImage: "",
-    mode: "ONLINE", location: "", registrationOpen: "", registrationClose: "",
-    eventStart: "", eventEnd: "", entryFee: 0, certificate: true, type: "HACKATHON",
-    organizer: "Soft Game Studio", website: ""
+    title: "",
+    tagline: "",
+    shortDescription: "",
+    longDescription: "",
+    coverImage: "",
+    mode: "ONLINE",
+    location: "",
+    registrationOpen: "",
+    registrationClose: "",
+    eventStart: "",
+    eventEnd: "",
+    entryFee: 0,
+    certificate: true,
+    type: "HACKATHON",
+    organizer: "Soft Game Studio",
+    website: ""
   },
   team: { allowSolo: true, allowTeam: true, minSize: 1, maxSize: 4, maxTeams: 100 },
   problemStatements: [],
@@ -72,52 +109,38 @@ const normEvent = (data) => {
 };
 
 const fmt = (d) => d ? new Date(d).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" }) : "TBA";
-const fmtTime = (d) => d ? new Date(d).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "";
 
-/* ─── High-tech FAQ Accordion item ─── */
+/* Accessible FAQ Accordion */
 function FaqItem({ q, a, index }) {
   const [open, setOpen] = useState(false);
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.04 }}
-      className="rounded-2xl overflow-hidden border border-white/10 bg-[#0d0e1d]/80 text-left transition-all duration-300 hover:border-violet-500/40"
-    >
+    <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-left transition hover:border-[#00ACF0]/40 overflow-hidden shadow-sm">
       <button
-        onClick={() => setOpen(prev => !prev)}
-        className="w-full flex items-center justify-between p-5 text-left gap-4 hover:bg-white/[0.02] transition-colors"
+        onClick={() => setOpen((prev) => !prev)}
+        aria-expanded={open}
+        className="w-full flex items-center justify-between p-5 text-left gap-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors"
       >
-        <span className="font-bold text-white text-sm sm:text-base leading-snug">{q}</span>
-        <div className={`shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
-          open ? "bg-violet-600 text-white" : "bg-white/5 text-slate-400"
+        <span className="font-semibold text-neutral-900 dark:text-white text-sm sm:text-base leading-snug">{q}</span>
+        <div className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+          open ? "bg-[#00ACF0] text-white" : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500"
         }`}>
           {open ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </div>
       </button>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="overflow-hidden"
-          >
-            <div className="px-5 pb-5 text-slate-300 text-sm leading-relaxed border-t border-white/5 pt-4">
-              {a}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+      {open && (
+        <div className="px-5 pb-5 text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed border-t border-neutral-100 dark:border-neutral-800 pt-3">
+          {a}
+        </div>
+      )}
+    </div>
   );
 }
 
 export default function DynamicEventPage() {
   const { id: eventId } = useParams();
   const navigate = useNavigate();
+  const shouldReduceMotion = useReducedMotion();
+
   const [event, setEvent] = useState(EMPTY_EVENT);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -126,15 +149,14 @@ export default function DynamicEventPage() {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("about");
 
-  // Real-time ticking Countdown State
+  // Real-time Countdown
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, ended: false });
 
-  // Scroll detection for sticky navigation bar
+  // Scroll detection
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 400);
 
-      // Section highlight
       const sections = ["about", "problems", "timeline", "prizes", "rules", "judging", "faq", "register-section"];
       for (const s of sections) {
         const el = document.getElementById(s);
@@ -153,23 +175,27 @@ export default function DynamicEventPage() {
 
   // Fetch event document
   useEffect(() => {
+    let isMounted = true;
     const fetchEvent = async () => {
       setLoading(true);
       try {
         const snap = await getDoc(doc(fireDB, "events", eventId));
-        if (snap.exists()) {
+        if (snap.exists() && isMounted) {
           setEvent(normEvent({ id: snap.id, ...snap.data() }));
-        } else {
+        } else if (isMounted) {
           setNotFound(true);
         }
       } catch (err) {
         console.error("Error loading event:", err);
-        setNotFound(true);
+        if (isMounted) setNotFound(true);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
     if (eventId) fetchEvent();
+    return () => {
+      isMounted = false;
+    };
   }, [eventId]);
 
   // Live countdown clock ticker
@@ -221,36 +247,70 @@ export default function DynamicEventPage() {
   const isRegOpen = rO && rC && new Date(rO) <= now && new Date(rC) >= now;
   const isConcluded = eE && new Date(eE) < now;
 
-  /* ═══ LOADING STATE ═══ */
+  const { basic, team, problemStatements, timeline, judging, faq, prizes, registrationFields } = event;
+
+  // JSON-LD Event Schema
+  const eventSchema = {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": basic.title || "SGS Challenge",
+    "description": basic.shortDescription || basic.tagline || "Official developer hackathon and competition.",
+    "startDate": basic.eventStart || undefined,
+    "endDate": basic.eventEnd || basic.eventStart || undefined,
+    "eventAttendanceMode": basic.mode === "ONLINE"
+      ? "https://schema.org/OnlineEventAttendanceMode"
+      : basic.mode === "OFFLINE"
+      ? "https://schema.org/OfflineEventAttendanceMode"
+      : "https://schema.org/MixedEventAttendanceMode",
+    "eventStatus": isConcluded
+      ? "https://schema.org/EventMovedOnline"
+      : "https://schema.org/EventScheduled",
+    "location": {
+      "@type": basic.mode === "ONLINE" ? "VirtualLocation" : "Place",
+      "name": basic.location || "Soft Game Studio Virtual Arena",
+      "url": window.location.href
+    },
+    "organizer": {
+      "@type": "Organization",
+      "name": basic.organizer || "Soft Game Studio",
+      "url": "https://softgamestudios.web.app"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": basic.entryFee || "0",
+      "priceCurrency": "INR",
+      "availability": isRegOpen ? "https://schema.org/InStock" : "https://schema.org/SoldOut",
+      "validFrom": basic.registrationOpen || undefined
+    }
+  };
+
+  /* LOADING STATE */
   if (loading) {
     return (
       <Layout>
-        <div className="flex flex-col items-center justify-center min-h-[85vh] bg-[#070711] text-white">
-          <div className="relative mb-6">
-            <div className="w-16 h-16 rounded-full border-4 border-violet-500/30 border-t-violet-500 animate-spin" />
-            <div className="absolute inset-2 rounded-full border-4 border-indigo-500/20 border-b-indigo-400 animate-spin" style={{ animationDirection: "reverse", animationDuration: "0.8s" }} />
-          </div>
-          <span className="text-sm font-mono text-violet-400 tracking-wider">LOADING ARENA DATA...</span>
+        <div className="flex flex-col items-center justify-center min-h-[70vh] bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100">
+          <div className="w-10 h-10 rounded-full border-2 border-[#00ACF0] border-t-transparent animate-spin mb-4" />
+          <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">Loading Challenge Data...</span>
         </div>
       </Layout>
     );
   }
 
-  /* ═══ NOT FOUND STATE ═══ */
+  /* NOT FOUND STATE */
   if (notFound) {
     return (
       <Layout>
-        <div className="flex flex-col items-center justify-center min-h-[85vh] bg-[#070711] text-white px-6 text-center">
-          <div className="w-20 h-20 rounded-3xl bg-violet-600/10 border border-violet-500/20 flex items-center justify-center mb-6 text-violet-400">
-            <AlertTriangle size={36} />
+        <div className="flex flex-col items-center justify-center min-h-[70vh] bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 px-6 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center justify-center mb-4 text-amber-600">
+            <AlertTriangle size={32} />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black mb-3">Challenge Not Found</h1>
-          <p className="text-slate-400 max-w-md mb-8">
-            The event arena you are seeking may have been removed or the URL is incorrect.
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Challenge Not Found</h1>
+          <p className="text-neutral-600 dark:text-neutral-400 max-w-md mb-6 text-sm">
+            The event arena you are seeking may have concluded, been archived, or the link has changed.
           </p>
           <button
             onClick={() => navigate("/event")}
-            className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-sm shadow-xl shadow-violet-600/30 hover:brightness-110 transition-all flex items-center gap-2"
+            className="px-6 py-2.5 rounded-xl bg-[#00ACF0] hover:bg-[#0092cc] text-white font-semibold text-sm transition flex items-center gap-2 shadow-sm"
           >
             Browse All Arenas <ArrowRight size={16} />
           </button>
@@ -259,316 +319,274 @@ export default function DynamicEventPage() {
     );
   }
 
-  const { basic, team, problemStatements, timeline, judging, faq, prizes, registrationFields } = event;
-
   return (
     <Layout>
-      {/* ── Custom Styling ── */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;600;700&display=swap');
-        .ev-detail * { font-family: 'DM Sans', system-ui, sans-serif; }
-        .ev-detail h1, .ev-detail h2, .ev-detail h3, .ev-detail h4, .ev-detail .font-heading { font-family: 'Space Grotesk', system-ui, sans-serif; }
-        .ev-detail .font-mono { font-family: 'Fira Code', monospace; }
+      <Helmet>
+        <title>{`${basic.title} | SGS Hackathons`}</title>
+        <meta
+          name="description"
+          content={basic.shortDescription || basic.tagline || `Join ${basic.title} hosted by Soft Game Studio. Compete, build projects, and claim verified credentials.`}
+        />
+        <link rel="canonical" href={`https://softgamestudios.web.app/event/${eventId}`} />
 
-        @keyframes auroraFloat {
-          0%, 100% { transform: translate(0px, 0px) scale(1); }
-          50% { transform: translate(25px, -20px) scale(1.06); }
-        }
-        @keyframes shimmerText {
-          0% { background-position: -200% center; }
-          100% { background-position: 200% center; }
-        }
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`https://softgamestudios.web.app/event/${eventId}`} />
+        <meta property="og:title" content={`${basic.title} | Soft Game Studio`} />
+        <meta
+          property="og:description"
+          content={basic.shortDescription || basic.tagline || "Official hackathon and developer competition hosted on Soft Game Studio."}
+        />
+        {basic.coverImage && <meta property="og:image" content={basic.coverImage} />}
 
-        .aurora-orb { animation: auroraFloat 16s ease-in-out infinite; }
-        .shimmer-gradient {
-          background: linear-gradient(90deg, #c084fc, #818cf8, #60a5fa, #c084fc);
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          animation: shimmerText 5s linear infinite;
-        }
-        .glass-card {
-          backdrop-filter: blur(20px) saturate(180%);
-          background: rgba(13, 14, 28, 0.7);
-        }
-      `}</style>
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@SoftGameStudio" />
+        <meta name="twitter:title" content={`${basic.title} | Soft Game Studio`} />
+        <meta
+          name="twitter:description"
+          content={basic.tagline || basic.shortDescription || "Participate in this official coding challenge."}
+        />
 
-      <div className="ev-detail min-h-screen bg-[#070711] text-slate-100 relative overflow-hidden selection:bg-violet-500/30 selection:text-white">
+        {/* Schema */}
+        <script type="application/ld+json">{JSON.stringify(eventSchema)}</script>
+      </Helmet>
 
-        {/* ── Ambient Background Lighting ── */}
-        <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-          <div className="aurora-orb absolute -top-40 -left-40 w-[800px] h-[800px] rounded-full bg-violet-600/15 blur-[150px]" />
-          <div className="aurora-orb absolute top-1/3 -right-32 w-[700px] h-[700px] rounded-full bg-indigo-600/12 blur-[140px]" style={{ animationDelay: "-6s" }} />
-          <div className="aurora-orb absolute -bottom-32 left-1/3 w-[850px] h-[550px] rounded-full bg-purple-600/10 blur-[160px]" style={{ animationDelay: "-10s" }} />
-          <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:32px_32px] opacity-60" />
-        </div>
-
-        {/* ═══════════════════════════════════════════
-            STICKY FLOATING TOP NAVBAR (Scroll-triggered)
-        ═══════════════════════════════════════════ */}
-        <AnimatePresence>
-          {scrolled && (
-            <motion.div
-              initial={{ y: -70, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -70, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="fixed top-0 left-0 right-0 z-50 bg-[#080914]/90 backdrop-blur-xl border-b border-white/10 px-4 sm:px-8 py-3 shadow-2xl"
-            >
-              <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className={`w-2.5 h-2.5 rounded-full ${isRegOpen ? "bg-emerald-400 animate-pulse" : "bg-slate-500"}`} />
-                  <h3 className="text-sm font-bold text-white truncate max-w-[200px] sm:max-w-xs">{basic.title}</h3>
-                  <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-md text-[10px] font-mono bg-violet-500/20 text-violet-300 border border-violet-500/30 uppercase">
-                    {basic.type}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-3 shrink-0">
-                  {!timeLeft.ended && (
-                    <div className="hidden md:flex items-center gap-1.5 text-xs font-mono text-slate-300 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10">
-                      <Clock size={13} className="text-violet-400" />
-                      <span>{timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m left</span>
-                    </div>
-                  )}
-
-                  <button
-                    onClick={() => setShowShareModal(true)}
-                    className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white border border-white/10 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                  >
-                    <Share2 size={14} />
-                  </button>
-
-                  <button
-                    onClick={() => scrollToSection("register-section")}
-                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:brightness-110 text-white font-bold text-xs shadow-lg shadow-violet-600/30 transition-all flex items-center gap-1.5"
-                  >
-                    Register <Rocket size={13} />
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* ═══════════════════════════════════════════
-            HERO SECTION
-        ═══════════════════════════════════════════ */}
-        <section className="relative pt-32 pb-16 px-4 sm:px-6 max-w-7xl mx-auto">
-          {/* Breadcrumbs */}
-          <div className="flex items-center gap-2 text-xs text-slate-400 mb-6">
-            <Link to="/event" className="hover:text-white transition-colors">Arenas</Link>
-            <span>/</span>
-            <span className="text-violet-400 uppercase font-semibold">{basic.type}</span>
-            <span>/</span>
-            <span className="text-slate-300 truncate max-w-xs">{basic.title}</span>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            {/* Left Column: Title, Metadata, Countdown & CTA */}
-            <div className="lg:col-span-7 space-y-6 text-left">
-              {/* Status & Category Badge */}
-              <div className="flex flex-wrap items-center gap-2.5">
-                <span className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border backdrop-blur-md ${
-                  isRegOpen
-                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                    : isConcluded
-                    ? "bg-slate-500/10 border-slate-500/30 text-slate-400"
-                    : "bg-violet-500/10 border-violet-500/30 text-violet-400"
-                }`}>
-                  <span className={`w-2 h-2 rounded-full ${isRegOpen ? "bg-emerald-400 animate-pulse" : "bg-slate-400"}`} />
-                  {isRegOpen ? "Registrations Open" : isConcluded ? "Concluded" : "Registrations Closed"}
-                </span>
-
-                <span className="px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-violet-600/20 text-violet-300 border border-violet-500/30 font-mono">
+      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
+        {/* Sticky Floating Top Bar */}
+        {scrolled && (
+          <div className="fixed top-0 left-0 right-0 z-40 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 px-4 sm:px-8 py-3 shadow-sm transition">
+            <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className={`w-2.5 h-2.5 rounded-full ${isRegOpen ? "bg-emerald-500 animate-pulse" : "bg-neutral-400"}`} />
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-white truncate max-w-[200px] sm:max-w-xs">{basic.title}</h3>
+                <span className="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-mono bg-sky-50 dark:bg-sky-950/60 text-[#00ACF0] uppercase">
                   {basic.type}
                 </span>
-
-                {basic.certificate && (
-                  <span className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-white/[0.04] text-slate-300 border border-white/10 flex items-center gap-1.5">
-                    <Award size={13} className="text-amber-400" /> Certificate Included
-                  </span>
-                )}
               </div>
 
-              {/* Event Title */}
-              <h1 className="text-4xl sm:text-6xl font-black text-white leading-[1.08] tracking-tight">
-                <span className="shimmer-gradient">{basic.title}</span>
-              </h1>
-
-              {/* Tagline / Short Description */}
-              {(basic.tagline || basic.shortDescription) && (
-                <p className="text-base sm:text-xl text-slate-300 leading-relaxed max-w-2xl font-normal">
-                  {basic.tagline || basic.shortDescription}
-                </p>
-              )}
-
-              {/* ── REAL-TIME COUNTDOWN TIMER CLOCK ── */}
-              {!timeLeft.ended && (
-                <div className="pt-2">
-                  <span className="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-2.5 flex items-center gap-1.5">
-                    <Clock size={13} className="text-violet-400" /> Registration Closes In
-                  </span>
-                  <div className="grid grid-cols-4 gap-2.5 sm:gap-4 max-w-md">
-                    {[
-                      { label: "DAYS", value: timeLeft.days },
-                      { label: "HOURS", value: timeLeft.hours },
-                      { label: "MINS", value: timeLeft.minutes },
-                      { label: "SECS", value: timeLeft.seconds }
-                    ].map((item, idx) => (
-                      <div key={idx} className="p-3 rounded-2xl bg-white/[0.04] border border-white/10 text-center glass-card shadow-lg">
-                        <span className="block text-2xl sm:text-3xl font-black font-mono text-white tracking-wider">
-                          {String(item.value).padStart(2, "0")}
-                        </span>
-                        <span className="block text-[10px] font-bold text-slate-400 tracking-widest uppercase mt-0.5">
-                          {item.label}
-                        </span>
-                      </div>
-                    ))}
+              <div className="flex items-center gap-3 shrink-0">
+                {!timeLeft.ended && (
+                  <div className="hidden md:flex items-center gap-1.5 text-xs font-mono text-neutral-600 dark:text-neutral-400 px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800">
+                    <Clock size={13} className="text-[#00ACF0]" />
+                    <span>{timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m left</span>
                   </div>
-                </div>
-              )}
-
-              {/* Metadata Badges */}
-              <div className="flex flex-wrap gap-3 pt-2 text-xs sm:text-sm text-slate-300">
-                <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/[0.03] border border-white/10">
-                  <MapPin size={15} className="text-violet-400 shrink-0" />
-                  <span>{basic.mode} {basic.location && `· ${basic.location}`}</span>
-                </div>
-
-                <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/[0.03] border border-white/10">
-                  <Calendar size={15} className="text-indigo-400 shrink-0" />
-                  <span>{fmt(basic.eventStart)} {basic.eventEnd && `– ${fmt(basic.eventEnd)}`}</span>
-                </div>
-
-                <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/[0.03] border border-white/10">
-                  <Tag size={15} className="text-emerald-400 shrink-0" />
-                  <span className={`font-semibold ${basic.entryFee === 0 ? "text-emerald-400" : "text-amber-400"}`}>
-                    {basic.entryFee === 0 ? "Free Entry" : `₹${basic.entryFee.toLocaleString("en-IN")}`}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/[0.03] border border-white/10">
-                  <Users size={15} className="text-blue-400 shrink-0" />
-                  <span>
-                    {team.allowSolo && team.allowTeam ? `Solo or Team (${team.minSize}–${team.maxSize})` : team.allowSolo ? "Solo Only" : `Team (${team.minSize}–${team.maxSize})`}
-                  </span>
-                </div>
-              </div>
-
-              {/* Primary Action Buttons */}
-              <div className="flex flex-wrap items-center gap-4 pt-3">
-                <button
-                  onClick={() => scrollToSection("register-section")}
-                  className="px-8 py-4 rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 hover:brightness-110 text-white font-bold text-base shadow-2xl shadow-violet-600/35 transition-all flex items-center gap-2.5 transform hover:-translate-y-0.5"
-                >
-                  Register For Arena <Rocket size={18} />
-                </button>
+                )}
 
                 <button
                   onClick={() => setShowShareModal(true)}
-                  className="px-6 py-4 rounded-2xl bg-white/[0.05] hover:bg-white/10 text-white border border-white/15 font-semibold text-sm transition-all flex items-center gap-2"
+                  className="p-2 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 transition"
+                  title="Share event link"
                 >
-                  <Share2 size={16} /> Share Arena
+                  <Share2 size={14} />
                 </button>
 
-                <a
-                  href={getCalendarUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-5 py-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/10 text-sm font-semibold transition-all flex items-center gap-2"
-                  title="Add to Google Calendar"
+                <button
+                  onClick={() => scrollToSection("register-section")}
+                  className="px-4 py-2 rounded-xl bg-[#00ACF0] hover:bg-[#0092cc] text-white font-semibold text-xs transition shadow-sm flex items-center gap-1.5"
                 >
-                  <CalendarDays size={16} /> Add to Calendar
-                </a>
-
-                {basic.website && (
-                  <a
-                    href={basic.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-5 py-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/10 text-sm font-semibold transition-all flex items-center gap-2"
-                  >
-                    <Globe size={16} /> Official Website <ExternalLink size={13} />
-                  </a>
-                )}
+                  Register <Rocket size={13} />
+                </button>
               </div>
             </div>
+          </div>
+        )}
 
-            {/* Right Column: Holographic 3D-styled Visual Card */}
-            <div className="lg:col-span-5 flex justify-center">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="w-full max-w-md rounded-3xl p-[1px] bg-gradient-to-br from-violet-600/40 via-indigo-500/20 to-transparent shadow-2xl shadow-violet-950/40"
-              >
-                <div className="bg-[#0b0c1b] rounded-[23px] overflow-hidden p-3 relative group">
-                  <div className="aspect-[4/3] rounded-2xl overflow-hidden relative bg-black/60">
+        {/* Hero Section */}
+        <header className="relative pt-24 pb-14 px-4 bg-gradient-to-b from-neutral-100 via-neutral-50 to-neutral-50 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
+          <div className="max-w-7xl mx-auto">
+            {/* Breadcrumb Navigation */}
+            <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 mb-6">
+              <Link to="/event" className="hover:text-[#00ACF0] transition-colors">Arenas</Link>
+              <span>/</span>
+              <span className="uppercase font-semibold text-[#00ACF0]">{basic.type}</span>
+              <span>/</span>
+              <span className="truncate max-w-xs text-neutral-700 dark:text-neutral-300">{basic.title}</span>
+            </nav>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              {/* Left Column */}
+              <div className="lg:col-span-7 space-y-5 text-left">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
+                    isRegOpen
+                      ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300"
+                      : isConcluded
+                      ? "bg-neutral-100 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700 text-neutral-500"
+                      : "bg-sky-50 dark:bg-sky-950/40 border-sky-300 dark:border-sky-800 text-[#00ACF0]"
+                  }`}>
+                    <span className={`w-2 h-2 rounded-full ${isRegOpen ? "bg-emerald-500 animate-pulse" : "bg-neutral-400"}`} />
+                    {isRegOpen ? "Registrations Open" : isConcluded ? "Concluded" : "Registrations Closed"}
+                  </span>
+
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold uppercase bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+                    {basic.type}
+                  </span>
+
+                  {basic.certificate && (
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1">
+                      <Award size={12} className="text-amber-500" /> Certificate Included
+                    </span>
+                  )}
+                </div>
+
+                <h1 className="text-3xl sm:text-5xl font-extrabold text-neutral-900 dark:text-white tracking-tight leading-tight">
+                  {basic.title}
+                </h1>
+
+                {(basic.tagline || basic.shortDescription) && (
+                  <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-2xl">
+                    {basic.tagline || basic.shortDescription}
+                  </p>
+                )}
+
+                {/* Real-time Countdown Timer Clock */}
+                {!timeLeft.ended && (
+                  <div className="pt-2">
+                    <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-2 flex items-center gap-1.5">
+                      <Clock size={13} className="text-[#00ACF0]" /> Registration Deadline
+                    </span>
+                    <div className="grid grid-cols-4 gap-2.5 sm:gap-3 max-w-sm">
+                      {[
+                        { label: "DAYS", value: timeLeft.days },
+                        { label: "HOURS", value: timeLeft.hours },
+                        { label: "MINS", value: timeLeft.minutes },
+                        { label: "SECS", value: timeLeft.seconds }
+                      ].map((item, idx) => (
+                        <div key={idx} className="p-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-center shadow-sm">
+                          <span className="block text-2xl font-bold font-mono text-neutral-900 dark:text-white">
+                            {String(item.value).padStart(2, "0")}
+                          </span>
+                          <span className="block text-[10px] font-semibold text-neutral-400 uppercase mt-0.5">
+                            {item.label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Metadata Row */}
+                <div className="flex flex-wrap gap-3 pt-1 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                    <MapPin size={14} className="text-[#00ACF0]" />
+                    <span>{basic.mode} {basic.location && `- ${basic.location}`}</span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                    <Calendar size={14} className="text-[#00ACF0]" />
+                    <span>{fmt(basic.eventStart)} {basic.eventEnd && `to ${fmt(basic.eventEnd)}`}</span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                    <Tag size={14} className="text-emerald-500" />
+                    <span className={`font-semibold ${basic.entryFee === 0 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+                      {basic.entryFee === 0 ? "Free Entry" : `₹${basic.entryFee.toLocaleString("en-IN")}`}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                    <Users size={14} className="text-sky-500" />
+                    <span>
+                      {team.allowSolo && team.allowTeam ? `Solo or Squad (${team.minSize} to ${team.maxSize})` : team.allowSolo ? "Solo Only" : `Squad (${team.minSize} to ${team.maxSize})`}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Primary Action Buttons */}
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <button
+                    onClick={() => scrollToSection("register-section")}
+                    className="px-6 py-3 rounded-xl bg-[#00ACF0] hover:bg-[#0092cc] text-white font-semibold text-sm shadow-sm transition flex items-center gap-2"
+                  >
+                    Register For Challenge <Rocket size={16} />
+                  </button>
+
+                  <button
+                    onClick={() => setShowShareModal(true)}
+                    className="px-4 py-3 rounded-xl border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-semibold text-sm transition flex items-center gap-2"
+                  >
+                    <Share2 size={15} /> Share
+                  </button>
+
+                  <a
+                    href={getCalendarUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-3 rounded-xl border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-sm font-semibold transition flex items-center gap-1.5"
+                    title="Add to Google Calendar"
+                  >
+                    <CalendarDays size={15} /> Add to Calendar
+                  </a>
+
+                  {basic.website && (
+                    <a
+                      href={basic.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-3 rounded-xl border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-sm font-semibold transition flex items-center gap-1.5"
+                    >
+                      <Globe size={15} /> Website <ExternalLink size={13} />
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: Event Media Card */}
+              <div className="lg:col-span-5 flex justify-center">
+                <div className="w-full max-w-md rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3 shadow-sm">
+                  <div className="aspect-[4/3] rounded-xl overflow-hidden relative bg-neutral-100 dark:bg-neutral-800">
                     {basic.coverImage ? (
                       <img
                         src={basic.coverImage}
                         alt={basic.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-violet-900/40 via-indigo-950 to-black flex flex-col items-center justify-center p-6 text-center">
-                        <Trophy size={54} className="text-violet-400 mb-3 drop-shadow-[0_0_25px_rgba(139,92,246,0.6)]" />
-                        <span className="text-base font-bold text-white uppercase tracking-widest">{basic.type}</span>
-                        <span className="text-xs text-slate-400 mt-1">{basic.organizer}</span>
+                      <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-sky-50 dark:bg-sky-950/20">
+                        <Trophy size={48} className="text-[#00ACF0] mb-2" />
+                        <span className="text-sm font-bold text-neutral-900 dark:text-white uppercase">{basic.type}</span>
+                        <span className="text-xs text-neutral-500 mt-1">{basic.organizer}</span>
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-5">
-                      <div className="flex items-center justify-between w-full">
-                        <span className="text-xs font-mono text-violet-300 font-semibold flex items-center gap-1.5">
-                          <Shield size={14} className="text-emerald-400" /> SGS Verified Challenge
-                        </span>
-                        <span className="text-xs font-bold text-amber-400">
-                          {basic.entryFee === 0 ? "Free Participation" : `₹${basic.entryFee}`}
-                        </span>
-                      </div>
-                    </div>
                   </div>
 
-                  {/* Highlights Bar under image */}
                   <div className="p-4 grid grid-cols-2 gap-3 text-left">
-                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5">
-                      <span className="block text-[11px] text-slate-400 uppercase font-semibold">Organized By</span>
-                      <span className="text-xs font-bold text-white truncate block mt-0.5">{basic.organizer}</span>
+                    <div className="p-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/50">
+                      <span className="block text-[11px] text-neutral-500 uppercase font-semibold">Organized By</span>
+                      <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 truncate block mt-0.5">{basic.organizer}</span>
                     </div>
-                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5">
-                      <span className="block text-[11px] text-slate-400 uppercase font-semibold">Team Size</span>
-                      <span className="text-xs font-bold text-white block mt-0.5">{team.minSize} – {team.maxSize} Members</span>
+                    <div className="p-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/50">
+                      <span className="block text-[11px] text-neutral-500 uppercase font-semibold">Squad Capacity</span>
+                      <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 block mt-0.5">{team.minSize} to {team.maxSize} Members</span>
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </div>
           </div>
-        </section>
+        </header>
 
-        {/* ═══════════════════════════════════════════
-            IN-PAGE ANCHOR NAVIGATION TABS BAR
-        ═══════════════════════════════════════════ */}
-        <div className="sticky top-0 z-30 bg-[#070711]/90 backdrop-blur-xl border-y border-white/10 px-4 sm:px-6">
-          <div className="max-w-7xl mx-auto flex items-center gap-1 sm:gap-2 overflow-x-auto py-2.5 scrollbar-none">
+        {/* In-page Anchor Navigation Bar */}
+        <div className="sticky top-0 z-30 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 px-4">
+          <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto py-2.5 scrollbar-none">
             {[
-              { id: "about", label: "About & Highlights", show: true },
+              { id: "about", label: "Overview", show: true },
               { id: "problems", label: "Problem Tracks", show: problemStatements.length > 0 },
               { id: "timeline", label: "Timeline", show: timeline.length > 0 },
-              { id: "prizes", label: "Prizes & Rewards", show: prizes.length > 0 },
-              { id: "rules", label: "Rules & Eligibility", show: true },
+              { id: "prizes", label: "Prizes", show: prizes.length > 0 },
+              { id: "rules", label: "Rules", show: true },
               { id: "judging", label: "Judging Criteria", show: judging.length > 0 },
               { id: "faq", label: "FAQ", show: faq.length > 0 },
               { id: "register-section", label: "Register", show: true }
-            ].filter(t => t.show).map(tab => (
+            ].filter((t) => t.show).map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => scrollToSection(tab.id)}
-                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap ${
                   activeSection === tab.id
-                    ? "bg-violet-600 text-white shadow-md shadow-violet-600/30"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                    ? "bg-[#00ACF0] text-white shadow-sm"
+                    : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
                 }`}
               >
                 {tab.label}
@@ -577,346 +595,304 @@ export default function DynamicEventPage() {
           </div>
         </div>
 
-        {/* ═══════════════════════════════════════════
-            SECTION: ABOUT & EVENT HIGHLIGHTS BENTO
-        ═══════════════════════════════════════════ */}
-        <section id="about" className="relative py-20 px-4 sm:px-6 max-w-7xl mx-auto text-left">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-            {/* Long description */}
-            <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/25 text-violet-400 text-xs font-bold tracking-widest uppercase">
+        {/* SECTION: ABOUT & HIGHLIGHTS */}
+        <section id="about" className="py-16 px-4 max-w-7xl mx-auto text-left">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-7 space-y-4">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-100 dark:bg-sky-950/60 text-[#00ACF0] text-xs font-semibold uppercase">
                 <BookOpen size={12} /> Overview
               </div>
-              <h2 className="text-3xl sm:text-4xl font-black text-white">
+              <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
                 About the Challenge
               </h2>
-              <div className="prose prose-invert max-w-none text-slate-300 text-base leading-relaxed space-y-4 whitespace-pre-line">
-                {basic.longDescription || basic.shortDescription || "Welcome to the official challenge arena. Prepare your ideas, team up, and build impactful solutions."}
+              <div className="text-neutral-600 dark:text-neutral-400 text-sm sm:text-base leading-relaxed space-y-3 whitespace-pre-line">
+                {basic.longDescription || basic.shortDescription || "Welcome to the official challenge. Prepare your technical approach, assemble your squad, and build solutions."}
               </div>
             </div>
 
-            {/* Highlights Bento Cards */}
             <div className="lg:col-span-5 grid grid-cols-2 gap-4">
-              <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 glass-card space-y-2">
-                <div className="w-10 h-10 rounded-xl bg-violet-600/20 text-violet-400 flex items-center justify-center mb-2">
-                  <Trophy size={20} />
+              <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-1.5 shadow-sm">
+                <div className="w-9 h-9 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-[#00ACF0] flex items-center justify-center mb-2">
+                  <Trophy size={18} />
                 </div>
-                <h4 className="text-sm font-bold text-white">Prestigious Prizes</h4>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Cash rewards, certificates of excellence, and verified Soft Game Studio credentials.
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Recognition</h3>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                  Grants, certificates of excellence, and verified Soft Game Studio credentials.
                 </p>
               </div>
 
-              <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 glass-card space-y-2">
-                <div className="w-10 h-10 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center mb-2">
-                  <Users size={20} />
+              <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-1.5 shadow-sm">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 flex items-center justify-center mb-2">
+                  <Users size={18} />
                 </div>
-                <h4 className="text-sm font-bold text-white">Collaboration</h4>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Compete individually or assemble a dream team of up to {team.maxSize} developers.
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Collaboration</h3>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                  Compete individually or assemble a squad of up to {team.maxSize} developers.
                 </p>
               </div>
 
-              <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 glass-card space-y-2">
-                <div className="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center mb-2">
-                  <Sparkles size={20} />
+              <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-1.5 shadow-sm">
+                <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 flex items-center justify-center mb-2">
+                  <Sparkles size={18} />
                 </div>
-                <h4 className="text-sm font-bold text-white">Mentorship &amp; Review</h4>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Get evaluated by seasoned industry engineers and receive constructive project feedback.
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Constructive Feedback</h3>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                  Submissions are reviewed by seasoned engineers with actionable feedback.
                 </p>
               </div>
 
-              <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 glass-card space-y-2">
-                <div className="w-10 h-10 rounded-xl bg-rose-600/20 text-rose-400 flex items-center justify-center mb-2">
-                  <Rocket size={20} />
+              <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-1.5 shadow-sm">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-500 flex items-center justify-center mb-2">
+                  <Rocket size={18} />
                 </div>
-                <h4 className="text-sm font-bold text-white">Career Opportunities</h4>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Outstanding performers gain interview opportunities and direct project showcase features.
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Showcase Opportunities</h3>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                  Top projects receive dedicated showcases across our developer community.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ═══════════════════════════════════════════
-            SECTION: PROBLEM STATEMENTS & TRACKS
-        ═══════════════════════════════════════════ */}
+        {/* SECTION: PROBLEM STATEMENTS */}
         {problemStatements.length > 0 && (
-          <section id="problems" className="relative py-20 px-4 sm:px-6 max-w-7xl mx-auto border-t border-white/10 text-left">
-            <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/25 text-violet-400 text-xs font-bold tracking-widest uppercase">
+          <section id="problems" className="py-16 px-4 max-w-7xl mx-auto border-t border-neutral-200 dark:border-neutral-800 text-left">
+            <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-100 dark:bg-sky-950/60 text-[#00ACF0] text-xs font-semibold uppercase">
                 <Target size={12} /> Innovation Tracks
               </div>
-              <h2 className="text-3xl sm:text-5xl font-black text-white">
+              <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
                 Problem Statements
               </h2>
-              <p className="text-slate-400 text-sm sm:text-base">
-                Choose your track, innovate without boundaries, and construct future-proof solutions.
+              <p className="text-neutral-600 dark:text-neutral-400 text-sm">
+                Select your track and engineer solutions according to competition guidelines.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {problemStatements.map((track, idx) => (
-                <motion.div
+                <div
                   key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.08 }}
-                  className="rounded-3xl bg-[#0c0d1b] border border-white/10 p-6 flex flex-col justify-between space-y-4 hover:border-violet-500/50 transition-all duration-300 shadow-xl group"
+                  className="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 flex flex-col justify-between space-y-4 hover:border-[#00ACF0]/40 transition shadow-sm"
                 >
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-violet-600/20 text-violet-300 border border-violet-500/30">
+                      <span className="px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold bg-sky-50 dark:bg-sky-950/60 text-[#00ACF0] border border-sky-200 dark:border-sky-800">
                         {track.track || `Track 0${idx + 1}`}
                       </span>
-                      <Target size={18} className="text-violet-400" />
+                      <Target size={16} className="text-[#00ACF0]" />
                     </div>
 
-                    <h3 className="text-xl font-bold text-white group-hover:text-violet-300 transition-colors">
+                    <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
                       {track.name}
                     </h3>
 
-                    <p className="text-slate-300 text-sm leading-relaxed line-clamp-4">
+                    <p className="text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed line-clamp-4">
                       {track.description}
                     </p>
                   </div>
 
-                  <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
-                    <span>Deliverable: Working Prototype</span>
-                    <span className="text-violet-400 font-semibold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                      Details <ArrowRight size={12} />
-                    </span>
+                  <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs text-neutral-500">
+                    Deliverable: Working code prototype & documentation
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           </section>
         )}
 
-        {/* ═══════════════════════════════════════════
-            SECTION: EVENT TIMELINE & ROADMAP
-        ═══════════════════════════════════════════ */}
+        {/* SECTION: TIMELINE */}
         {timeline.length > 0 && (
-          <section id="timeline" className="relative py-20 px-4 sm:px-6 max-w-4xl mx-auto border-t border-white/10 text-left">
-            <div className="text-center mb-16 space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/25 text-indigo-400 text-xs font-bold tracking-widest uppercase">
+          <section id="timeline" className="py-16 px-4 max-w-3xl mx-auto border-t border-neutral-200 dark:border-neutral-800 text-left">
+            <div className="text-center mb-12 space-y-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-100 dark:bg-sky-950/60 text-[#00ACF0] text-xs font-semibold uppercase">
                 <CalendarDays size={12} /> Schedule
               </div>
-              <h2 className="text-3xl sm:text-5xl font-black text-white">
+              <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
                 Challenge Roadmap
               </h2>
-              <p className="text-slate-400 text-sm">
-                Mark your calendar. Follow each milestone from kickoff to grand finale.
+              <p className="text-neutral-600 dark:text-neutral-400 text-sm">
+                Follow each milestone from kickoff through evaluation.
               </p>
             </div>
 
-            <div className="relative pl-6 sm:pl-8 border-l-2 border-violet-500/30 space-y-10">
+            <div className="relative pl-6 border-l-2 border-[#00ACF0]/40 space-y-8">
               {timeline.map((item, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.08 }}
-                  className="relative group"
-                >
-                  {/* Glowing Node Dot */}
-                  <div className="absolute -left-[31px] sm:-left-[39px] top-1.5 w-6 h-6 rounded-full bg-[#070711] border-2 border-violet-500 flex items-center justify-center shadow-lg shadow-violet-500/50">
-                    <div className="w-2 h-2 rounded-full bg-violet-400" />
-                  </div>
-
-                  <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-violet-500/40 transition-all space-y-2">
+                <div key={i} className="relative">
+                  <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-white dark:bg-neutral-900 border-2 border-[#00ACF0]" />
+                  <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-1.5">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-xs font-mono font-bold text-violet-400 uppercase tracking-wider">
-                        {fmt(item.date)} {item.time && `· ${item.time}`}
+                      <span className="text-xs font-mono font-bold text-[#00ACF0] uppercase">
+                        {fmt(item.date)} {item.time && `- ${item.time}`}
                       </span>
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-white/5 text-slate-400">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-neutral-100 dark:bg-neutral-800 text-neutral-500">
                         Phase {i + 1}
                       </span>
                     </div>
 
-                    <h3 className="text-lg font-bold text-white">
+                    <h3 className="text-base font-bold text-neutral-900 dark:text-white">
                       {item.title}
                     </h3>
 
                     {item.description && (
-                      <p className="text-sm text-slate-300 leading-relaxed">
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
                         {item.description}
                       </p>
                     )}
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           </section>
         )}
 
-        {/* ═══════════════════════════════════════════
-            SECTION: PRIZES & REWARDS PODIUM
-        ═══════════════════════════════════════════ */}
+        {/* SECTION: PRIZES */}
         {prizes.length > 0 && (
-          <section id="prizes" className="relative py-20 px-4 sm:px-6 max-w-7xl mx-auto border-t border-white/10 text-left">
-            <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs font-bold tracking-widest uppercase">
+          <section id="prizes" className="py-16 px-4 max-w-7xl mx-auto border-t border-neutral-200 dark:border-neutral-800 text-left">
+            <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-xs font-semibold uppercase">
                 <Trophy size={12} /> Recognition
               </div>
-              <h2 className="text-3xl sm:text-5xl font-black text-white">
-                Prizes &amp; Glory
+              <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
+                Prizes & Awards
               </h2>
-              <p className="text-slate-400 text-sm">
-                Celebrated achievements, cash grants, and career-accelerating opportunities.
+              <p className="text-neutral-600 dark:text-neutral-400 text-sm">
+                Acknowledged achievements and verified certificates.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
               {prizes.map((p, i) => {
                 const isFirst = i === 0;
                 const isSecond = i === 1;
-                const isThird = i === 2;
-
-                const borderGrad = isFirst
-                  ? "from-amber-400 via-yellow-500 to-amber-600"
-                  : isSecond
-                  ? "from-slate-200 via-zinc-400 to-slate-500"
-                  : isThird
-                  ? "from-amber-600 via-orange-600 to-amber-800"
-                  : "from-violet-500 to-indigo-600";
 
                 return (
-                  <motion.div
+                  <div
                     key={i}
-                    initial={{ opacity: 0, y: 25 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.1 }}
-                    whileHover={{ y: -8 }}
-                    className={`relative p-[1px] rounded-3xl bg-gradient-to-b ${borderGrad} shadow-2xl`}
+                    className={`rounded-2xl p-6 text-center border transition shadow-sm flex flex-col justify-between ${
+                      isFirst
+                        ? "bg-amber-50/40 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800"
+                        : isSecond
+                        ? "bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800"
+                        : "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800"
+                    }`}
                   >
-                    <div className="h-full bg-[#0d0e1d] rounded-[23px] p-8 text-center flex flex-col items-center justify-between relative overflow-hidden">
-                      <div className="space-y-4 w-full">
-                        <div className="w-16 h-16 mx-auto rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-3xl shadow-inner">
-                          {isFirst ? "🥇" : isSecond ? "🥈" : isThird ? "🥉" : "🏆"}
-                        </div>
-
-                        <span className="inline-block text-xs font-mono font-bold uppercase tracking-widest text-slate-400">
-                          {p.title || `Rank 0${i + 1}`}
-                        </span>
-
-                        <div className="text-3xl font-black text-white font-mono">
-                          {p.amount && p.amount !== "0"
-                            ? `₹${Number(p.amount).toLocaleString("en-IN")}`
-                            : "Excellence Grant"}
-                        </div>
-
-                        {p.description && (
-                          <p className="text-xs text-slate-400 leading-relaxed">
-                            {p.description}
-                          </p>
+                    <div className="space-y-3">
+                      <div className="w-12 h-12 mx-auto rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center">
+                        {isFirst ? (
+                          <Trophy className="w-6 h-6 text-amber-500" />
+                        ) : isSecond ? (
+                          <Medal className="w-6 h-6 text-slate-400" />
+                        ) : (
+                          <Award className="w-6 h-6 text-[#00ACF0]" />
                         )}
                       </div>
 
-                      <div className="pt-6 mt-6 border-t border-white/10 w-full space-y-2 text-xs text-slate-300">
-                        <div className="flex items-center gap-2 justify-center">
-                          <CheckCircle2 size={14} className="text-emerald-400" />
-                          <span>Official SGS Trophy &amp; Certificate</span>
-                        </div>
-                        <div className="flex items-center gap-2 justify-center">
-                          <CheckCircle2 size={14} className="text-emerald-400" />
-                          <span>Direct Portfolio Feature</span>
-                        </div>
+                      <span className="block text-xs font-mono font-bold uppercase tracking-wider text-neutral-500">
+                        {p.title || `Rank 0${i + 1}`}
+                      </span>
+
+                      <div className="text-2xl font-bold font-mono text-neutral-900 dark:text-white">
+                        {p.amount && p.amount !== "0"
+                          ? `₹${Number(p.amount).toLocaleString("en-IN")}`
+                          : "Excellence Grant"}
                       </div>
+
+                      {p.description && (
+                        <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                          {p.description}
+                        </p>
+                      )}
                     </div>
-                  </motion.div>
+
+                    <div className="pt-4 mt-4 border-t border-neutral-200 dark:border-neutral-800 text-xs text-neutral-600 dark:text-neutral-400 flex items-center justify-center gap-1.5">
+                      <CheckCircle2 size={13} className="text-emerald-500" />
+                      <span>Official Trophy & Certificate</span>
+                    </div>
+                  </div>
                 );
               })}
             </div>
           </section>
         )}
 
-        {/* ═══════════════════════════════════════════
-            SECTION: RULES & PARTICIPATION GUIDELINES
-        ═══════════════════════════════════════════ */}
-        <section id="rules" className="relative py-20 px-4 sm:px-6 max-w-7xl mx-auto border-t border-white/10 text-left">
-          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/25 text-violet-400 text-xs font-bold tracking-widest uppercase">
+        {/* SECTION: RULES */}
+        <section id="rules" className="py-16 px-4 max-w-7xl mx-auto border-t border-neutral-200 dark:border-neutral-800 text-left">
+          <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-100 dark:bg-sky-950/60 text-[#00ACF0] text-xs font-semibold uppercase">
               <Shield size={12} /> Compliance
             </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-white">
-              Rules &amp; Guidelines
+            <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
+              Rules & Guidelines
             </h2>
-            <p className="text-slate-400 text-sm">
-              Standard competition policies to ensure a fair and inspiring environment.
+            <p className="text-neutral-600 dark:text-neutral-400 text-sm">
+              Standard competition code of conduct ensuring fairness and collaboration.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 rounded-2xl bg-[#0c0d1b] border border-white/10 space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-violet-600/20 text-violet-400 flex items-center justify-center font-bold">1</div>
-              <h3 className="text-base font-bold text-white">Eligibility &amp; Teams</h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Open to developers, students, and engineers worldwide. Team sizes must comply with the specified minimum ({team.minSize}) and maximum ({team.maxSize}) participant limits.
+            <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-2">
+              <span className="w-8 h-8 rounded-lg bg-sky-50 dark:bg-sky-950/40 text-[#00ACF0] font-bold text-xs flex items-center justify-center">1</span>
+              <h3 className="text-base font-bold text-neutral-900 dark:text-white">Eligibility & Squad Limits</h3>
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                Open to developers and students worldwide. Team sizes must comply with the minimum ({team.minSize}) and maximum ({team.maxSize}) member limits.
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-[#0c0d1b] border border-white/10 space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-violet-600/20 text-violet-400 flex items-center justify-center font-bold">2</div>
-              <h3 className="text-base font-bold text-white">Fresh &amp; Original Code</h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                All source code and designs must be authored during the active hackathon timeline. Utilizing public open-source libraries and APIs is permitted and encouraged.
+            <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-2">
+              <span className="w-8 h-8 rounded-lg bg-sky-50 dark:bg-sky-950/40 text-[#00ACF0] font-bold text-xs flex items-center justify-center">2</span>
+              <h3 className="text-base font-bold text-neutral-900 dark:text-white">Original Engineering</h3>
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                All source code must be authored within the active hackathon schedule. Open-source libraries and public frameworks are permitted with attribution.
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-[#0c0d1b] border border-white/10 space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-violet-600/20 text-violet-400 flex items-center justify-center font-bold">3</div>
-              <h3 className="text-base font-bold text-white">Submission Requirements</h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Teams must submit a working prototype URL, public GitHub code repository, and a concise walkthrough demonstration video before the designated deadline.
+            <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-2">
+              <span className="w-8 h-8 rounded-lg bg-sky-50 dark:bg-sky-950/40 text-[#00ACF0] font-bold text-xs flex items-center justify-center">3</span>
+              <h3 className="text-base font-bold text-neutral-900 dark:text-white">Submission Deliverables</h3>
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                Teams must submit a working repository, video demonstration, and architectural overview before the announced deadline.
               </p>
             </div>
           </div>
         </section>
 
-        {/* ═══════════════════════════════════════════
-            SECTION: JUDGING CRITERIA
-        ═══════════════════════════════════════════ */}
+        {/* SECTION: JUDGING CRITERIA */}
         {judging.length > 0 && (
-          <section id="judging" className="relative py-20 px-4 sm:px-6 max-w-7xl mx-auto border-t border-white/10 text-left">
-            <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-bold tracking-widest uppercase">
-                <Lightbulb size={12} /> Scoring
+          <section id="judging" className="py-16 px-4 max-w-7xl mx-auto border-t border-neutral-200 dark:border-neutral-800 text-left">
+            <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold uppercase">
+                <Lightbulb size={12} /> Rubric
               </div>
-              <h2 className="text-3xl sm:text-5xl font-black text-white">
+              <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
                 Judging Criteria
               </h2>
-              <p className="text-slate-400 text-sm">
-                Transparent rubric utilized by our industry panel to evaluate submissions.
+              <p className="text-neutral-600 dark:text-neutral-400 text-sm">
+                Transparent evaluation rubric applied by our technical reviewers.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {judging.map((item, idx) => (
-                <div key={idx} className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 space-y-4 flex flex-col justify-between">
-                  <div className="space-y-2">
+                <div key={idx} className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-3 flex flex-col justify-between">
+                  <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono font-bold text-violet-400 uppercase">Weightage</span>
+                      <span className="text-xs font-mono text-neutral-500 uppercase">Weight</span>
                       {item.weight && (
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-violet-600/20 text-violet-300 border border-violet-500/30">
+                        <span className="px-2 py-0.5 rounded text-xs font-mono font-semibold bg-sky-50 dark:bg-sky-950/60 text-[#00ACF0]">
                           {item.weight}%
                         </span>
                       )}
                     </div>
-                    <h3 className="text-lg font-bold text-white">{item.name}</h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      {item.description || "Evaluated for execution, depth, practicality, and real-world viability."}
+                    <h3 className="text-base font-bold text-neutral-900 dark:text-white">{item.name}</h3>
+                    <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                      {item.description || "Evaluated for execution quality, depth, and practical viability."}
                     </p>
                   </div>
 
                   {item.weight && (
-                    <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-                      <div className="bg-gradient-to-r from-violet-500 to-indigo-500 h-full rounded-full" style={{ width: `${item.weight}%` }} />
+                    <div className="w-full bg-neutral-200 dark:bg-neutral-800 h-1 rounded-full overflow-hidden">
+                      <div className="bg-[#00ACF0] h-full rounded-full" style={{ width: `${item.weight}%` }} />
                     </div>
                   )}
                 </div>
@@ -925,20 +901,18 @@ export default function DynamicEventPage() {
           </section>
         )}
 
-        {/* ═══════════════════════════════════════════
-            SECTION: FAQS & CONTACT
-        ═══════════════════════════════════════════ */}
+        {/* SECTION: FAQS */}
         {faq.length > 0 && (
-          <section id="faq" className="relative py-20 px-4 sm:px-6 max-w-4xl mx-auto border-t border-white/10 text-left">
-            <div className="text-center mb-16 space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-400 text-xs font-bold tracking-widest uppercase">
+          <section id="faq" className="py-16 px-4 max-w-3xl mx-auto border-t border-neutral-200 dark:border-neutral-800 text-left">
+            <div className="text-center mb-12 space-y-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-100 dark:bg-sky-950/60 text-[#00ACF0] text-xs font-semibold uppercase">
                 <HelpCircle size={12} /> Answers
               </div>
-              <h2 className="text-3xl sm:text-5xl font-black text-white">
+              <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
                 Frequently Asked Questions
               </h2>
-              <p className="text-slate-400 text-sm">
-                Everything you need to know before stepping into the arena.
+              <p className="text-neutral-600 dark:text-neutral-400 text-sm">
+                Key questions regarding participation, submission, and logistics.
               </p>
             </div>
 
@@ -948,38 +922,23 @@ export default function DynamicEventPage() {
               ))}
             </div>
 
-            {/* Support / Help card */}
-            <div className="mt-10 p-6 rounded-2xl bg-white/[0.02] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+            <div className="mt-8 p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
               <div>
-                <h4 className="text-sm font-bold text-white">Have more questions?</h4>
-                <p className="text-xs text-slate-400 mt-0.5">Our support coordinators are ready to help you.</p>
+                <h4 className="text-sm font-bold text-neutral-900 dark:text-white">Have additional questions?</h4>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Reach out to the Soft Game Studio coordination team.</p>
               </div>
               <a
-                href="mailto:support@softgamestudio.com"
-                className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs border border-white/15 transition-all flex items-center gap-2 shrink-0"
+                href="mailto:sgs.web.app@gmail.com"
+                className="px-4 py-2 rounded-xl border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold text-xs transition flex items-center gap-1.5 shrink-0"
               >
-                <Mail size={14} /> Contact Coordinators
+                <Mail size={13} /> Contact Support
               </a>
             </div>
           </section>
         )}
 
-        {/* ═══════════════════════════════════════════
-            SECTION: REGISTRATION PORTAL
-        ═══════════════════════════════════════════ */}
-        <section id="register-section" className="relative py-28 px-4 sm:px-6 max-w-7xl mx-auto border-t border-white/10">
-          <div className="relative z-10 text-center mb-12 space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-bold tracking-widest uppercase">
-              <Rocket size={13} className="fill-current" /> Registration Terminal
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-white">
-              Secure Your Arena Entry Pass
-            </h2>
-            <p className="text-slate-400 text-sm sm:text-base max-w-xl mx-auto">
-              Enroll your team or compete solo in <span className="text-violet-400 font-semibold">{basic.title}</span>.
-            </p>
-          </div>
-
+        {/* SECTION: REGISTRATION PORTAL */}
+        <section id="register-section" className="py-20 px-4 max-w-7xl mx-auto border-t border-neutral-200 dark:border-neutral-800">
           <RegistrationForm
             eventId={eventId}
             eventTitle={basic.title}
@@ -988,71 +947,62 @@ export default function DynamicEventPage() {
           />
         </section>
 
-        {/* ═══════════════════════════════════════════
-            SHARE & QR MODAL
-        ═══════════════════════════════════════════ */}
+        {/* SHARE & QR MODAL */}
         <AnimatePresence>
           {showShareModal && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/70 backdrop-blur-sm"
+              onClick={() => setShowShareModal(false)}
             >
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                className="w-full max-w-md bg-[#0c0d1b] border border-white/15 rounded-3xl p-6 relative shadow-2xl text-left"
+              <div
+                className="w-full max-w-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 relative shadow-xl text-left"
+                onClick={(e) => e.stopPropagation()}
               >
                 <button
                   onClick={() => setShowShareModal(false)}
-                  className="absolute right-4 top-4 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white"
+                  className="absolute right-4 top-4 p-2 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-white transition"
                 >
                   <X size={16} />
                 </button>
 
-                <h3 className="text-xl font-bold text-white mb-1">Share this Arena</h3>
-                <p className="text-xs text-slate-400 mb-6">Invite your teammates and friends to join this challenge.</p>
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-1">Share Event</h3>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-6">Invite your teammates to register for {basic.title}.</p>
 
-                {/* QR Code Container */}
-                <div className="p-4 rounded-2xl bg-white flex flex-col items-center justify-center mb-6 shadow-inner">
-                  <QRCodeSVG value={window.location.href} size={150} level="M" />
-                  <span className="text-[11px] font-mono font-bold text-slate-800 mt-2">Scan to Open on Mobile</span>
+                <div className="p-4 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex flex-col items-center justify-center mb-5">
+                  <QRCodeSVG value={window.location.href} size={140} level="M" />
+                  <span className="text-[11px] font-mono font-medium text-neutral-500 mt-2">Scan with mobile camera</span>
                 </div>
 
-                {/* Copy Link Input */}
-                <div className="flex items-center gap-2 p-2 rounded-xl bg-white/5 border border-white/10 mb-6">
+                <div className="flex items-center gap-2 p-2 rounded-xl border border-neutral-200 dark:border-neutral-700 mb-5">
                   <input
                     type="text"
                     readOnly
                     value={window.location.href}
-                    className="bg-transparent border-0 text-xs text-slate-300 px-2 flex-1 focus:outline-none"
+                    className="bg-transparent border-0 text-xs text-neutral-700 dark:text-neutral-300 px-2 flex-1 focus:outline-none"
                   />
                   <button
                     onClick={handleCopyLink}
-                    className="px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all"
+                    className="px-3 py-1.5 rounded-lg bg-[#00ACF0] hover:bg-[#0092cc] text-white font-semibold text-xs flex items-center gap-1 transition"
                   >
-                    {copied ? <Check size={14} className="text-emerald-300" /> : <Copy size={14} />}
-                    {copied ? "Copied" : "Copy"}
+                    {copied ? <Check size={13} /> : <Copy size={13} />}
+                    <span>{copied ? "Copied" : "Copy"}</span>
                   </button>
                 </div>
 
-                {/* Social Share Shortcuts */}
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-2">
                   <a
-                    href={`https://wa.me/?text=${encodeURIComponent(`Check out ${basic.title} on Soft Game Studio: ${window.location.href}`)}`}
+                    href={`https://wa.me/?text=${encodeURIComponent(`Register for ${basic.title} on Soft Game Studio: ${window.location.href}`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-3 rounded-xl bg-white/[0.04] hover:bg-white/10 border border-white/10 text-center text-xs font-semibold text-slate-200 transition-all block"
+                    className="p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-center text-xs font-semibold text-neutral-700 dark:text-neutral-300 transition block"
                   >
                     WhatsApp
                   </a>
                   <a
-                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Join me at ${basic.title} on Soft Game Studio! ${window.location.href}`)}`}
+                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out ${basic.title} at Soft Game Studio: ${window.location.href}`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-3 rounded-xl bg-white/[0.04] hover:bg-white/10 border border-white/10 text-center text-xs font-semibold text-slate-200 transition-all block"
+                    className="p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-center text-xs font-semibold text-neutral-700 dark:text-neutral-300 transition block"
                   >
                     Twitter / X
                   </a>
@@ -1060,16 +1010,15 @@ export default function DynamicEventPage() {
                     href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-3 rounded-xl bg-white/[0.04] hover:bg-white/10 border border-white/10 text-center text-xs font-semibold text-slate-200 transition-all block"
+                    className="p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-center text-xs font-semibold text-neutral-700 dark:text-neutral-300 transition block"
                   >
                     LinkedIn
                   </a>
                 </div>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
           )}
         </AnimatePresence>
-
       </div>
     </Layout>
   );
