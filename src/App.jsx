@@ -100,8 +100,9 @@ function App() {
           <Route path="/login" element={<UserLogin />} />
           <Route path="/signup" element={<UserSignup />} />
           <Route path="/resetpassword" element={<UserResetPasswordPage />} />
-          {/* Leagle Documents  */}
-          <Route path="/*" element={<NotFoundPage />} />
+          {/* Redirection and 404 */}
+          <Route path="/redirect" element={<RedirectPage />} />
+          <Route path="/404" element={<NotFoundPage />} />
           <Route path="/CopyrightPage" element={<CopyrightPage />} />
           <Route path="/PrivacyPolicy" element={<Privacy />} />
           <Route path="/ReturnPolicy" element={<ReturnPolicy />} />
@@ -170,6 +171,8 @@ function App() {
 
 
 
+          {/* Wildcard 404 Route */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
         <ToastContainer />
       </Router>

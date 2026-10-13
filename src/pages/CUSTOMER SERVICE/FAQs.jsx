@@ -6,7 +6,7 @@ import { Helmet } from 'react-helmet';
 
 const FAQPage = () => {
 
-    const navigate = useNavigate(); // Call the hook at the top
+  const navigate = useNavigate(); // Call the hook at the top
 
   const sectionRef = useRef(null);
   const [contextMenu, setContextMenu] = useState({
@@ -42,47 +42,47 @@ const FAQPage = () => {
   }, []);
 
   // FAQ data (unchanged)
-  const faqs = [  {
-      id: 1,
-      title: "How to create an account?",
-      content: "To create an account, navigate to our sign-up page and enter your email address, choose a secure password, and complete the verification process. You'll receive a confirmation email to activate your account.",
-      tags: ["account", "sign-up"]
-    },
-    {
-      id: 2,
-      title: "How can I make payment using Paypal?",
-      content: "During checkout, select PayPal as your payment method. You'll be redirected to PayPal's secure site to log in and authorize the payment. Once confirmed, you'll return to our site to complete the transaction.",
-      tags: ["payment", "paypal"]
-    },
-    {
-      id: 3,
-      title: "Can I cancel my subscription plan?",
-      content: "Yes, you can cancel your subscription at any time. Go to your account settings, select 'Subscriptions', and choose the plan you wish to cancel. Your access will continue until the end of your current billing period.",
-      tags: ["subscription", "billing"]
-    },
-    {
-      id: 4,
-      title: "How can I reach technical support?",
-      content: "Our support team is available 24/7. You can contact us via live chat on our website, email support@softgamestudio.com, or call +1 (800) 555-1234. Response time is typically under 30 minutes during business hours.",
-      tags: ["support", "contact"]
-    },
-    {
-      id: 5,
-      title: "What platforms do your games support?",
-      content: "Our games are available on Windows, macOS, iOS, and Android. Some titles also support PlayStation, Xbox, and Nintendo Switch. Check individual game pages for specific platform compatibility.",
-      tags: ["platforms", "compatibility"]
-    },
-    {
-      id: 6,
-      title: "Do you offer educational discounts?",
-      content: "Yes, we provide special pricing for educational institutions. Contact our sales team at edu@softgamestudio.com with proof of your academic affiliation to receive a custom quote and discount code.",
-      tags: ["education", "discount"]
-    }];
+  const faqs = [{
+    id: 1,
+    title: "How to create an account?",
+    content: "To create an account, navigate to our sign-up page and enter your email address, choose a secure password, and complete the verification process. You'll receive a confirmation email to activate your account.",
+    tags: ["account", "sign-up"]
+  },
+  {
+    id: 2,
+    title: "How can I make payment using Paypal?",
+    content: "During checkout, select PayPal as your payment method. You'll be redirected to PayPal's secure site to log in and authorize the payment. Once confirmed, you'll return to our site to complete the transaction.",
+    tags: ["payment", "paypal"]
+  },
+  {
+    id: 3,
+    title: "Can I cancel my subscription plan?",
+    content: "Yes, you can cancel your subscription at any time. Go to your account settings, select 'Subscriptions', and choose the plan you wish to cancel. Your access will continue until the end of your current billing period.",
+    tags: ["subscription", "billing"]
+  },
+  {
+    id: 4,
+    title: "How can I reach technical support?",
+    content: "Our support team is available 24/7. You can contact us via live chat on our website, email support@softgamestudio.com, or call +1 (800) 555-1234. Response time is typically under 30 minutes during business hours.",
+    tags: ["support", "contact"]
+  },
+  {
+    id: 5,
+    title: "What platforms do your games support?",
+    content: "Our games are available on Windows, macOS, iOS, and Android. Some titles also support PlayStation, Xbox, and Nintendo Switch. Check individual game pages for specific platform compatibility.",
+    tags: ["platforms", "compatibility"]
+  },
+  {
+    id: 6,
+    title: "Do you offer educational discounts?",
+    content: "Yes, we provide special pricing for educational institutions. Contact our sales team at edu@softgamestudio.com with proof of your academic affiliation to receive a custom quote and discount code.",
+    tags: ["education", "discount"]
+  }];
 
   // Handle right-click on FAQ items (unchanged)
   // ...
 
-    const handleContextMenu = (event, faq) => {
+  const handleContextMenu = (event, faq) => {
     event.preventDefault();
     setContextMenu({
       visible: true,
@@ -91,7 +91,7 @@ const FAQPage = () => {
       content: faq.content,
       title: faq.title
     });
-    }
+  }
   return (
     <Layout>
       <Helmet>
@@ -104,7 +104,7 @@ const FAQPage = () => {
           name="keywords"
           content="Soft Game Studio FAQ, online exams help, free education, affordable courses, certification support, exam registration, technical support"
         />
-        <meta name="author" content="Soft Game Studio Pvt. Ltd." />
+        <meta name="author" content="Soft Game Studio" />
         <meta name="robots" content="index, follow" />
         <meta property="og:title" content="FAQs | Soft Game Studio" />
         <meta
@@ -129,7 +129,7 @@ const FAQPage = () => {
         />
         <link rel="canonical" href="https://softgamestudios.web.app/FAQs" />
       </Helmet>
-      <div 
+      <div
         className="min-h-screen transition-colors duration-300 
                    bg-purple-100 text-gray-900
                    dark:bg-neutral-950 dark:text-white"
@@ -142,14 +142,14 @@ const FAQPage = () => {
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24">
           {/* Header */}
-          <motion.div 
+          <motion.div
             className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-           
- <motion.h1 
+
+            <motion.h1
               className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-cyan-600 dark:bg-gradient-to-r dark:from-purple-400 dark:to-cyan-400   "
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -158,8 +158,8 @@ const FAQPage = () => {
               Frequently Asked Questions
             </motion.h1>
 
-           
-            <motion.p 
+
+            <motion.p
               className="max-w-2xl mx-auto text-lg md:text-xl text-purple-700 dark:text-purple-200"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -170,7 +170,7 @@ const FAQPage = () => {
           </motion.div>
 
           {/* FAQ Grid */}
-          <div 
+          <div
             ref={sectionRef}
             className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto"
           >
@@ -220,7 +220,7 @@ const FAQPage = () => {
           </div>
 
           {/* Additional Info */}
-          <motion.div 
+          <motion.div
             className="mt-16 text-center p-8 rounded-2xl backdrop-blur-sm border
                       bg-gradient-to-r from-purple-100 to-cyan-100 border-gray-200
                       dark:bg-gradient-to-r dark:from-purple-900/30 dark:to-cyan-900/30 dark:border-white/10"
@@ -234,7 +234,7 @@ const FAQPage = () => {
             <p className="max-w-2xl mx-auto mb-6 text-purple-700 dark:text-purple-200">
               Our support team is ready to assist you with any questions not covered in our FAQ.
             </p>
-            <button onClick={()=>navigate("/ContactUs")} className="px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-1 shadow-lg
+            <button onClick={() => navigate("/ContactUs")} className="px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-1 shadow-lg
                               bg-gradient-to-r from-purple-500 to-cyan-400 shadow-purple-300/30 text-white
                               dark:bg-gradient-to-r dark:from-purple-600 dark:to-cyan-500 dark:shadow-purple-500/20">
               Contact Support
@@ -260,7 +260,7 @@ const FAQPage = () => {
               <h3 className="font-bold text-purple-600 dark:text-purple-300">
                 {contextMenu.title}
               </h3>
-              <button 
+              <button
                 onClick={closeContextMenu}
                 className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white"
               >
@@ -273,7 +273,7 @@ const FAQPage = () => {
               {contextMenu.content}
             </p>
             <div className="mt-3 pt-3 flex justify-end border-t border-gray-200 dark:border-gray-700">
-              <button 
+              <button
                 className="text-xs px-3 py-1 rounded transition-colors
                           bg-purple-600 hover:bg-purple-700 text-white
                           dark:bg-purple-700 dark:hover:bg-purple-600"

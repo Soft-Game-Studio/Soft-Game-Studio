@@ -68,7 +68,7 @@ export const NavBody = ({
       }}
       className={cn(
         "relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full bg-transparent px-4 py-2 lg:flex dark:bg-transparent",
-        visible && "bg-purple-100/80 dark:bg-neutral-950/80",
+        visible && "bg-white/90 dark:bg-neutral-950/90",
         className
       )}>
       {children}
@@ -133,7 +133,7 @@ export const MobileNav = ({
       }}
       className={ cn(
         " relative z-50 mx-auto flex w-full max-w-[calc(100vw-2rem)] flex-col items-center justify-between self-start rounded-full bg-transparent px-0 py-2 lg:hidden",
-        visible && "bg-purple-100/80 dark:bg-neutral-950/80",
+        visible && "bg-white/90 dark:bg-neutral-950/90",
         className
       )}>
       {children}
@@ -162,16 +162,27 @@ export const MobileNavMenu = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className={cn(
-            "absolute inset-x-0 top-16 z-50 flex w-full flex-col items-start justify-start gap-4 rounded-lg bg-purple-100 px-4 py-8 shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset] dark:bg-neutral-950",
-            className
-          )}>
-          {children}
-        </motion.div>
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs lg:hidden"
+            aria-hidden="true"
+          />
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18 }}
+            className={cn(
+              "absolute inset-x-0 top-16 z-50 flex w-full flex-col items-start justify-start gap-4 rounded-xl bg-white border border-neutral-200 px-4 py-6 shadow-xl dark:bg-neutral-950 dark:border-neutral-800",
+              className
+            )}>
+            {children}
+          </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
@@ -179,23 +190,39 @@ export const MobileNavMenu = ({
 
 export const MobileNavToggle = ({
   isOpen,
-  onClick
+  onClick,
+  className,
+  ...props
 }) => {
-  return isOpen ? (
-    <IconX className="text-black dark:text-white" onClick={onClick} />
-  ) : (
-    <IconMenu2 className="text-black dark:text-white" onClick={onClick} />
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "p-2 rounded-lg text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors focus:outline-none cursor-pointer flex items-center justify-center",
+        className
+      )}
+      aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+      aria-expanded={isOpen}
+      {...props}
+    >
+      {isOpen ? (
+        <IconX className="w-5 h-5 text-current" />
+      ) : (
+        <IconMenu2 className="w-5 h-5 text-current" />
+      )}
+    </button>
   );
 };
 
 export const NavbarLogo = () => {
   return (
     <a
-      href="#"
+      href="/"
       className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black">
       <img
         src="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media"
-        alt="logo"
+        alt="Soft Game Studio logo"
         width={30}
         height={30} 
         className="rounded-full"/>

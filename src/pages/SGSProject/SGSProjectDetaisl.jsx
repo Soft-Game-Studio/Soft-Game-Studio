@@ -1,74 +1,113 @@
-// ProjectDetailsPage.jsx – Premium Modern Redesign (Public-Facing)
+/**
+ * SGSProjectDetaisl.jsx: Soft Game Studio Engineering Project Case Study
+ *
+ * Production-grade technical case study page implementing:
+ * - Full Dark & Light Mode Theme Support (neutral foundations, high contrast)
+ * - Strict Design Compliance: Zero purple gradients, zero em dashes, zero emoji icons
+ * - Technical SEO: react-helmet-async with SoftwareApplication JSON-LD structured data
+ * - Responsive 2-Column Grid: Architecture visual, comprehensive documentation, specs sidebar
+ * - Dynamic Source Code Request: Automated pre-filled query routing to Contact portal
+ * - Social Discovery: Native sharing and clipboard integration without em dashes
+ */
+
+/* eslint-disable react/prop-types */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { fireDB } from '../../DataBase/firebaseConfig';
 import Layout from '../../components/layout/Layout';
-
 import {
-  ArrowLeft,
-  Globe,
-  Calendar,
-  Clock,
-  Share2,
-  Copy,
-  CheckCircle,
-  Code2,
-  Layers,
-  Monitor,
-  Target,
-  TrendingUp,
-  FileText,
-  ExternalLink,
-  ChevronRight,
-  Zap,
-  Wrench,
-  AlertCircle,
-  Mail,
-  Cpu,
-  Sparkles,
-} from 'lucide-react';
-import {
-  FaRegCopy,
-  FaWhatsappSquare,
-  FaFacebookSquare,
+  FaArrowLeft,
+  FaGlobe,
+  FaCalendarAlt,
+  FaClock,
+  FaShareAlt,
+  FaCheckCircle,
+  FaCode,
+  FaLayerGroup,
+  FaLaptopCode,
+  FaBullseye,
+  FaFileAlt,
+  FaExternalLinkAlt,
+  FaChevronRight,
+  FaChevronDown,
+  FaWrench,
+  FaEnvelope,
+  FaMicrochip,
+  FaCheck,
+  FaCopy,
+  FaExclamationCircle,
+  FaTwitter,
   FaLinkedinIn,
-  FaTwitterSquare,
+  FaFacebookF,
+  FaWhatsapp,
+  FaServer,
+  FaUsers
 } from 'react-icons/fa';
+import { Helmet } from 'react-helmet-async';
 
-// ───────────────────────── helpers ──────────────────────────
-
+// Status Badge Component
 const StatusBadge = ({ status }) => {
   const map = {
-    completed: { cls: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800', icon: <CheckCircle className="w-3.5 h-3.5" />, label: 'Completed' },
-    active: { cls: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800', icon: <Zap className="w-3.5 h-3.5" />, label: 'Active' },
-    'in-progress': { cls: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800', icon: <TrendingUp className="w-3.5 h-3.5" />, label: 'In Progress' },
-    'on-hold': { cls: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800', icon: <Clock className="w-3.5 h-3.5" />, label: 'On Hold' },
-    planned: { cls: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800', icon: <Target className="w-3.5 h-3.5" />, label: 'Planned' },
-    maintenance: { cls: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800', icon: <Wrench className="w-3.5 h-3.5" />, label: 'Maintenance' },
+    completed: {
+      cls: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800',
+      label: 'Completed',
+    },
+    live: {
+      cls: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800',
+      label: 'Live Deployment',
+    },
+    active: {
+      cls: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-800',
+      label: 'Active Development',
+    },
+    'in-progress': {
+      cls: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800',
+      label: 'In Progress',
+    },
+    'on-hold': {
+      cls: 'bg-neutral-100 text-neutral-700 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700',
+      label: 'On Hold',
+    },
+    planned: {
+      cls: 'bg-neutral-100 text-neutral-700 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700',
+      label: 'Planned',
+    },
+    maintenance: {
+      cls: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/40 dark:text-orange-400 dark:border-orange-800',
+      label: 'Maintenance',
+    },
   };
-  const info = map[status?.toLowerCase()] || { cls: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-700', icon: <FileText className="w-3.5 h-3.5" />, label: status || 'Unknown' };
+
+  const key = status?.toLowerCase() || 'completed';
+  const info = map[key] || {
+    cls: 'bg-neutral-100 text-neutral-700 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700',
+    label: status || 'Completed',
+  };
+
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${info.cls} transition-colors`}>
-      {info.icon}{info.label}
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${info.cls}`}>
+      <span className="w-1.5 h-1.5 rounded-full bg-current" />
+      <span>{info.label}</span>
     </span>
   );
 };
 
-const InfoRow = ({ icon, label, value }) => {
+// Metadata Row Component
+const InfoRow = ({ icon: Icon, label, value }) => {
   if (!value) return null;
   return (
-    <div className="flex items-start gap-3">
-      <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 shrink-0">{icon}</div>
-      <div className="min-w-0">
-        <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
-        <p className="text-sm font-medium text-gray-900 dark:text-white break-words">{value}</p>
+    <div className="flex items-start gap-3 py-1.5">
+      <div className="p-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 flex-shrink-0">
+        {Icon && <Icon className="text-xs" />}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[11px] text-neutral-500 dark:text-neutral-400">{label}</p>
+        <p className="text-xs sm:text-sm font-semibold text-neutral-900 dark:text-white truncate">{value}</p>
       </div>
     </div>
   );
 };
-
-// ───────────────────────── main component ──────────────────────────
 
 export default function ProjectDetailsPage() {
   const { id } = useParams();
@@ -81,97 +120,143 @@ export default function ProjectDetailsPage() {
   const [copied, setCopied] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
 
-  // ── fetch only the single project document (no team / tasks queries) ──
+  // Fetch Project by Document ID with unmount safety
   const fetchProject = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const snap = await getDoc(doc(fireDB, 'sgsProjects', id));
-      if (!snap.exists()) { setError('Project not found'); return; }
+      if (!snap.exists()) {
+        setError('Project case study could not be found.');
+        return;
+      }
+      const data = snap.data();
       setProject({
         id: snap.id,
-        ...snap.data(),
-        createdAt: snap.data().createdAt?.toDate?.(),
-        updatedAt: snap.data().updatedAt?.toDate?.(),
+        ...data,
+        createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : data.createdAt,
+        updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : data.updatedAt,
       });
     } catch (err) {
-      console.error('Error fetching project:', err);
-      setError('Failed to load project details');
+      console.error('[SGS Project Details] Error fetching project:', err);
+      setError('Failed to load project details.');
     } finally {
       setLoading(false);
     }
   }, [id]);
 
-  useEffect(() => { if (id) fetchProject(); }, [id, fetchProject]);
+  useEffect(() => {
+    if (id) fetchProject();
+  }, [id, fetchProject]);
 
-  // ── utilities ──
-  const fmt = (date) => {
+  const formatDate = useCallback((date) => {
     if (!date) return null;
     try {
       const d = date.toDate ? date.toDate() : new Date(date);
-      return isNaN(d.getTime()) ? null : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-    } catch { return null; }
-  };
-
-  const copyLink = useCallback(() => {
-    navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+      return isNaN(d.getTime())
+        ? null
+        : d.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          });
+    } catch {
+      return null;
+    }
   }, []);
 
-  const share = useCallback((platform) => {
-    const text = `Check out "${project?.name}" – ${project?.shortDescription || project?.description?.substring(0, 120)}`;
+  const copyLink = useCallback(async () => {
     const url = window.location.href;
-    const urls = {
-      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
-      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
-      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-      whatsapp: `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`,
-    };
-    if (urls[platform]) window.open(urls[platform], '_blank');
-  }, [project]);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      window.prompt('Copy case study link:', url);
+    }
+  }, []);
 
-  // Build the "Get Source Code" contact link with pre-filled params
+  const share = useCallback(
+    (platform) => {
+      const title = project?.name || 'SGS Project';
+      const desc = project?.shortDescription || project?.description?.substring(0, 100) || '';
+      const text = `Explore "${title}": ${desc}`;
+      const url = window.location.href;
+
+      const shareTargets = {
+        twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+        facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+        whatsapp: `https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`,
+      };
+
+      if (shareTargets[platform]) {
+        window.open(shareTargets[platform], '_blank', 'noopener,noreferrer');
+      }
+    },
+    [project]
+  );
+
+  // Pre-filled source code contact link
   const getSourceCodeLink = useMemo(() => {
     if (!project) return '/ContactUs';
     const params = new URLSearchParams({
       subject: 'Get Source Code',
       projectName: project.name || '',
-      projectLink: project.deployLink || "No live url found",
-      projecturl: window.location.href ||"no url found",
+      projectLink: project.deployLink || 'No live url found',
+      projecturl: typeof window !== 'undefined' ? window.location.href : '',
       projectDesc: project.shortDescription || project.description?.substring(0, 200) || '',
     });
     return `/ContactUs?${params.toString()}`;
   }, [project]);
 
-  // ── loading skeleton ──
+  // Structured Data JSON-LD
+  const structuredData = useMemo(() => {
+    if (!project) return null;
+    return JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: project.name,
+      description: project.shortDescription || project.description,
+      applicationCategory: project.category || project.projectType?.category || 'DeveloperApplication',
+      operatingSystem: project.projectType?.platform || 'Web',
+      url: `https://softgamestudios.web.app/SGS-Projects/${project.id}`,
+      author: {
+        '@type': 'Organization',
+        name: 'Soft Game Studio',
+        url: 'https://softgamestudios.web.app',
+      },
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'USD',
+      },
+    });
+  }, [project]);
+
+  // Loading Skeleton State
   if (loading) {
     return (
       <Layout>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-          <div className="container mx-auto px-4 py-8 max-w-6xl">
-            <div className="animate-pulse space-y-8">
-              <div className="flex items-center justify-between">
-                <div className="h-10 w-28 bg-gray-200 dark:bg-gray-800 rounded-xl" />
-                <div className="h-10 w-36 bg-gray-200 dark:bg-gray-800 rounded-xl" />
+        <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 transition-colors py-12 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto space-y-8 animate-pulse">
+            <div className="flex items-center justify-between">
+              <div className="h-9 w-32 bg-neutral-200 dark:bg-neutral-800 rounded-xl" />
+              <div className="h-9 w-28 bg-neutral-200 dark:bg-neutral-800 rounded-xl" />
+            </div>
+            <div className="space-y-3">
+              <div className="h-5 w-24 bg-neutral-200 dark:bg-neutral-800 rounded-full" />
+              <div className="h-10 w-2/3 bg-neutral-200 dark:bg-neutral-800 rounded-xl" />
+              <div className="h-5 w-1/2 bg-neutral-200 dark:bg-neutral-800 rounded-lg" />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <div className="lg:col-span-8 space-y-6">
+                <div className="h-72 bg-neutral-200 dark:bg-neutral-800 rounded-2xl" />
+                <div className="h-48 bg-neutral-200 dark:bg-neutral-800 rounded-2xl" />
               </div>
-              <div className="space-y-4">
-                <div className="flex gap-2">
-                  <div className="h-6 w-20 bg-gray-200 dark:bg-gray-800 rounded-full" />
-                  <div className="h-6 w-24 bg-gray-200 dark:bg-gray-800 rounded-full" />
-                </div>
-                <div className="h-10 w-3/4 bg-gray-200 dark:bg-gray-800 rounded-lg" />
-                <div className="h-5 w-1/2 bg-gray-200 dark:bg-gray-800 rounded-lg" />
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 space-y-6">
-                  <div className="h-72 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
-                  <div className="h-48 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
-                </div>
-                <div className="space-y-6">
-                  <div className="h-48 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
-                  <div className="h-40 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
-                </div>
+              <div className="lg:col-span-4 space-y-6">
+                <div className="h-64 bg-neutral-200 dark:bg-neutral-800 rounded-2xl" />
+                <div className="h-44 bg-neutral-200 dark:bg-neutral-800 rounded-2xl" />
               </div>
             </div>
           </div>
@@ -180,22 +265,26 @@ export default function ProjectDetailsPage() {
     );
   }
 
-  // ── error state ──
+  // Error State
   if (error || !project) {
     return (
       <Layout>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4">
-          <div className="max-w-md text-center">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
-              <AlertCircle className="w-10 h-10 text-red-600 dark:text-red-400" />
+        <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 transition-colors py-24 px-4">
+          <div className="max-w-md mx-auto text-center bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-sm space-y-4">
+            <div className="w-14 h-14 mx-auto rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 flex items-center justify-center text-2xl">
+              <FaExclamationCircle />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">{error || 'Project Not Found'}</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-8">The project you're looking for doesn't exist or has been removed.</p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button onClick={() => navigate(-1)} className="px-6 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-medium hover:opacity-90 transition-all shadow-lg flex items-center justify-center gap-2">
-                <ArrowLeft className="w-4 h-4" /> Go Back
-              </button>
-              <button onClick={() => navigate('/SGS-Projects')} className="px-6 py-3 border-2 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-xl font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
+            <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
+              {error || 'Project Not Found'}
+            </h1>
+            <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+              The project you requested is not available or may have been unlisted from the public portfolio.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2.5 justify-center pt-2">
+              <button
+                onClick={() => navigate('/SGS-Projects')}
+                className="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 transition-colors"
+              >
                 Browse All Projects
               </button>
             </div>
@@ -205,141 +294,187 @@ export default function ProjectDetailsPage() {
     );
   }
 
-  // ── derived data (only compute what exists) ──
-  const techStack = project.techStack?.length ? project.techStack : null;
+  const techStack = project.techStack?.length ? project.techStack : project.technologies?.length ? project.technologies : null;
   const features = project.features?.length ? project.features : null;
   const devInfo = project.developmentTime;
   const projType = project.projectType;
-  const hasDescription = !!project.description?.trim();
-  const hasImage = !!project.photoUrl;
-  const hasLiveDemo = !!project.deployLink?.trim();
+  const hasDescription = Boolean(project.description?.trim());
+  const hasImage = Boolean(project.photoUrl);
+  const hasLiveDemo = Boolean(project.deployLink?.trim());
+  const currentUrl = `https://softgamestudios.web.app/SGS-Projects/${project.id}`;
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <Helmet>
+        <title>{project.name} | Soft Game Studio Portfolio Case Study</title>
+        <meta
+          name="description"
+          content={project.shortDescription || project.description?.substring(0, 155) || 'Case study by Soft Game Studio.'}
+        />
+        <meta property="og:title" content={`${project.name} | Soft Game Studio`} />
+        <meta
+          property="og:description"
+          content={project.shortDescription || project.description?.substring(0, 155) || ''}
+        />
+        <meta property="og:url" content={currentUrl} />
+        <meta property="og:type" content="article" />
+        {project.photoUrl && <meta property="og:image" content={project.photoUrl} />}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${project.name} | Soft Game Studio`} />
+        {structuredData && <script type="application/ld+json">{structuredData}</script>}
+      </Helmet>
 
-          {/* ─── Top bar ─── */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-            <button onClick={() => navigate(-1)} className="group flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-all shadow-sm hover:shadow-md">
-              <ArrowLeft className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" />
-              <span className="text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Back</span>
-            </button>
+      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 transition-colors py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto space-y-8">
+          {/* Top Breadcrumbs & Actions Toolbar */}
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <Link
+              to="/SGS-Projects"
+              className="inline-flex items-center gap-2 text-xs font-semibold text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
+            >
+              <FaArrowLeft className="text-xs" /> Back to Projects Directory
+            </Link>
 
-            <div className="flex items-center gap-3">
-              <button onClick={copyLink} className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-md transition-all">
-                {copied ? <CheckCircle className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-gray-600 dark:text-gray-400" />}
-                <span className="hidden sm:inline text-sm text-gray-700 dark:text-gray-300">{copied ? 'Copied!' : 'Copy Link'}</span>
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={copyLink}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                title="Copy case study link"
+              >
+                {copied ? <FaCheck className="text-emerald-500 text-xs" /> : <FaCopy className="text-xs" />}
+                <span>{copied ? 'Link Copied' : 'Copy Link'}</span>
               </button>
 
               {hasLiveDemo && (
-                <a href={project.deployLink} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all font-medium">
-                  <Globe className="w-4 h-4" />
+                <a
+                  href={project.deployLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 transition-colors shadow-xs"
+                >
+                  <FaGlobe className="text-xs" />
                   <span>Live Demo</span>
-                  <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <FaExternalLinkAlt className="text-[10px]" />
                 </a>
               )}
             </div>
           </div>
 
-          {/* ─── Project header ─── */}
-          <header className="mb-10">
-            <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-              <div className="flex flex-wrap gap-2">
-                {projType?.category && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-200 dark:from-blue-900/20 dark:to-indigo-900/20 dark:text-blue-400 dark:border-blue-800">
-                    <Layers className="w-3.5 h-3.5" />{projType.category}
+          {/* Project Title Header */}
+          <header className="space-y-3 pb-6 border-b border-neutral-200 dark:border-neutral-800">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                {(project.category || projType?.category) && (
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
+                    <FaLayerGroup className="text-neutral-400 text-[10px]" />
+                    {project.category || projType?.category}
                   </span>
                 )}
                 <StatusBadge status={project.status} />
               </div>
-              {fmt(project.createdAt) && (
-                <div className="text-right">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Created</p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{fmt(project.createdAt)}</p>
-                </div>
+
+              {formatDate(project.createdAt) && (
+                <span className="text-xs font-mono text-neutral-500 dark:text-neutral-400">
+                  Published: {formatDate(project.createdAt)}
+                </span>
               )}
             </div>
 
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-3 leading-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-neutral-900 dark:text-white tracking-tight leading-tight">
               {project.name}
             </h1>
-            {project.tagline || project.shortDescription ? (
-              <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl">{project.tagline || project.shortDescription}</p>
-            ) : null}
+
+            {(project.tagline || project.shortDescription) && (
+              <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 max-w-3xl leading-relaxed">
+                {project.tagline || project.shortDescription}
+              </p>
+            )}
           </header>
 
-          {/* ─── Main grid ─── */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-            {/* ── Left column ── */}
-            <div className="lg:col-span-2 space-y-8">
-
-              {/* Hero image */}
+          {/* Main 2-Column Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Left Column: Documentation & Specs */}
+            <div className="lg:col-span-8 space-y-8">
+              {/* Architecture Visual / Image Preview */}
               {hasImage && (
-                <div className="relative rounded-2xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-800 bg-gray-200 dark:bg-gray-800">
+                <div className="relative rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 aspect-video shadow-sm">
                   {!imgLoaded && (
-                    <div className="absolute inset-0 flex items-center justify-center animate-pulse">
-                      <Monitor className="w-12 h-12 text-gray-400 dark:text-gray-600" />
+                    <div className="absolute inset-0 flex items-center justify-center text-neutral-400 animate-pulse">
+                      <FaLaptopCode className="text-4xl" />
                     </div>
                   )}
                   <img
                     src={project.photoUrl}
-                    alt={project.name}
-                    className={`w-full h-64 md:h-80 object-cover transition-opacity duration-500 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+                    alt={`${project.name} system preview`}
+                    className={`w-full h-full object-cover transition-opacity duration-300 ${
+                      imgLoaded ? 'opacity-100' : 'opacity-0'
+                    }`}
                     loading="lazy"
                     onLoad={() => setImgLoaded(true)}
-                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'; setImgLoaded(true); }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      setImgLoaded(true);
+                    }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
                 </div>
               )}
 
-              {/* Description */}
+              {/* Detailed Description */}
               {hasDescription && (
-                <section className="bg-white dark:bg-gray-900 rounded-2xl p-6 md:p-8 shadow-sm border border-gray-200 dark:border-gray-800">
-                  <div className="flex items-center justify-between mb-5">
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                      About the Project
+                <section className="bg-white dark:bg-neutral-900 rounded-2xl p-6 sm:p-8 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                    <h2 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                      <FaFileAlt className="text-neutral-500 text-sm" />
+                      <span>About the Project</span>
                     </h2>
-                    {fmt(project.updatedAt || project.createdAt) && (
-                      <span className="hidden sm:flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                        <Clock className="w-3.5 h-3.5" /> Updated {fmt(project.updatedAt || project.createdAt)}
+                    {formatDate(project.updatedAt || project.createdAt) && (
+                      <span className="text-[11px] font-mono text-neutral-400">
+                        Updated {formatDate(project.updatedAt || project.createdAt)}
                       </span>
                     )}
                   </div>
 
-                  <p className={`text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed ${!showFullDesc && project.description.length > 400 ? 'line-clamp-5' : ''}`}>
+                  <div className={`text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-line leading-relaxed ${
+                    !showFullDesc && project.description.length > 500 ? 'line-clamp-6' : ''
+                  }`}>
                     {project.description}
-                  </p>
+                  </div>
 
-                  {project.description.length > 400 && (
-                    <button onClick={() => setShowFullDesc(!showFullDesc)} className="mt-4 inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-sm group">
-                      {showFullDesc ? 'Show Less' : 'Read More'}
-                      <ChevronRight className={`w-4 h-4 transition-transform ${showFullDesc ? 'rotate-90' : 'group-hover:translate-x-0.5'}`} />
+                  {project.description.length > 500 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowFullDesc((prev) => !prev)}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-900 dark:text-white hover:underline cursor-pointer pt-1"
+                    >
+                      <span>{showFullDesc ? 'Show Less' : 'Read Full Overview'}</span>
+                      {showFullDesc ? <FaChevronDown className="rotate-180 text-[10px]" /> : <FaChevronRight className="text-[10px]" />}
                     </button>
                   )}
 
-                  {/* Highlights */}
+                  {/* Highlights Grid */}
                   {(project.objective || project.statusDescription) && (
-                    <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="mt-6 pt-6 border-t border-neutral-100 dark:border-neutral-800 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                       {project.objective && (
-                        <div className="p-5 rounded-xl bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/10 dark:to-gray-900 border border-blue-100 dark:border-blue-800/30">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30"><Target className="w-5 h-5 text-blue-600 dark:text-blue-400" /></div>
-                            <h3 className="font-semibold text-gray-900 dark:text-white">Objective</h3>
+                        <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30 space-y-1.5">
+                          <div className="flex items-center gap-2 font-semibold text-neutral-900 dark:text-white">
+                            <FaBullseye className="text-neutral-500 text-sm" />
+                            <span>Primary Objective</span>
                           </div>
-                          <p className="text-gray-700 dark:text-gray-300 text-sm">{project.objective}</p>
+                          <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                            {project.objective}
+                          </p>
                         </div>
                       )}
                       {project.statusDescription && (
-                        <div className="p-5 rounded-xl bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-900/10 dark:to-gray-900 border border-emerald-100 dark:border-emerald-800/30">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30"><CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" /></div>
-                            <h3 className="font-semibold text-gray-900 dark:text-white">Current Status</h3>
+                        <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30 space-y-1.5">
+                          <div className="flex items-center gap-2 font-semibold text-neutral-900 dark:text-white">
+                            <FaCheckCircle className="text-emerald-500 text-sm" />
+                            <span>Current Milestone</span>
                           </div>
-                          <p className="text-gray-700 dark:text-gray-300 text-sm">{project.statusDescription}</p>
+                          <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                            {project.statusDescription}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -347,35 +482,44 @@ export default function ProjectDetailsPage() {
                 </section>
               )}
 
-              {/* Tech Stack */}
+              {/* Technologies Used */}
               {techStack && (
-                <section className="bg-white dark:bg-gray-900 rounded-2xl p-6 md:p-8 shadow-sm border border-gray-200 dark:border-gray-800">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-6">
-                    <Cpu className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-                    Technologies Used
+                <section className="bg-white dark:bg-neutral-900 rounded-2xl p-6 sm:p-8 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
+                  <h2 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2 pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                    <FaMicrochip className="text-neutral-500 text-sm" />
+                    <span>Technologies & Architecture Stack</span>
                   </h2>
-                  <div className="flex flex-wrap gap-3">
+
+                  <div className="flex flex-wrap gap-2 pt-1">
                     {techStack.map((tech, i) => (
-                      <span key={i} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-violet-50 to-purple-50 text-violet-700 border border-violet-200 dark:from-violet-900/15 dark:to-purple-900/15 dark:text-violet-300 dark:border-violet-800/40 transition-colors hover:shadow-sm">
-                        <Code2 className="w-3.5 h-3.5" />{tech}
+                      <span
+                        key={i}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700"
+                      >
+                        <FaCode className="text-[10px] text-neutral-400" />
+                        {tech}
                       </span>
                     ))}
                   </div>
                 </section>
               )}
 
-              {/* Features */}
+              {/* System Features */}
               {features && (
-                <section className="bg-white dark:bg-gray-900 rounded-2xl p-6 md:p-8 shadow-sm border border-gray-200 dark:border-gray-800">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-6">
-                    <Sparkles className="w-5 h-5 text-amber-500 dark:text-amber-400" />
-                    Key Features
+                <section className="bg-white dark:bg-neutral-900 rounded-2xl p-6 sm:p-8 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
+                  <h2 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2 pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                    <FaCheckCircle className="text-neutral-500 text-sm" />
+                    <span>Key Features & Capabilities</span>
                   </h2>
-                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                     {features.map((feat, i) => (
-                      <li key={i} className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50">
-                        <CheckCircle className="w-5 h-5 text-emerald-500 dark:text-emerald-400 shrink-0 mt-0.5" />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{feat}</span>
+                      <li
+                        key={i}
+                        className="flex items-start gap-2.5 p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30 text-xs text-neutral-700 dark:text-neutral-300"
+                      >
+                        <FaCheck className="text-emerald-500 text-xs mt-0.5 flex-shrink-0" />
+                        <span>{feat}</span>
                       </li>
                     ))}
                   </ul>
@@ -383,135 +527,160 @@ export default function ProjectDetailsPage() {
               )}
             </div>
 
-            {/* ── Right sidebar ── */}
-            <aside className="space-y-6">
+            {/* Right Column: Sidebar Specs & Actions */}
+            <aside className="lg:col-span-4 space-y-6">
+              {/* Request Source Code Card */}
+              <div className="bg-neutral-900 text-white dark:bg-neutral-900 border border-neutral-800 rounded-2xl p-6 shadow-sm space-y-4">
+                <div className="flex items-center gap-2">
+                  <FaEnvelope className="text-neutral-400 text-sm" />
+                  <h3 className="text-sm font-bold uppercase tracking-wider">
+                    Source Code Inquiries
+                  </h3>
+                </div>
+                <p className="text-xs text-neutral-300 leading-relaxed">
+                  Interested in licensing the source repository, API contracts, or technical integration documentation for this deployment? Submit an inquiry to our engineering team.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate(getSourceCodeLink)}
+                  className="w-full py-3 px-4 rounded-xl font-semibold text-xs text-neutral-900 bg-white hover:bg-neutral-100 dark:text-neutral-950 dark:bg-white dark:hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                >
+                  <span>Request Source Code</span>
+                  <FaChevronRight className="text-[10px]" />
+                </button>
+              </div>
 
-              {/* Get Source Code CTA */}
-              <div className="bg-gradient-to-br from-purple-600 to-indigo-700 dark:from-purple-800 dark:to-indigo-900 rounded-2xl p-6 text-white relative overflow-hidden shadow-lg">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16" />
-                <div className="relative z-10">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Mail className="w-5 h-5" />
-                    <h3 className="text-lg font-bold">Get Source Code</h3>
-                  </div>
-                  <p className="text-purple-100 text-sm mb-5 leading-relaxed">
-                    Want the source code for this project? Submit a request and our team will get back to you via email.
-                  </p>
-                  <button
-                    onClick={() => navigate(getSourceCodeLink)}
-                    className="w-full py-3 bg-white text-purple-700 rounded-xl font-semibold hover:bg-purple-50 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-                  >
-                    Request Source Code
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
+              {/* Technical Specifications */}
+              <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm space-y-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 pb-2 border-b border-neutral-100 dark:border-neutral-800">
+                  Project Specifications
+                </h3>
+
+                <div className="space-y-1">
+                  <InfoRow icon={FaCalendarAlt} label="Date Published" value={formatDate(project.createdAt)} />
+                  <InfoRow icon={FaClock} label="Last Updated" value={formatDate(project.updatedAt)} />
+                  {projType?.industry && <InfoRow icon={FaLayerGroup} label="Industry Sector" value={projType.industry} />}
+                  {projType?.platform && <InfoRow icon={FaLaptopCode} label="Deployment Platform" value={projType.platform} />}
+                  {devInfo?.duration && <InfoRow icon={FaClock} label="Development Cycle" value={devInfo.duration} />}
+                  {devInfo?.teamSize && <InfoRow icon={FaUsers} label="Engineering Team" value={devInfo.teamSize} />}
+                  {devInfo?.role && <InfoRow icon={FaBullseye} label="Studio Role" value={devInfo.role} />}
                 </div>
               </div>
 
-              {/* Project Info */}
-              <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-5">Project Details</h3>
-                <div className="space-y-4">
-                  <InfoRow icon={<Calendar className="w-4 h-4" />} label="Created" value={fmt(project.createdAt)} />
-                  <InfoRow icon={<Clock className="w-4 h-4" />} label="Last Updated" value={fmt(project.updatedAt)} />
-                  {projType?.industry && <InfoRow icon={<Layers className="w-4 h-4" />} label="Industry" value={projType.industry} />}
-                  {projType?.platform && <InfoRow icon={<Monitor className="w-4 h-4" />} label="Platform" value={projType.platform} />}
-                  {devInfo?.duration && <InfoRow icon={<Clock className="w-4 h-4" />} label="Development Time" value={devInfo.duration} />}
-                  {devInfo?.teamSize && <InfoRow icon={<Code2 className="w-4 h-4" />} label="Team Size" value={devInfo.teamSize} />}
-                  {devInfo?.role && <InfoRow icon={<Target className="w-4 h-4" />} label="Role" value={devInfo.role} />}
-                </div>
-              </div>
-
-              {/* Live Demo Quick Link */}
+              {/* Live Deployment Link Card if available */}
               {hasLiveDemo && (
-                <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-5">Quick Links</h3>
+                <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 pb-2 border-b border-neutral-100 dark:border-neutral-800">
+                    Live Environment
+                  </h3>
                   <a
                     href={project.deployLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex items-center gap-4 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md transition-all"
+                    className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/30 flex items-center justify-between gap-3 transition-colors block"
                   >
-                    <div className="p-2.5 rounded-lg bg-blue-600"><Globe className="w-5 h-5 text-white" /></div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 dark:text-white truncate">Live Demo</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">Try it out now</p>
+                    <div className="flex items-center gap-3 truncate">
+                      <FaGlobe className="text-neutral-500 text-sm flex-shrink-0" />
+                      <div className="truncate">
+                        <p className="text-xs font-semibold text-neutral-900 dark:text-white truncate">Open Live Demo</p>
+                        <p className="text-[11px] text-neutral-500 truncate">{project.deployLink}</p>
+                      </div>
                     </div>
-                    <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                    <FaExternalLinkAlt className="text-xs text-neutral-400 flex-shrink-0" />
                   </a>
                 </div>
               )}
 
-              {/* Development Status */}
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-2xl p-6 border border-blue-200 dark:border-blue-800/50">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-5">Status</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700 dark:text-gray-300">Project Status</span>
-                    <StatusBadge status={project.status} />
-                  </div>
-                  {projType?.category && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-700 dark:text-gray-300">Category</span>
-                      <span className="text-sm font-semibold text-gray-900 dark:text-white">{projType.category}</span>
-                    </div>
-                  )}
+              {/* Social Sharing Card */}
+              <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm space-y-3">
+                <div className="flex items-center gap-2 pb-2 border-b border-neutral-100 dark:border-neutral-800">
+                  <FaShareAlt className="text-neutral-500 text-xs" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                    Share Case Study
+                  </h3>
                 </div>
-              </div>
 
-              {/* Share */}
-              <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
-                <div className="flex items-center gap-2 mb-5">
-                  <Share2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Share Project</h3>
+                <div className="grid grid-cols-4 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => share('twitter')}
+                    className="p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center cursor-pointer"
+                    title="Share on X (Twitter)"
+                    aria-label="Share on X"
+                  >
+                    <FaTwitter className="text-xs text-neutral-800 dark:text-neutral-200" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => share('linkedin')}
+                    className="p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center cursor-pointer"
+                    title="Share on LinkedIn"
+                    aria-label="Share on LinkedIn"
+                  >
+                    <FaLinkedinIn className="text-xs text-neutral-800 dark:text-neutral-200" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => share('facebook')}
+                    className="p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center cursor-pointer"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                  >
+                    <FaFacebookF className="text-xs text-neutral-800 dark:text-neutral-200" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => share('whatsapp')}
+                    className="p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center cursor-pointer"
+                    title="Share on WhatsApp"
+                    aria-label="Share on WhatsApp"
+                  >
+                    <FaWhatsapp className="text-xs text-neutral-800 dark:text-neutral-200" />
+                  </button>
                 </div>
-                <div className="grid grid-cols-4 gap-2 mb-4">
-                  {[
-                    { key: 'twitter', Icon: FaTwitterSquare, bg: 'bg-black hover:bg-gray-800' },
-                    { key: 'linkedin', Icon: FaLinkedinIn, bg: 'bg-blue-700 hover:bg-blue-800' },
-                    { key: 'facebook', Icon: FaFacebookSquare, bg: 'bg-blue-600 hover:bg-blue-700' },
-                    { key: 'whatsapp', Icon: FaWhatsappSquare, bg: 'bg-green-500 hover:bg-green-600' },
-                  ].map(({ key, Icon, bg }) => (
-                    <button key={key} onClick={() => share(key)} className={`p-3 ${bg} text-white rounded-xl flex flex-col items-center justify-center gap-1 transition-all hover:scale-105 active:scale-95`}>
-                      <Icon className="text-lg" />
-                      <span className="text-[10px] font-medium capitalize">{key}</span>
-                    </button>
-                  ))}
-                </div>
-                <button onClick={copyLink} className="w-full py-3 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2 text-sm">
-                  {copied ? <CheckCircle className="w-4 h-4 text-emerald-500" /> : <FaRegCopy className="text-sm" />}
-                  {copied ? 'Link Copied!' : 'Copy Project Link'}
+
+                <button
+                  type="button"
+                  onClick={copyLink}
+                  className="w-full py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {copied ? <FaCheck className="text-emerald-500 text-xs" /> : <FaCopy className="text-xs" />}
+                  <span>{copied ? 'Link Copied' : 'Copy Direct Link'}</span>
                 </button>
               </div>
             </aside>
           </div>
 
-          {/* ─── Bottom CTA ─── */}
-          <div className="mt-16">
-            <div className="bg-gradient-to-r from-purple-600 to-indigo-700 dark:from-gray-900 dark:to-gray-800 rounded-2xl p-8 md:p-10 text-white relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32" />
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24" />
-              <div className="relative z-10">
-                <h2 className="text-2xl md:text-3xl font-bold mb-3">Interested in This Project?</h2>
-                <p className="text-purple-100 dark:text-gray-400 mb-6 max-w-2xl">
-                  Want the source code or have questions about this project? Get in touch with our team.
-                </p>
-                <div className="flex flex-wrap gap-4">
-                  <button onClick={() => navigate(getSourceCodeLink)} className="px-6 py-3 bg-white text-purple-700 dark:text-gray-900 rounded-xl font-semibold hover:bg-gray-100 hover:shadow-lg transition-all flex items-center gap-2">
-                    <Mail className="w-4 h-4" /> Request Source Code
-                  </button>
-                  <button onClick={() => navigate('/SGS-Projects')} className="px-6 py-3 bg-transparent border-2 border-white/80 text-white rounded-xl font-semibold hover:bg-white/10 transition-all">
-                    Browse More Projects
-                  </button>
-                  {hasLiveDemo && (
-                    <a href={project.deployLink} target="_blank" rel="noopener noreferrer" className="px-6 py-3 bg-transparent border-2 border-white/80 text-white rounded-xl font-semibold hover:bg-white/10 transition-all flex items-center gap-2">
-                      <Globe className="w-4 h-4" /> Try Live Demo
-                    </a>
-                  )}
-                </div>
-              </div>
+          {/* Bottom Inquiries CTA */}
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 sm:p-10 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+            <div className="space-y-1">
+              <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white">
+                Interested in Custom Engineering?
+              </h2>
+              <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-xl leading-relaxed">
+                Our team architectures web applications, game engines, and production backend services. Let us discuss your product specifications.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => navigate(getSourceCodeLink)}
+                className="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 transition-colors shadow-xs"
+              >
+                Inquire About Source Code
+              </button>
+              <Link
+                to="/SGS-Projects"
+                className="px-5 py-2.5 rounded-xl text-xs font-semibold border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              >
+                Browse All Projects
+              </Link>
             </div>
           </div>
-
         </div>
       </div>
     </Layout>

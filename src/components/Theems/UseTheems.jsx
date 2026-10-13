@@ -1,35 +1,48 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 export function useTheme() {
-  const [theme, setTheme] = useState("light");
-
-  useEffect(() => {
-    const storedTheme = localStorage.getItem("theme");
-    let initialTheme;
-
-    if (storedTheme) {
-      initialTheme = storedTheme;
-    } else {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      initialTheme = prefersDark ? "dark" : "light";
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("theme");
+      if (stored === "dark" || stored === "light") return stored;
+      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        return "dark";
+      }
     }
+    return "light";
+  });
 
-    document.documentElement.classList.remove("light", "dark"); // 🧹 Remove both
-    document.documentElement.classList.add(initialTheme);
-    setTheme(initialTheme);
-  }, []);
-
-  const toggleTheme = (newTheme) => {
-    // 🧹 Remove the previous theme
+  // Keep DOM classList and localStorage synchronized with theme state
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const active = theme === "dark" ? "dark" : "light";
     document.documentElement.classList.remove("light", "dark");
-    // ✅ Add the new one
-    document.documentElement.classList.add(newTheme);
-    localStorage.setItem("theme", newTheme);
-    setTheme(newTheme);
-  };
+    document.documentElement.classList.add(active);
+    try {
+      localStorage.setItem("theme", active);
+    } catch {
+      // localStorage may fail in private mode
+    }
+  }, [theme]);
+
+  // Robust toggleTheme supporting functional updater, explicit value, or no args
+  const toggleTheme = useCallback((targetTheme) => {
+    setTheme((prev) => {
+      let nextTheme;
+      if (typeof targetTheme === "function") {
+        nextTheme = targetTheme(prev);
+      } else if (targetTheme === "dark" || targetTheme === "light") {
+        nextTheme = targetTheme;
+      } else {
+        nextTheme = prev === "dark" ? "light" : "dark";
+      }
+      return nextTheme === "dark" ? "dark" : "light";
+    });
+  }, []);
 
   return {
     theme,
-    setTheme: toggleTheme, // ✅ Expose toggleTheme
+    setTheme: toggleTheme,
+    toggleTheme,
   };
 }

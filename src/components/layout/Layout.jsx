@@ -13,7 +13,7 @@ function Layout({ children }) {
     setShowFirstDiv(!showFirstDiv);
   }
   return (
-    <div className="bg-purple-100 dark:bg-neutral-950 m-0 p-0">
+    <div className="bg-white dark:bg-neutral-950 m-0 p-0 min-h-screen text-neutral-900 dark:text-neutral-100">
       <NavbarMenu />
       <div className="">
         <div className="content">{children}</div>

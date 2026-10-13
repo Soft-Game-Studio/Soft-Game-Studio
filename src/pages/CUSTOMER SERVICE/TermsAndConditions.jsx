@@ -10,49 +10,49 @@ const TermsAndConditions = () => {
   return (
     <Layout>
       <Helmet>
-  <title>Terms and Conditions | Soft Game Studio</title>
-  <meta
-    name="description"
-    content="Read the Terms and Conditions of Soft Game Studio to understand the rules, guidelines, and policies governing the use of our services and products."
-  />
-  <meta
-    name="keywords"
-    content="Terms and Conditions, Soft Game Studio, User Agreement, Service Rules, Online Exam Policies, Legal, Guidelines"
-  />
-  <meta name="author" content="Soft Game Studio Pvt. Ltd." />
-  <meta name="robots" content="index, follow" />
+        <title>Terms and Conditions | Soft Game Studio</title>
+        <meta
+          name="description"
+          content="Read the Terms and Conditions of Soft Game Studio to understand the rules, guidelines, and policies governing the use of our services and products."
+        />
+        <meta
+          name="keywords"
+          content="Terms and Conditions, Soft Game Studio, User Agreement, Service Rules, Online Exam Policies, Legal, Guidelines"
+        />
+        <meta name="author" content="Soft Game Studio" />
+        <meta name="robots" content="index, follow" />
 
-  <meta property="og:title" content="Terms and Conditions | Soft Game Studio" />
-  <meta
-    property="og:description"
-    content="Review Soft Game Studio’s Terms and Conditions to learn about your rights and responsibilities when using our services."
-  />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://softgamestudios.web.app/TermsAndConditions" />
-  <meta property="og:image" content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" />
+        <meta property="og:title" content="Terms and Conditions | Soft Game Studio" />
+        <meta
+          property="og:description"
+          content="Review Soft Game Studio’s Terms and Conditions to learn about your rights and responsibilities when using our services."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://softgamestudios.web.app/TermsAndConditions" />
+        <meta property="og:image" content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" />
 
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Terms and Conditions | Soft Game Studio" />
-  <meta
-    name="twitter:description"
-    content="Understand the rules and policies of Soft Game Studio to use our platform responsibly and effectively."
-  />
-  <meta name="twitter:image" content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Terms and Conditions | Soft Game Studio" />
+        <meta
+          name="twitter:description"
+          content="Understand the rules and policies of Soft Game Studio to use our platform responsibly and effectively."
+        />
+        <meta name="twitter:image" content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" />
 
-  <link rel="canonical" href="https://softgamestudios.web.app/TermsAndConditions" />
-</Helmet>
+        <link rel="canonical" href="https://softgamestudios.web.app/TermsAndConditions" />
+      </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-gray-950 dark:to-neutral-950 text-gray-800 dark:text-gray-200 overflow-hidden">
         {/* Parallax background */}
-        <motion.div 
+        <motion.div
           className="absolute inset-0 opacity-20 dark:opacity-10"
-          style={{ 
+          style={{
             y,
             backgroundImage: "url('https://webjl26.web.app/static/media/stars.7d85fe42.png')",
             backgroundSize: "cover"
           }}
         />
-        
+
         {/* Floating legal document elements */}
         <motion.div
           className="absolute top-[15%] left-[15%] w-64 h-64 rounded-full blur-3xl"
@@ -69,7 +69,7 @@ const TermsAndConditions = () => {
             background: "radial-gradient(circle, rgba(192, 132, 252, 0.4) 0%, transparent 70%)"
           }}
         />
-        
+
         <motion.div
           className="absolute bottom-[25%] right-[15%] w-48 h-48 rounded-full blur-3xl"
           animate={{
@@ -86,7 +86,7 @@ const TermsAndConditions = () => {
             background: "radial-gradient(circle, rgba(129, 140, 248, 0.4) 0%, transparent 70%)"
           }}
         />
-        
+
         {/* Content Container */}
         <div className="relative max-w-5xl mx-auto px-4 py-16 z-10">
           {/* Header */}
@@ -97,13 +97,13 @@ const TermsAndConditions = () => {
             className="flex flex-col items-center mb-12"
           >
             <div className="flex items-center gap-3 mb-6">
-               <div className="w-12 h-12 rounded-full bg-purple-600 dark:bg-purple-700 overflow-hidden flex items-center justify-center">
-              <img loading="lazy"  src="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" alt="" />
-            </div>
+              <div className="w-12 h-12 rounded-full bg-purple-600 dark:bg-purple-700 overflow-hidden flex items-center justify-center">
+                <img loading="lazy" src="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" alt="" />
+              </div>
               <h1 className="text-3xl font-bold text-purple-800 dark:text-purple-400">Soft Game Studio</h1>
             </div>
-            
-            <motion.h1 
+
+            <motion.h1
               className="text-4xl md:text-5xl font-bold text-center text-gray-900 dark:text-white mb-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -111,7 +111,7 @@ const TermsAndConditions = () => {
             >
               Terms & Conditions
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="text-lg text-purple-600 dark:text-purple-300"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -176,7 +176,7 @@ const TermsAndConditions = () => {
                 number, and address.
               </p>
               <p>
-                You are responsible for maintaining the confidentiality of your account 
+                You are responsible for maintaining the confidentiality of your account
                 credentials and for any activities that occur under your account.
               </p>
             </motion.div>
@@ -291,7 +291,7 @@ const TermsAndConditions = () => {
                 applicable laws and regulations.
               </p>
               <p>
-                Any misuse of our services or violation of these Terms & Conditions 
+                Any misuse of our services or violation of these Terms & Conditions
                 may result in the suspension or termination of your account.
               </p>
             </motion.div>
@@ -313,7 +313,7 @@ const TermsAndConditions = () => {
               <p className="mb-6 max-w-2xl mx-auto">
                 If you have any questions about these Terms & Conditions, please contact our team:
               </p>
-              
+
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <a
                   href="mailto:team.softgamestudio@gmail.com"

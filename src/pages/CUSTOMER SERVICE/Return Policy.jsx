@@ -10,50 +10,50 @@ const ReturnPolicy = () => {
   return (
     <Layout>
       <Helmet>
-  <title>Return & Refund Policy | Soft Game Studio</title>
-  <meta
-    name="description"
-    content="Read Soft Game Studio’s Return and Refund Policy to understand our no-return, no-refund terms and how to contact our support team for any inquiries."
-  />
-  <meta
-    name="keywords"
-    content="Return Policy, Refund Policy, Soft Game Studio, No Returns, No Refunds, Customer Support, Purchase Terms"
-  />
-  <meta name="author" content="Soft Game Studio Pvt. Ltd." />
-  <meta name="robots" content="index, follow" />
+        <title>Return & Refund Policy | Soft Game Studio</title>
+        <meta
+          name="description"
+          content="Read Soft Game Studio’s Return and Refund Policy to understand our no-return, no-refund terms and how to contact our support team for any inquiries."
+        />
+        <meta
+          name="keywords"
+          content="Return Policy, Refund Policy, Soft Game Studio, No Returns, No Refunds, Customer Support, Purchase Terms"
+        />
+        <meta name="author" content="Soft Game Studio" />
+        <meta name="robots" content="index, follow" />
 
-  <meta property="og:title" content="Return & Refund Policy | Soft Game Studio" />
-  <meta
-    property="og:description"
-    content="Understand Soft Game Studio’s strict no-return, no-refund policy and learn how to reach out for any questions."
-  />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://softgamestudios.web.app/ReturnPolicy" />
-  <meta property="og:image" content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" />
+        <meta property="og:title" content="Return & Refund Policy | Soft Game Studio" />
+        <meta
+          property="og:description"
+          content="Understand Soft Game Studio’s strict no-return, no-refund policy and learn how to reach out for any questions."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://softgamestudios.web.app/ReturnPolicy" />
+        <meta property="og:image" content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" />
 
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Return & Refund Policy | Soft Game Studio" />
-  <meta
-    name="twitter:description"
-    content="Review Soft Game Studio’s Return and Refund Policy to know your purchase rights and our contact info."
-  />
-  <meta name="twitter:image" content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" />
-  <meta name="twitter:site" content="@SoftGameStudio" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Return & Refund Policy | Soft Game Studio" />
+        <meta
+          name="twitter:description"
+          content="Review Soft Game Studio’s Return and Refund Policy to know your purchase rights and our contact info."
+        />
+        <meta name="twitter:image" content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" />
+        <meta name="twitter:site" content="@SoftGameStudio" />
 
-  <link rel="canonical" href="https://softgamestudios.web.app/ReturnPolicy" />
-</Helmet>
+        <link rel="canonical" href="https://softgamestudios.web.app/ReturnPolicy" />
+      </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-gray-950 dark:to-neutral-950 text-gray-800 dark:text-gray-200 overflow-hidden">
         {/* Parallax background */}
-        <motion.div 
+        <motion.div
           className="absolute inset-0 opacity-20 dark:opacity-10"
-          style={{ 
+          style={{
             y,
             backgroundImage: "url('https://webjl26.web.app/static/media/stars.7d85fe42.png')",
             backgroundSize: "cover"
           }}
         />
-        
+
         {/* Floating elements */}
         <motion.div
           className="absolute top-[15%] left-[15%] w-64 h-64 rounded-full blur-3xl"
@@ -70,7 +70,7 @@ const ReturnPolicy = () => {
             background: "radial-gradient(circle, rgba(192, 132, 252, 0.4) 0%, transparent 70%)"
           }}
         />
-        
+
         <motion.div
           className="absolute bottom-[25%] right-[15%] w-48 h-48 rounded-full blur-3xl"
           animate={{
@@ -87,7 +87,7 @@ const ReturnPolicy = () => {
             background: "radial-gradient(circle, rgba(129, 140, 248, 0.4) 0%, transparent 70%)"
           }}
         />
-        
+
         {/* Content Container */}
         <div className="relative max-w-5xl mx-auto px-4 py-16 z-10">
           {/* Header */}
@@ -98,13 +98,13 @@ const ReturnPolicy = () => {
             className="text-center mb-12"
           >
             <div className="flex items-center justify-center gap-3 mb-6">
-               <div className="w-12 h-12 rounded-full bg-purple-600 dark:bg-purple-700 overflow-hidden flex items-center justify-center">
-              <img loading="lazy"  src="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" alt="" />
-            </div>
+              <div className="w-12 h-12 rounded-full bg-purple-600 dark:bg-purple-700 overflow-hidden flex items-center justify-center">
+                <img loading="lazy" src="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" alt="" />
+              </div>
               <h1 className="text-3xl font-bold text-purple-800 dark:text-purple-400">Soft Game Studio</h1>
             </div>
-            
-            <motion.h1 
+
+            <motion.h1
               className="text-4xl md:text-5xl font-bold text-center text-gray-900 dark:text-white mb-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -112,7 +112,7 @@ const ReturnPolicy = () => {
             >
               Return & Refund Policy
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="text-lg text-purple-600 dark:text-purple-300"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -162,7 +162,7 @@ const ReturnPolicy = () => {
                 </div>
                 <h2 className="text-2xl font-bold text-purple-700 dark:text-purple-400">Interpretation and Definitions</h2>
               </div>
-              
+
               <div className="mb-4">
                 <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-gray-200">Interpretation</h3>
                 <p className="mb-4">
@@ -171,7 +171,7 @@ const ReturnPolicy = () => {
                   apply regardless of whether they appear in the singular or plural.
                 </p>
               </div>
-              
+
               <div>
                 <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-gray-200">Definitions</h3>
                 <p className="mb-4">For the purposes of this Return and Refund Policy:</p>
@@ -232,14 +232,14 @@ const ReturnPolicy = () => {
                 </div>
                 <h2 className="text-2xl font-bold text-red-700 dark:text-red-400">No Return and No Refund Policy</h2>
               </div>
-              
+
               <p className="mb-4">
                 Once an order is placed and the product is delivered, the product
                 cannot be returned or refunded under any circumstances. Please
                 ensure that you carefully review your order before confirming your
                 purchase.
               </p>
-              
+
               <div className="mt-6 p-4 bg-red-50 dark:bg-gray-800 rounded-xl border border-red-100 dark:border-gray-700">
                 <h3 className="font-bold mb-3 flex items-center gap-2 text-red-700 dark:text-red-400">
                   <span>⚠️</span> Important Notice
@@ -275,7 +275,7 @@ const ReturnPolicy = () => {
               <p className="mb-6 max-w-2xl mx-auto">
                 If you have any questions about our Return and Refund Policy, please contact our team:
               </p>
-              
+
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <a
                   href="mailto:team.softgamestudio@gmail.com"
@@ -292,8 +292,8 @@ const ReturnPolicy = () => {
               </div>
             </motion.div>
           </div>
-          
-        
+
+
         </div>
       </div>
     </Layout>

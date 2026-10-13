@@ -94,7 +94,7 @@ const OfficialQuizList = () => {
             <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur px-4 py-1.5 rounded-full text-white/90 text-sm font-medium mb-4">
               🏆 Official Competition Exams
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">SGS Quiz Exams</h1>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">KarMun Inc. Quiz Pannel </h1>
             <p className="text-purple-100 text-lg max-w-2xl mx-auto mb-8">
               Test your skills in live, timed competitions. Questions and options are randomized every session.
             </p>

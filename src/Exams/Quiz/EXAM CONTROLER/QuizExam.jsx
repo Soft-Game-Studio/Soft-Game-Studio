@@ -518,6 +518,17 @@ const OfficialQuizExam = () => {
     );
   }
 
+  if (!user){
+    return (
+      <Layout>
+        <div className="flex flex-col justify-center items-center min-h-[85vh] bg-slate-50 dark:bg-neutral-950 gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent shadow-md"></div>
+          <p className="text-purple-600 dark:text-purple-400 font-semibold">Please Login to Continue...</p>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-neutral-950 text-gray-800 dark:text-gray-200 transition-colors duration-300">
       

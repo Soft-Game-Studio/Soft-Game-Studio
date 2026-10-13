@@ -7,128 +7,128 @@ const CookiesPolicy = () => {
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: containerRef });
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
-  
- const cookieData = [
-  {
-    name: "termsAccepted",
-    purpose: "Remembers if the user accepted Terms & Conditions",
-    type: "First-party",
-    data: "true / false",
-    duration: "1 year",
-    essential: "Yes",
-  },
-  {
-    name: "_ga, _gid",
-    purpose: "Tracks usage behavior via Google Analytics for site improvement",
-    type: "Third-party",
-    data: "Anonymous user ID and session data",
-    duration: "2 years / 24 hours",
-    essential: "No",
-  },
-  {
-    name: "firebase-auth",
-    purpose: "Maintains user login session using Firebase authentication (Email, Google, GitHub)",
-    type: "First-party",
-    data: "Firebase Auth ID token (JWT)",
-    duration: "Session (until browser close)",
-    essential: "Yes",
-  },
-  {
-    name: "userProfile",
-    purpose: "Stores user information like name, email, phone, and address after login",
-    type: "First-party",
-    data: "User name, email, phone, address",
-    duration: "1 year",
-    essential: "Yes",
-  },
-  {
-    name: "cartData",
-    purpose: "Stores selected product IDs and their quantity for shopping cart",
-    type: "First-party",
-    data: "Array of product IDs, quantity, selected variants",
-    duration: "30 days",
-    essential: "No",
-  },
-  {
-    name: "orderHistory",
-    purpose: "Saves a temporary record of placed orders for confirmation and local reference",
-    type: "First-party",
-    data: "Order ID, items, payment status",
-    duration: "30 days",
-    essential: "No",
-  },
-  {
-    name: "paymentSession",
-    purpose: "Tracks ongoing payment session details for Razorpay or other integrations",
-    type: "Third-party / First-party (depending on provider)",
-    data: "Transaction ID, status, session info",
-    duration: "Session",
-    essential: "Yes",
-  },
-  {
-    name: "theme",
-    purpose: "Remembers user’s selected UI theme (dark/light)",
-    type: "First-party",
-    data: "dark / light",
-    duration: "1 year",
-    essential: "No",
-  }
-];
+
+  const cookieData = [
+    {
+      name: "termsAccepted",
+      purpose: "Remembers if the user accepted Terms & Conditions",
+      type: "First-party",
+      data: "true / false",
+      duration: "1 year",
+      essential: "Yes",
+    },
+    {
+      name: "_ga, _gid",
+      purpose: "Tracks usage behavior via Google Analytics for site improvement",
+      type: "Third-party",
+      data: "Anonymous user ID and session data",
+      duration: "2 years / 24 hours",
+      essential: "No",
+    },
+    {
+      name: "firebase-auth",
+      purpose: "Maintains user login session using Firebase authentication (Email, Google, GitHub)",
+      type: "First-party",
+      data: "Firebase Auth ID token (JWT)",
+      duration: "Session (until browser close)",
+      essential: "Yes",
+    },
+    {
+      name: "userProfile",
+      purpose: "Stores user information like name, email, phone, and address after login",
+      type: "First-party",
+      data: "User name, email, phone, address",
+      duration: "1 year",
+      essential: "Yes",
+    },
+    {
+      name: "cartData",
+      purpose: "Stores selected product IDs and their quantity for shopping cart",
+      type: "First-party",
+      data: "Array of product IDs, quantity, selected variants",
+      duration: "30 days",
+      essential: "No",
+    },
+    {
+      name: "orderHistory",
+      purpose: "Saves a temporary record of placed orders for confirmation and local reference",
+      type: "First-party",
+      data: "Order ID, items, payment status",
+      duration: "30 days",
+      essential: "No",
+    },
+    {
+      name: "paymentSession",
+      purpose: "Tracks ongoing payment session details for Razorpay or other integrations",
+      type: "Third-party / First-party (depending on provider)",
+      data: "Transaction ID, status, session info",
+      duration: "Session",
+      essential: "Yes",
+    },
+    {
+      name: "theme",
+      purpose: "Remembers user’s selected UI theme (dark/light)",
+      type: "First-party",
+      data: "dark / light",
+      duration: "1 year",
+      essential: "No",
+    }
+  ];
 
 
   return (
     <Layout>
       <Helmet>
-  <title>Cookies Policy | Soft Game Studio</title>
-  <meta
-    name="description"
-    content="Learn how Soft Game Studio uses cookies to enhance your experience and manage your preferences on our website."
-  />
-  <meta
-    name="keywords"
-    content="Cookies Policy, Soft Game Studio, Cookie Usage, Website Cookies, Privacy, Tracking, Online Experience"
-  />
-  <meta name="author" content="Soft Game Studio Pvt. Ltd." />
-  <meta name="robots" content="index, follow" />
+        <title>Cookies Policy | Soft Game Studio</title>
+        <meta
+          name="description"
+          content="Learn how Soft Game Studio uses cookies to enhance your experience and manage your preferences on our website."
+        />
+        <meta
+          name="keywords"
+          content="Cookies Policy, Soft Game Studio, Cookie Usage, Website Cookies, Privacy, Tracking, Online Experience"
+        />
+        <meta name="author" content="Soft Game Studio" />
+        <meta name="robots" content="index, follow" />
 
-  <meta property="og:title" content="Cookies Policy | Soft Game Studio" />
-  <meta
-    property="og:description"
-    content="Find out about the types of cookies used by Soft Game Studio and how they improve your browsing experience."
-  />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://softgamestudios.web.app/CookiesPolicy" />
-  <meta property="og:image" content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media"/>
+        <meta property="og:title" content="Cookies Policy | Soft Game Studio" />
+        <meta
+          property="og:description"
+          content="Find out about the types of cookies used by Soft Game Studio and how they improve your browsing experience."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://softgamestudios.web.app/CookiesPolicy" />
+        <meta property="og:image" content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" />
 
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Cookies Policy | Soft Game Studio" />
-  <meta
-    name="twitter:description"
-    content="Understand Soft Game Studio’s cookie usage and how it affects your online experience."
-  />
-  <meta name="twitter:image" content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Cookies Policy | Soft Game Studio" />
+        <meta
+          name="twitter:description"
+          content="Understand Soft Game Studio’s cookie usage and how it affects your online experience."
+        />
+        <meta name="twitter:image" content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media" />
 
-  <link rel="canonical" href="https://softgamestudios.web.app/CookiesPolicy" />
-</Helmet>
+        <link rel="canonical" href="https://softgamestudios.web.app/CookiesPolicy" />
+      </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-gray-950 dark:to-neutral-950 text-gray-800 dark:text-gray-200 overflow-hidden">
         {/* Parallax background */}
-        <motion.div 
+        <motion.div
           className="absolute inset-0 opacity-20 dark:opacity-10"
-          style={{ 
+          style={{
             y,
             backgroundImage: "url('https://webjl26.web.app/static/media/stars.7d85fe42.png')",
             backgroundSize: "cover"
           }}
         />
-        
+
         {/* Floating cookies */}
         {[...Array(6)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute w-12 h-12 rounded-full bg-amber-200 dark:bg-amber-400 opacity-80"
-            initial={{ 
-              y: Math.random() * 100, 
+            initial={{
+              y: Math.random() * 100,
               x: Math.random() * 100,
               scale: 0.8
             }}
@@ -155,7 +155,7 @@ const CookiesPolicy = () => {
             <div className="absolute w-3 h-3 rounded-full bg-amber-400 dark:bg-amber-600 bottom-2 left-6"></div>
           </motion.div>
         ))}
-        
+
         {/* Content Container */}
         <div className="relative max-w-5xl mx-auto px-4 py-16 z-10">
           <motion.div
@@ -164,7 +164,7 @@ const CookiesPolicy = () => {
             transition={{ duration: 0.8 }}
             className="text-center mb-12"
           >
-            <motion.h1 
+            <motion.h1
               className="text-4xl md:text-5xl font-bold mb-4 text-blue-600 dark:text-blue-400"
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
@@ -172,7 +172,7 @@ const CookiesPolicy = () => {
             >
               🍪 Cookie Policy
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="text-xl text-purple-600 dark:text-purple-300"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -223,7 +223,7 @@ const CookiesPolicy = () => {
                 </div>
                 <h2 className="text-2xl font-bold text-purple-700 dark:text-purple-400">Cookies We Use</h2>
               </div>
-              
+
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead className="bg-blue-50 dark:bg-gray-800">
@@ -249,22 +249,20 @@ const CookiesPolicy = () => {
                         <td className="p-3 font-medium">{cookie.name}</td>
                         <td className="p-3">{cookie.purpose}</td>
                         <td className="p-3">
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            cookie.type === "First-party" 
-                              ? "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300" 
+                          <span className={`px-2 py-1 rounded-full text-xs ${cookie.type === "First-party"
+                              ? "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300"
                               : "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300"
-                          }`}>
+                            }`}>
                             {cookie.type}
                           </span>
                         </td>
                         <td className="p-3">{cookie.data}</td>
                         <td className="p-3">{cookie.duration}</td>
                         <td className="p-3">
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            cookie.essential === "Yes" 
-                              ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300" 
+                          <span className={`px-2 py-1 rounded-full text-xs ${cookie.essential === "Yes"
+                              ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300"
                               : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300"
-                          }`}>
+                            }`}>
                             {cookie.essential}
                           </span>
                         </td>
@@ -416,8 +414,8 @@ const CookiesPolicy = () => {
               </div>
             </motion.div>
           </div>
-          
-        
+
+
         </div>
       </div>
     </Layout>

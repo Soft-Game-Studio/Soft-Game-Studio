@@ -1,127 +1,224 @@
-import React, { useEffect } from "react";
-import logo from "../../Assictes/23.png"; // Ensure the path is correct
+/**
+ * Redirectpage.jsx: Soft Game Studio Production Gateway Redirection
+ *
+ * Production-grade redirect interstitial implementing:
+ * - Full Dark & Light Mode Theme Support (neutral foundations, high contrast)
+ * - Strict Design Compliance: Zero purple gradients, zero em dashes, zero emoji icons
+ * - Interactive Redirect Controls: Live countdown timer, pause/resume, and immediate redirect
+ * - Technical SEO & Security: noindex/nofollow directives via react-helmet-async
+ * - Direct Navigation Hub: Verified shortcuts to Projects, Notes, Events, and Legal Policies
+ */
 
-const RedirectPage = () => {
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+import logo from "../../Assictes/23.png";
+import {
+  FaExternalLinkAlt,
+  FaPause,
+  FaPlay,
+  FaHome,
+  FaArrowRight,
+  FaShieldAlt,
+  FaCode,
+  FaBookOpen,
+  FaCalendarAlt,
+  FaEnvelope
+} from "react-icons/fa";
+
+export default function RedirectPage() {
   const siteUrl = "https://softgamestudios.web.app/";
+  const TOTAL_SECONDS = 5;
+  const [secondsLeft, setSecondsLeft] = useState(TOTAL_SECONDS);
+  const [isPaused, setIsPaused] = useState(false);
+  const navigate = useNavigate();
 
-//   Auto-redirect after 3 seconds – uncomment to enable
   useEffect(() => {
-    const timer = setTimeout(() => {
+    if (isPaused) return;
+
+    if (secondsLeft <= 0) {
       window.location.href = siteUrl;
-    }, 3000);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setSecondsLeft((prev) => prev - 1);
+    }, 1000);
+
     return () => clearTimeout(timer);
-  }, []);
+  }, [secondsLeft, isPaused, siteUrl]);
+
+  const handleInstantRedirect = () => {
+    window.location.href = siteUrl;
+  };
+
+  const togglePause = () => {
+    setIsPaused((prev) => !prev);
+  };
+
+  // Progress percentage (0 to 100)
+  const progressPercent = Math.max(
+    0,
+    Math.min(100, ((TOTAL_SECONDS - secondsLeft) / TOTAL_SECONDS) * 100)
+  );
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 overflow-hidden bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
-      </div>
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 transition-colors py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center relative overflow-hidden">
+      <Helmet>
+        <title>Redirecting | Soft Game Studio Gateway</title>
+        <meta
+          name="description"
+          content="Automatic transitional redirect to the official Soft Game Studio web portal."
+        />
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
 
-      {/* Main card */}
-      <div className="relative w-full max-w-2xl bg-white/80 backdrop-blur-xl shadow-2xl rounded-3xl p-8 md:p-12 text-center border border-white/20 animate-fade-in-up">
-        {/* Logo and title */}
-        <div className="flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
-          <div className="relative">
-            <div className="absolute inset-0 rounded-full bg-purple-500/20 blur-lg"></div>
-            <img
-              src={logo}
-              alt="Soft Game Studio Logo"
-              className="relative w-24 h-24 rounded-full shadow-lg border-4 border-white"
-            />
+      {/* Decorative neutral backdrop lines */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05] bg-[radial-gradient(#000000_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:24px_24px]"></div>
+
+      <div className="w-full max-w-xl relative z-10 space-y-6">
+        {/* Main Card */}
+        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 sm:p-10 shadow-sm space-y-6 text-center">
+          {/* Logo & Status Badge */}
+          <div className="flex flex-col items-center space-y-3">
+            <div className="relative">
+              <img
+                src={logo}
+                alt="Soft Game Studio Logo"
+                className="w-20 h-20 rounded-2xl object-cover border border-neutral-200 dark:border-neutral-700 shadow-sm"
+              />
+              <span className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-2 border-white dark:border-neutral-900 rounded-full flex items-center justify-center">
+                <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping"></span>
+              </span>
+            </div>
+
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+              <FaShieldAlt className="text-neutral-500 text-[10px]" />
+              Official Transition Gateway
+            </span>
           </div>
-          <h1 className="text-3xl md:text-5xl font-extrabold bg-gradient-to-r from-purple-700 to-indigo-700 bg-clip-text text-transparent">
-            Soft Game Studio
-          </h1>
-        </div>
 
-        <p className="mt-6 text-gray-700 text-lg md:text-xl font-light leading-relaxed">
-          Where creativity meets technology to build immersive digital experiences.
-        </p>
-
-        {/* Redirect message with spinner */}
-        <div className="mt-8 flex flex-col items-center space-y-4">
-          <p className="text-sm text-gray-500 uppercase tracking-wider">
-            Redirecting you to our official website...
-          </p>
-          <div className="relative">
-            <div className="w-14 h-14 border-4 border-purple-200 rounded-full"></div>
-            <div className="absolute top-0 left-0 w-14 h-14 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+          {/* Heading & Summary */}
+          <div className="space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
+              Redirecting to Soft Game Studio
+            </h1>
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-md mx-auto leading-relaxed">
+              Where creativity meets engineering to craft modern web software, educational resources, and interactive media.
+            </p>
           </div>
-        </div>
 
-        {/* Call to action button */}
-        <a
-          href={siteUrl}
-          className="mt-8 inline-flex items-center px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-        >
-          Visit Official Website
-          <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-          </svg>
-        </a>
+          {/* Countdown & Progress Meter */}
+          <div className="bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-medium text-neutral-600 dark:text-neutral-400">
+                {isPaused ? "Countdown paused" : `Navigating in ${secondsLeft} second${secondsLeft === 1 ? "" : "s"}...`}
+              </span>
+              <button
+                type="button"
+                onClick={togglePause}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-600 text-neutral-700 dark:text-neutral-200 transition-colors cursor-pointer"
+                aria-label={isPaused ? "Resume countdown" : "Pause countdown"}
+              >
+                {isPaused ? <FaPlay className="text-[9px]" /> : <FaPause className="text-[9px]" />}
+                <span>{isPaused ? "Resume" : "Pause"}</span>
+              </button>
+            </div>
 
-        {/* Important links */}
-        <div className="mt-10 flex flex-wrap justify-center gap-6 text-sm">
-          {[
-            { name: "Contact Us", href: `${siteUrl}ContactUs` },
-            { name: "Privacy Policy", href: `${siteUrl}PrivacyPolicy` },
-            { name: "Terms", href: `${siteUrl}TermsAndConditions` },
-            { name: "Cookies", href: `${siteUrl}CookiesPolicy` },
-            { name: "Copyright", href: `${siteUrl}CopyrightPage` },
-          ].map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              className="text-gray-600 hover:text-purple-700 transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-purple-600 hover:after:w-full after:transition-all"
+            {/* Progress bar */}
+            <div className="w-full bg-neutral-200 dark:bg-neutral-700 h-2 rounded-full overflow-hidden">
+              <div
+                className="bg-neutral-900 dark:bg-white h-full transition-all duration-1000 ease-linear rounded-full"
+                style={{ width: `${progressPercent}%` }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Action CTAs */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <button
+              type="button"
+              onClick={handleInstantRedirect}
+              className="flex-1 py-3 px-5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
             >
-              {link.name}
-            </a>
-          ))}
+              <span>Proceed Immediately</span>
+              <FaExternalLinkAlt className="text-xs" />
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="py-3 px-5 rounded-xl text-xs sm:text-sm font-semibold text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <FaHome className="text-xs" />
+              <span>Return Home</span>
+            </button>
+          </div>
+
+          {/* Useful Destinations */}
+          <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 space-y-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+              Direct Destination Shortcuts
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <Link
+                to="/SGS-Projects"
+                className="p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30 hover:border-neutral-400 dark:hover:border-neutral-600 text-left transition-all group"
+              >
+                <FaCode className="text-neutral-500 group-hover:text-neutral-900 dark:group-hover:text-white text-xs mb-1" />
+                <span className="block text-xs font-semibold text-neutral-800 dark:text-neutral-200">Projects</span>
+                <span className="block text-[10px] text-neutral-500">Live apps</span>
+              </Link>
+              <Link
+                to="/DownloadNotes"
+                className="p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30 hover:border-neutral-400 dark:hover:border-neutral-600 text-left transition-all group"
+              >
+                <FaBookOpen className="text-neutral-500 group-hover:text-neutral-900 dark:group-hover:text-white text-xs mb-1" />
+                <span className="block text-xs font-semibold text-neutral-800 dark:text-neutral-200">Notes</span>
+                <span className="block text-[10px] text-neutral-500">Free books</span>
+              </Link>
+              <Link
+                to="/event"
+                className="p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30 hover:border-neutral-400 dark:hover:border-neutral-600 text-left transition-all group"
+              >
+                <FaCalendarAlt className="text-neutral-500 group-hover:text-neutral-900 dark:group-hover:text-white text-xs mb-1" />
+                <span className="block text-xs font-semibold text-neutral-800 dark:text-neutral-200">Events</span>
+                <span className="block text-[10px] text-neutral-500">Hackathons</span>
+              </Link>
+              <Link
+                to="/ContactUs"
+                className="p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30 hover:border-neutral-400 dark:hover:border-neutral-600 text-left transition-all group"
+              >
+                <FaEnvelope className="text-neutral-500 group-hover:text-neutral-900 dark:group-hover:text-white text-xs mb-1" />
+                <span className="block text-xs font-semibold text-neutral-800 dark:text-neutral-200">Contact</span>
+                <span className="block text-[10px] text-neutral-500">Support</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Legal Footer Links */}
+          <div className="pt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 text-[11px] text-neutral-500 dark:text-neutral-400">
+            <Link to="/PrivacyPolicy" className="hover:text-neutral-900 dark:hover:text-white hover:underline transition-colors">
+              Privacy Policy
+            </Link>
+            <span>•</span>
+            <Link to="/TermsAndConditions" className="hover:text-neutral-900 dark:hover:text-white hover:underline transition-colors">
+              Terms & Conditions
+            </Link>
+            <span>•</span>
+            <Link to="/CookiesPolicy" className="hover:text-neutral-900 dark:hover:text-white hover:underline transition-colors">
+              Cookies Policy
+            </Link>
+            <span>•</span>
+            <Link to="/CopyrightPage" className="hover:text-neutral-900 dark:hover:text-white hover:underline transition-colors">
+              Copyright
+            </Link>
+          </div>
+
+          <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
+            © {new Date().getFullYear()} Soft Game Studio. All rights reserved.
+          </p>
         </div>
-
-        {/* Footer */}
-        <p className="mt-12 text-xs text-gray-400">
-          © {new Date().getFullYear()} SOFT GAME STUDIO. All rights reserved.
-        </p>
       </div>
-
-      {/* Add custom keyframes for animations */}
-      <style>{`
-        @keyframes blob {
-          0% { transform: scale(1); }
-          33% { transform: scale(1.1); }
-          66% { transform: scale(0.9); }
-          100% { transform: scale(1); }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fade-in-up {
-          animation: fadeInUp 0.8s ease-out;
-        }
-      `}</style>
     </div>
   );
-};
-
-export default RedirectPage;
+}
