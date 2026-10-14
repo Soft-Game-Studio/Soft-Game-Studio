@@ -2,13 +2,13 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
-import { 
-  Gamepad2, 
-  Search, 
-  Calendar, 
-  Download, 
-  AlertCircle, 
-  RefreshCw, 
+import {
+  Gamepad2,
+  Search,
+  Calendar,
+  Download,
+  AlertCircle,
+  RefreshCw,
   ArrowRight,
   Monitor,
   Smartphone,
@@ -17,7 +17,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
-import { gameService } from './gameService';
+import { gameService } from './GameService';
 
 const GamesListPage = () => {
   const [games, setGames] = useState([]);
@@ -52,7 +52,7 @@ const GamesListPage = () => {
     // Search filter
     const query = searchTerm.trim().toLowerCase();
     if (query) {
-      filtered = filtered.filter(game => 
+      filtered = filtered.filter(game =>
         (game.gameName && game.gameName.toLowerCase().includes(query)) ||
         (game.description && game.description.toLowerCase().includes(query)) ||
         (game.developerName && game.developerName.toLowerCase().includes(query))
@@ -92,10 +92,10 @@ const GamesListPage = () => {
     if (!dateString) return 'Release Build';
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
       });
     } catch {
       return 'Release Build';
@@ -115,8 +115,8 @@ const GamesListPage = () => {
       '@graph': [
         {
           '@type': 'CollectionPage',
-          '@id': 'https://softgamestudios.web.app/game#webpage',
-          url: 'https://softgamestudios.web.app/game',
+          '@id': 'https://softgamestudios.web.app/Game#webpage',
+          url: 'https://softgamestudios.web.app/Game',
           name: 'Game Engineering & Interactive Titles | Soft Game Studio',
           description: 'Explore and download interactive 2D games, physics engines, and playable titles developed by Soft Game Studio for Windows PC and Android.',
           isPartOf: {
@@ -143,7 +143,7 @@ const GamesListPage = () => {
                 game.windowsExeLink ? 'Windows' : null,
                 game.androidApkLink ? 'Android' : null
               ].filter(Boolean).join(', ') || 'Windows, Android',
-              url: `https://softgamestudios.web.app/game/${game.id}`
+              url: `https://softgamestudios.web.app/Game/${game.id}`
             }
           }))
         }
@@ -160,7 +160,7 @@ const GamesListPage = () => {
           name="description"
           content="Explore and download original 2D titles, real-time physics engines, and playable desktop/mobile builds engineered by Soft Game Studio."
         />
-        <link rel="canonical" href="https://softgamestudios.web.app/game" />
+        <link rel="canonical" href="https://softgamestudios.web.app/Game" />
 
         {/* Open Graph */}
         <meta property="og:type" content="website" />
@@ -170,7 +170,7 @@ const GamesListPage = () => {
           property="og:description"
           content="Explore and download original 2D titles and interactive game builds engineered by Soft Game Studio."
         />
-        <meta property="og:url" content="https://softgamestudios.web.app/game" />
+        <meta property="og:url" content="https://softgamestudios.web.app/Game" />
         <meta
           property="og:image"
           content="https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Assets%2FSqure%20Logo.png?alt=media"
@@ -218,8 +218,8 @@ const GamesListPage = () => {
           {/* Search, Filter & Sort Controls */}
           <div className="mt-8 flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
             {/* Platform Segmented Filter */}
-            <div 
-              role="radiogroup" 
+            <div
+              role="radiogroup"
               aria-label="Filter games by platform"
               className="inline-flex p-1 rounded-md bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-x-auto"
             >
@@ -228,11 +228,10 @@ const GamesListPage = () => {
                 role="radio"
                 aria-checked={selectedPlatform === 'all'}
                 onClick={() => setSelectedPlatform('all')}
-                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
-                  selectedPlatform === 'all'
+                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${selectedPlatform === 'all'
                     ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
                     : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
-                }`}
+                  }`}
               >
                 All Platforms ({games.length})
               </button>
@@ -241,11 +240,10 @@ const GamesListPage = () => {
                 role="radio"
                 aria-checked={selectedPlatform === 'windows'}
                 onClick={() => setSelectedPlatform('windows')}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
-                  selectedPlatform === 'windows'
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${selectedPlatform === 'windows'
                     ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
                     : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
-                }`}
+                  }`}
               >
                 <Monitor className="w-3.5 h-3.5" aria-hidden="true" />
                 Windows PC
@@ -255,11 +253,10 @@ const GamesListPage = () => {
                 role="radio"
                 aria-checked={selectedPlatform === 'android'}
                 onClick={() => setSelectedPlatform('android')}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
-                  selectedPlatform === 'android'
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${selectedPlatform === 'android'
                     ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
                     : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
-                }`}
+                  }`}
               >
                 <Smartphone className="w-3.5 h-3.5" aria-hidden="true" />
                 Android APK
@@ -269,11 +266,10 @@ const GamesListPage = () => {
                 role="radio"
                 aria-checked={selectedPlatform === 'playstore'}
                 onClick={() => setSelectedPlatform('playstore')}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
-                  selectedPlatform === 'playstore'
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${selectedPlatform === 'playstore'
                     ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
                     : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100'
-                }`}
+                  }`}
               >
                 <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
                 Play Store
@@ -311,14 +307,14 @@ const GamesListPage = () => {
 
         {/* Loading Skeleton State */}
         {loading && (
-          <div 
-            aria-busy="true" 
+          <div
+            aria-busy="true"
             aria-label="Loading interactive titles"
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             {[...Array(6)].map((_, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden animate-pulse"
               >
                 <div className="aspect-video bg-neutral-200 dark:bg-neutral-800" />
@@ -338,7 +334,7 @@ const GamesListPage = () => {
 
         {/* Error State */}
         {!loading && error && (
-          <div 
+          <div
             role="alert"
             className="p-8 text-center rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 max-w-xl mx-auto my-8"
           >
@@ -362,8 +358,8 @@ const GamesListPage = () => {
             <Gamepad2 className="w-10 h-10 text-neutral-400 mx-auto mb-3" aria-hidden="true" />
             <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">No game titles found</h2>
             <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
-              {searchTerm 
-                ? `No titles matching "${searchTerm}". Try resetting search or platform filters.` 
+              {searchTerm
+                ? `No titles matching "${searchTerm}". Try resetting search or platform filters.`
                 : 'No games currently published under this category.'}
             </p>
             {(searchTerm || selectedPlatform !== 'all') && (
@@ -382,15 +378,15 @@ const GamesListPage = () => {
         {!loading && !error && filteredGames.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredGames.map((game, index) => {
-              const targetUrl = `/game/${game.id}`;
+              const targetUrl = `/Game/${game.id}`;
 
               return (
                 <motion.article
                   key={game.id}
                   initial={shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ 
-                    duration: shouldReduceMotion ? 0.01 : 0.35, 
+                  transition={{
+                    duration: shouldReduceMotion ? 0.01 : 0.35,
                     delay: shouldReduceMotion ? 0 : Math.min(index * 0.05, 0.3),
                     ease: [0.22, 1, 0.36, 1]
                   }}
@@ -417,7 +413,7 @@ const GamesListPage = () => {
                     {/* Platform Tag Indicators */}
                     <div className="absolute top-3 right-3 flex items-center gap-1.5">
                       {game.windowsExeLink && (
-                        <span 
+                        <span
                           className="px-2 py-0.5 rounded text-[10px] font-mono font-medium tracking-wide bg-neutral-900/85 text-white dark:bg-neutral-950/90 dark:text-neutral-200 backdrop-blur-sm border border-neutral-700/50 flex items-center gap-1"
                           title="Windows Executable Available"
                         >
@@ -426,7 +422,7 @@ const GamesListPage = () => {
                         </span>
                       )}
                       {game.androidApkLink && (
-                        <span 
+                        <span
                           className="px-2 py-0.5 rounded text-[10px] font-mono font-medium tracking-wide bg-neutral-900/85 text-white dark:bg-neutral-950/90 dark:text-neutral-200 backdrop-blur-sm border border-neutral-700/50 flex items-center gap-1"
                           title="Android APK Available"
                         >
@@ -435,7 +431,7 @@ const GamesListPage = () => {
                         </span>
                       )}
                       {game.playStoreLink && (
-                        <span 
+                        <span
                           className="px-2 py-0.5 rounded text-[10px] font-mono font-medium tracking-wide bg-neutral-900/85 text-white dark:bg-neutral-950/90 dark:text-neutral-200 backdrop-blur-sm border border-neutral-700/50 flex items-center gap-1"
                           title="Google Play Store Link"
                         >
@@ -449,7 +445,7 @@ const GamesListPage = () => {
                   {/* Body Content */}
                   <div className="p-5 flex-1 flex flex-col">
                     <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100 line-clamp-1 group-hover:text-neutral-950 dark:group-hover:text-white transition-colors">
-                      <Link 
+                      <Link
                         to={targetUrl}
                         className="focus:outline-none focus-visible:underline"
                         aria-label={`View specifications for ${game.gameName || 'Game'}`}

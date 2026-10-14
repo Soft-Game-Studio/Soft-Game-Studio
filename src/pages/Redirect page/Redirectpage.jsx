@@ -161,7 +161,7 @@ export default function RedirectPage() {
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <Link
-                to="/SGS-Projects"
+                to="/Projects"
                 className="p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30 hover:border-neutral-400 dark:hover:border-neutral-600 text-left transition-all group"
               >
                 <FaCode className="text-neutral-500 group-hover:text-neutral-900 dark:group-hover:text-white text-xs mb-1" />

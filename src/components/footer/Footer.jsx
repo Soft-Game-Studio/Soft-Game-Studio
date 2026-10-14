@@ -27,7 +27,7 @@ const FOOTER_SECTIONS = [
     title: 'Studio & Work',
     links: [
       { name: 'About Studio', path: '/About-SGS' },
-      { name: 'Engineering Work', path: '/SGS-Projects' },
+      { name: 'Engineering Work', path: '/Projects' },
       { name: 'Studio Team', path: '/OurMembers' },
       { name: 'Developer Community', path: '/OurCommunity' },
     ],
@@ -35,7 +35,7 @@ const FOOTER_SECTIONS = [
   {
     title: 'Resources & Tech',
     links: [
-      { name: 'Interactive Games', path: '/game' },
+      { name: 'Interactive Games', path: '/Game' },
       { name: 'Web Courses', path: '/OurCourse' },
       { name: 'Technical Notes', path: '/DownloadNotes' },
       { name: 'E-Books Library', path: '/E-Books' },

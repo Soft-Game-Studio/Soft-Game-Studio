@@ -144,7 +144,7 @@ function ProjectCard({ project }) {
 
   return (
     <Link
-      to={`/SGS-Projects/${project.id}`}
+      to={`/Projects/${project.id}`}
       aria-label={`View case study for ${project.name}`}
       className="group block border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 rounded-lg overflow-hidden flex flex-col hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:focus-visible:ring-white focus-visible:ring-offset-2 h-full"
     >
@@ -462,7 +462,7 @@ export default function HomeBelowFold() {
               title="Selected client systems and engineering projects"
             />
             <Link
-              to="/SGS-Projects"
+              to="/Projects"
               className="inline-flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white underline-offset-4 hover:underline transition-colors mb-12 sm:mb-16 flex-shrink-0"
             >
               <span>Browse all projects</span>
@@ -478,7 +478,7 @@ export default function HomeBelowFold() {
               <p className="text-sm text-red-700 dark:text-red-400 font-medium">{projectsError}</p>
               <p className="text-xs text-red-600 dark:text-red-400 mt-2">
                 You can visit the dedicated{' '}
-                <Link to="/SGS-Projects" className="underline font-semibold">
+                <Link to="/Projects" className="underline font-semibold">
                   projects catalog
                 </Link>{' '}
                 directly.
@@ -516,7 +516,7 @@ export default function HomeBelowFold() {
 
           <div className="mt-12 text-center">
             <Link
-              to="/SGS-Projects"
+              to="/Projects"
               className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-md font-semibold text-sm border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:focus-visible:ring-white focus-visible:ring-offset-2"
             >
               <span>View All Documented Projects</span>
@@ -545,11 +545,10 @@ export default function HomeBelowFold() {
           {pricingTiers.map((tier) => (
             <div
               key={tier.name}
-              className={`relative rounded-lg p-6 flex flex-col justify-between ${
-                tier.featured
+              className={`relative rounded-lg p-6 flex flex-col justify-between ${tier.featured
                   ? 'border-2 border-neutral-950 dark:border-white bg-white dark:bg-neutral-900 shadow-md'
                   : 'border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/50'
-              }`}
+                }`}
             >
               {tier.featured && (
                 <div
@@ -586,11 +585,10 @@ export default function HomeBelowFold() {
               <Link
                 to="/ContactUs"
                 aria-label={`Inquire about ${tier.name} engagement model`}
-                className={`w-full text-center py-2.5 px-4 rounded-md font-semibold text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
-                  tier.featured
+                className={`w-full text-center py-2.5 px-4 rounded-md font-semibold text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${tier.featured
                     ? 'bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 shadow-xs focus-visible:ring-neutral-900 dark:focus-visible:ring-white'
                     : 'border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 focus-visible:ring-neutral-500'
-                }`}
+                  }`}
               >
                 Request Project Estimate
               </Link>

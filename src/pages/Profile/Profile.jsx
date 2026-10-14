@@ -446,11 +446,10 @@ export default function ProfilePage() {
             <motion.div
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`p-4 rounded-xl border text-xs sm:text-sm flex items-center justify-between ${
-                saveStatus.type === "error"
+              className={`p-4 rounded-xl border text-xs sm:text-sm flex items-center justify-between ${saveStatus.type === "error"
                   ? "bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900/50 text-red-800 dark:text-red-300"
                   : "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-300"
-              }`}
+                }`}
             >
               <div className="flex items-center gap-2">
                 {saveStatus.type === "error" ? (
@@ -480,11 +479,10 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("profile")}
-                    className={`flex-1 py-3.5 px-4 text-center text-xs sm:text-sm font-semibold transition-colors relative cursor-pointer ${
-                      activeTab === "profile"
+                    className={`flex-1 py-3.5 px-4 text-center text-xs sm:text-sm font-semibold transition-colors relative cursor-pointer ${activeTab === "profile"
                         ? "text-neutral-900 dark:text-white"
                         : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
-                    }`}
+                      }`}
                   >
                     <span>Account Details</span>
                     {activeTab === "profile" && (
@@ -498,11 +496,10 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("community")}
-                    className={`flex-1 py-3.5 px-4 text-center text-xs sm:text-sm font-semibold transition-colors relative cursor-pointer ${
-                      activeTab === "community"
+                    className={`flex-1 py-3.5 px-4 text-center text-xs sm:text-sm font-semibold transition-colors relative cursor-pointer ${activeTab === "community"
                         ? "text-neutral-900 dark:text-white"
                         : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
-                    }`}
+                      }`}
                   >
                     <span>Community Membership</span>
                     {activeTab === "community" && (
@@ -516,11 +513,10 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("resources")}
-                    className={`flex-1 py-3.5 px-4 text-center text-xs sm:text-sm font-semibold transition-colors relative cursor-pointer ${
-                      activeTab === "resources"
+                    className={`flex-1 py-3.5 px-4 text-center text-xs sm:text-sm font-semibold transition-colors relative cursor-pointer ${activeTab === "resources"
                         ? "text-neutral-900 dark:text-white"
                         : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
-                    }`}
+                      }`}
                   >
                     <span>Activity & Hub</span>
                     {activeTab === "resources" && (
@@ -886,7 +882,7 @@ export default function ProfilePage() {
                       </Link>
 
                       <Link
-                        to="/game"
+                        to="/Game"
                         className="p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-white dark:bg-neutral-900 transition-colors space-y-2 block"
                       >
                         <div className="flex items-center justify-between">

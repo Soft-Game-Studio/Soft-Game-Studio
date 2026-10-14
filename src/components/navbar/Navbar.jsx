@@ -24,7 +24,7 @@ const navItems = [
   { name: "Notes", link: "/DownloadNotes" },
   { name: "Course", link: "/OurCourse" },
   { name: "E-Books", link: "/E-Books" },
-  { name: "Games", link: "/game" },
+  { name: "Games", link: "/Game" },
 ];
 
 export function NavbarMenu() {

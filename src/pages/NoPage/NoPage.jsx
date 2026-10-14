@@ -33,7 +33,7 @@ export default function NotFoundPage() {
     {
       title: "SGS Projects",
       desc: "Explore live web applications, tools, and UI showcases.",
-      href: "/SGS-Projects",
+      href: "/Projects",
       icon: FaCode,
     },
     {
@@ -51,7 +51,7 @@ export default function NotFoundPage() {
     {
       title: "Official Quizzes",
       desc: "Take technical assessments and earn verified certificates.",
-      href: "/SGS-Quiz-Official",
+      href: "/Exam",
       icon: FaAward,
     },
   ];

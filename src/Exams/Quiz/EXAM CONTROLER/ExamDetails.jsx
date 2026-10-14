@@ -1,43 +1,70 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useMemo } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
-import { motion } from "framer-motion";
+import { Helmet } from "react-helmet";
+import { motion, useReducedMotion } from "framer-motion";
 import parse from "html-react-parser";
+import {
+  Play,
+  Clock,
+  Calendar,
+  ShieldCheck,
+  AlertTriangle,
+  Code,
+  ArrowLeft,
+  Layers,
+  HelpCircle,
+  FileCheck2,
+  Lock,
+  Headphones,
+  Info,
+} from "lucide-react";
 import { fireDB } from "../../../DataBase/firebaseConfig";
 import Layout from "../../../components/layout/Layout";
-import { FaPlay, FaClock, FaCalendarAlt, FaShieldAlt, FaExclamationTriangle, FaHeadphones } from "react-icons/fa";
+import ExamPanelNav from "../../Common/ExamPanelNav";
 
+/**
+ * Production-Grade Examination Specification & Guidelines Page
+ * Soft Game Studio Examination Authority
+ */
 const OfficialQuizDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [exam, setExam] = useState(null);
   const [loading, setLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState(null);
+  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchExam = async () => {
       try {
         const docRef = doc(fireDB, "quizzes", id);
         const docSnap = await getDoc(docRef);
 
-        if (docSnap.exists()) {
+        if (docSnap.exists() && isMounted) {
           const examData = docSnap.data();
           setExam({
             ...examData,
-            id: docSnap.id
+            id: docSnap.id,
           });
-        } else {
+        } else if (isMounted) {
           setExam(null);
         }
       } catch (error) {
-        console.error("Error fetching exam details:", error);
-        setExam(null);
+        console.error("Error fetching examination details:", error);
+        if (isMounted) setExam(null);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchExam();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   // Countdown timer effect
@@ -47,7 +74,7 @@ const OfficialQuizDetails = () => {
     const interval = setInterval(() => {
       const now = Date.now();
       const startTime = exam.examStart ? new Date(exam.examStart).getTime() : null;
-      const endTime   = exam.examEnd   ? new Date(exam.examEnd).getTime()   : null;
+      const endTime = exam.examEnd ? new Date(exam.examEnd).getTime() : null;
 
       if (!startTime) {
         setTimeLeft(null);
@@ -66,35 +93,60 @@ const OfficialQuizDetails = () => {
       }
 
       const diff = startTime - now;
-      const days    = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours   = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
       if (days > 0) {
-        setTimeLeft(`${days}d ${hours}H`);
+        setTimeLeft(`${days}d ${hours}h`);
       } else {
-        setTimeLeft(`${hours}H ${minutes}M ${seconds}S`);
+        setTimeLeft(
+          `${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(
+            seconds
+          ).padStart(2, "0")}s`
+        );
       }
     }, 1000);
 
     return () => clearInterval(interval);
   }, [exam]);
 
-  const handleOpenQuiz = (examId) => {
-    navigate(`/SGS-Quiz-Official/${examId}`);
+  const handleOpenQuiz = (examId, openInNewWindow = true) => {
+    if (openInNewWindow) {
+      window.open(`/Exam/${examId}`, "_blank", "toolbar=no,menubar=no,scrollbars=yes,resizable=yes,status=no");
+    } else {
+      navigate(`/Exam/${examId}`);
+    }
   };
+
+  // Structured Data Schema for Search
+  const structuredData = useMemo(() => {
+    if (!exam) return null;
+    return JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Quiz",
+      "name": exam.name,
+      "about": {
+        "@type": "Thing",
+        "name": exam.language || "Computer Science",
+      },
+      "educationalLevel": "Intermediate to Advanced",
+      "provider": {
+        "@type": "Organization",
+        "name": "Soft Game Studio",
+        "url": "https://softgamestudios.web.app",
+      },
+    });
+  }, [exam]);
 
   if (loading) {
     return (
       <Layout>
-        <div className="flex flex-col justify-center items-center h-[85vh] bg-slate-50 dark:bg-neutral-950 gap-4">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-            className="h-14 w-14 border-4 border-purple-600 border-t-transparent rounded-full shadow-md"
-          ></motion.div>
-          <p className="text-purple-600 dark:text-purple-400 font-medium">Fetching exam schedule...</p>
+        <ExamPanelNav activeTab="exams" />
+        <div className="flex flex-col justify-center items-center min-h-[75vh] bg-slate-950 gap-4">
+          <div className="w-12 h-12 border-3 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin shadow-md"></div>
+          <p className="text-slate-400 font-medium text-sm">Retrieving examination syllabus...</p>
         </div>
       </Layout>
     );
@@ -103,271 +155,285 @@ const OfficialQuizDetails = () => {
   if (!exam) {
     return (
       <Layout>
-        <div className="flex flex-col items-center justify-center h-[85vh] bg-slate-50 dark:bg-neutral-950 text-center p-4">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="text-6xl mb-6 text-red-500"
+        <ExamPanelNav activeTab="exams" />
+        <div className="flex flex-col items-center justify-center min-h-[75vh] bg-slate-950 text-center p-6">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Examination Record Not Found</h2>
+          <p className="text-slate-400 mb-8 max-w-md text-sm leading-relaxed">
+            The requested assessment may have concluded, been archived, or had its identifier modified.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate("/Exam")}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors"
           >
-            <FaExclamationTriangle className="mx-auto" />
-          </motion.div>
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="text-3xl font-extrabold text-gray-800 dark:text-white mb-2"
-          >
-            Exam Not Found
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-            className="text-gray-500 dark:text-gray-400 mb-8 max-w-md"
-          >
-            The exam details you are looking for may have been archived or removed by the administrator.
-          </motion.p>
-          <motion.button
-            onClick={() => navigate(-1)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-3 px-8 rounded-2xl shadow-lg transition-all"
-          >
-            Go Back
-          </motion.button>
+            <ArrowLeft className="w-4 h-4" />
+            <span>Return to Examination Catalog</span>
+          </button>
         </div>
       </Layout>
     );
   }
 
+  const isLive = timeLeft === "STARTED";
+  const isEnded = timeLeft === "ENDED";
+  const questionCount = exam.questions?.length || 0;
+
   return (
     <Layout>
-      <div className="bg-slate-50 dark:bg-neutral-950 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
-        
-        {/* Immersive Hero Section */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-purple-700 via-indigo-700 to-violet-850 dark:from-purple-950 dark:via-indigo-950 dark:to-neutral-950 py-24 md:py-32 px-4">
-          <div className="absolute inset-0 bg-grid opacity-10 pointer-events-none"></div>
-          
-          <div className="relative z-10 flex flex-col justify-center items-center max-w-4xl mx-auto text-center">
+      <Helmet>
+        <title>{`${exam.name} | Examination Specifications | Soft Game Studio`}</title>
+        <meta
+          name="description"
+          content={`Review the rules, proctoring protocols, duration, and curriculum for ${exam.name} administered by Soft Game Studio.`}
+        />
+        <meta
+          name="keywords"
+          content={`${exam.name}, Soft Game Studio Quiz, ${exam.language} Exam, Coding Competition`}
+        />
+        <link rel="canonical" href={`https://softgamestudios.web.app/ExamDetails/${exam.id}`} />
+        {structuredData && <script type="application/ld+json">{structuredData}</script>}
+      </Helmet>
+
+      {/* Unified Examination Panel Header */}
+      <ExamPanelNav activeTab="exams" />
+
+      <main className="min-h-screen bg-slate-950 text-slate-100 antialiased pb-20">
+        {/* Hero Section */}
+        <section className="relative border-b border-slate-800 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 pt-12 pb-14 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-5xl mx-auto text-center">
+            {/* Breadcrumb back link */}
+            <div className="flex justify-start mb-6">
+              <Link
+                to="/Exam"
+                className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 transition-colors"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back to Competitions</span>
+              </Link>
+            </div>
+
+            {/* Credential Badge */}
             <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.6 }}
-              className="inline-flex items-center gap-2 bg-white/10 dark:bg-neutral-900/40 border border-white/20 px-4 py-1.5 rounded-full text-white text-sm font-semibold mb-6 backdrop-blur"
+              initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/80 border border-slate-700 text-xs text-slate-300 font-medium mb-4 shadow-xs"
             >
-              🏆 Official Coding Certification
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <span>Standardized Technical Assessment</span>
             </motion.div>
 
-            <motion.h1 
-              initial={{ opacity: 0, y: -30 }}
+            {/* Examination Name */}
+            <motion.h1
+              initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-              className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-4 tracking-tight drop-shadow"
+              transition={{ duration: 0.4, delay: 0.05 }}
+              className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-4"
             >
               {exam.name}
             </motion.h1>
 
-            <motion.p 
-              initial={{ opacity: 0 }}
+            <motion.p
+              initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-              className="text-lg md:text-xl text-purple-100 max-w-2xl mb-10 leading-relaxed font-light"
+              transition={{ delay: 0.1, duration: 0.4 }}
+              className="text-base text-slate-400 max-w-xl mx-auto mb-8"
             >
-              Subject area: <span className="font-semibold text-amber-200">{exam.language}</span>
+              Assessment Domain:{" "}
+              <span className="font-semibold text-emerald-400">{exam.language || "Computer Science"}</span>
             </motion.p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
-              className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
-            >
-              {timeLeft === "STARTED" ? (
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => handleOpenQuiz(exam.id)}
-                  className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-4 px-10 rounded-2xl shadow-xl transition-all flex items-center justify-center gap-2.5 text-lg"
-                >
-                  <FaPlay className="w-4 h-4" /> Start Exam Now
-                </motion.button>
-              ) : timeLeft === "ENDED" ? (
+            {/* Status & CTA Bar */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              {isLive ? (
                 <button
-                  disabled
-                  className="bg-red-100 dark:bg-red-950/20 text-red-600 dark:text-red-400 font-bold py-4 px-10 rounded-2xl shadow border border-red-200/10 cursor-not-allowed flex items-center justify-center gap-2.5 text-lg w-full sm:w-auto"
+                  type="button"
+                  onClick={() => handleOpenQuiz(exam.id, true)}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-900/40 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 cursor-pointer"
                 >
-                  Registration Closed
+                  <Play className="w-4 h-4 fill-current" />
+                  <span>Launch Secure Full-Screen Window</span>
                 </button>
+              ) : isEnded ? (
+                <div className="w-full sm:w-auto px-6 py-3 rounded-xl bg-slate-900 text-slate-500 border border-slate-800 text-xs font-semibold">
+                  Examination Concluded
+                </div>
               ) : (
-                <div className="bg-white dark:bg-neutral-900 text-purple-700 dark:text-purple-300 font-mono font-bold py-4 px-10 rounded-2xl shadow-lg flex items-center justify-center gap-2.5 text-lg border border-purple-100 dark:border-neutral-800">
-                  <FaClock className="w-4 h-4 text-purple-500 animate-pulse" />
-                  {timeLeft || "Timer starting..."}
+                <div className="w-full sm:w-auto inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 text-sky-400 font-mono text-sm font-semibold border border-slate-800">
+                  <Clock className="w-4 h-4 text-sky-400" />
+                  <span>{timeLeft ? `Starts in ${timeLeft}` : "Scheduled Assessment"}</span>
                 </div>
               )}
-              <button
-                onClick={() => window.scrollTo({ top: document.getElementById("details-content").offsetTop - 60, behavior: 'smooth' })}
-                className="bg-purple-600/30 hover:bg-purple-600/40 text-white font-bold py-4 px-10 rounded-2xl border border-white/20 backdrop-blur transition-all flex items-center justify-center gap-2"
+
+              <a
+                href="#specifications"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors"
               >
-                View Rules & Syllabus
-              </button>
-            </motion.div>
+                <Info className="w-4 h-4 text-slate-400" />
+                <span>Review Syllabus & Guidelines</span>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        {/* Content Container */}
+        <div id="specifications" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left 2 Cols: Description & Syllabus */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Exam Overview Card */}
+              <article className="p-6 sm:p-8 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+                <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                  <Layers className="w-5 h-5 text-emerald-400" />
+                  <span>Syllabus & Curriculum Overview</span>
+                </h2>
+
+                <div className="prose dark:prose-invert max-w-none text-slate-300 text-sm leading-relaxed mb-6">
+                  {parse(exam.description || "<p>Standardized domain evaluation for software engineering students and practitioners.</p>")}
+                </div>
+
+                {isLive && (
+                  <div className="pt-6 border-t border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenQuiz(exam.id)}
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-all shadow-md cursor-pointer"
+                    >
+                      <Play className="w-4 h-4 fill-current" />
+                      <span>Start Assessment</span>
+                    </button>
+                  </div>
+                )}
+              </article>
+
+              {/* Proctoring Rules */}
+              <article className="p-6 sm:p-8 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+                <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-amber-400" />
+                  <span>Proctoring & Anti-Cheat Governance</span>
+                </h2>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-slate-300">
+                  <div className="p-4 rounded-xl bg-slate-950 border border-slate-800/80">
+                    <span className="font-semibold text-white block mb-1">
+                      No Tab or Window Switching
+                    </span>
+                    <span className="text-slate-400">
+                      Leaving the assessment tab triggers automated proctor warnings. Repeated infractions result in immediate disqualification.
+                    </span>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-slate-950 border border-slate-800/80">
+                    <span className="font-semibold text-white block mb-1">
+                      Restricted Keystroke Operations
+                    </span>
+                    <span className="text-slate-400">
+                      Clipboard cut/copy/paste, printscreen, developer inspection tools, and keyboard shortcuts are disabled during test sessions.
+                    </span>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-slate-950 border border-slate-800/80">
+                    <span className="font-semibold text-white block mb-1">
+                      Randomized Question Sequences
+                    </span>
+                    <span className="text-slate-400">
+                      Questions and choice sequences are dynamically permuted per candidate to prevent synchronous collusion.
+                    </span>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-slate-950 border border-slate-800/80">
+                    <span className="font-semibold text-white block mb-1">
+                      Passing Grade & Certification
+                    </span>
+                    <span className="text-slate-400">
+                      Achieving 50% or above generates an authenticated certificate with verifiable roll registry metadata.
+                    </span>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            {/* Right Col: Quick Specifications Sidebar */}
+            <aside className="space-y-6">
+              {/* Media Card */}
+              <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+                <div className="h-44 bg-slate-950 rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center p-3 mb-5">
+                  {exam.imageUrl ? (
+                    <img
+                      src={exam.imageUrl}
+                      alt={exam.name}
+                      className="h-full w-full object-contain"
+                    />
+                  ) : (
+                    <Code className="w-12 h-12 text-slate-600" />
+                  )}
+                </div>
+
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4 border-b border-slate-800 pb-3">
+                  Specification Snapshot
+                </h3>
+
+                <dl className="space-y-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <dt className="text-slate-400">Assessment ID</dt>
+                    <dd className="font-mono text-slate-200">{exam.id.slice(0, 8)}</dd>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <dt className="text-slate-400">Subject Domain</dt>
+                    <dd className="font-semibold text-emerald-400">{exam.language || "General"}</dd>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <dt className="text-slate-400">Question Pool</dt>
+                    <dd className="font-semibold text-slate-200">{questionCount} items</dd>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <dt className="text-slate-400">Evaluation Type</dt>
+                    <dd className="text-slate-200">Multiple Choice Matrix</dd>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <dt className="text-slate-400">Issuing Body</dt>
+                    <dd className="text-slate-200">Soft Game Studio</dd>
+                  </div>
+                </dl>
+
+                <div className="mt-6 pt-4 border-t border-slate-800">
+                  <Link
+                    to="/About-Exam"
+                    className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors"
+                  >
+                    <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
+                    <span>General Examination FAQs</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Support Callout */}
+              <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 text-xs text-slate-400">
+                <div className="flex items-center gap-2 text-slate-200 font-semibold mb-2">
+                  <Headphones className="w-4 h-4 text-emerald-400" />
+                  <span>Technical Support Desk</span>
+                </div>
+                <p className="leading-relaxed mb-3">
+                  Experiencing authentication anomalies or session connectivity issues during test hours?
+                </p>
+                <Link
+                  to="/ContactUs"
+                  className="text-emerald-400 hover:text-emerald-300 font-medium underline underline-offset-2"
+                >
+                  Contact Candidate Administration
+                </Link>
+              </div>
+            </aside>
           </div>
         </div>
-
-        {/* Content Section */}
-        <section id="details-content" className="py-16 md:py-24 max-w-6xl mx-auto px-4">
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="flex flex-col lg:flex-row gap-12 items-center bg-white dark:bg-neutral-900 p-8 sm:p-10 rounded-3xl shadow-xl border border-purple-50/50 dark:border-neutral-800/40"
-          >
-            {/* Image display */}
-            <div className="lg:w-1/2 w-full flex justify-center">
-              <motion.img
-                src={exam.imageUrl || "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=500"}
-                alt={exam.name}
-                className="w-full max-h-80 sm:max-h-96 object-contain rounded-2xl shadow-lg border border-slate-100 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-800/50 p-4"
-                initial={{ scale: 0.95 }}
-                whileInView={{ scale: 1 }}
-                transition={{ duration: 0.4 }}
-                viewport={{ once: true }}
-              />
-            </div>
-
-            {/* Description */}
-            <div className="lg:w-1/2 w-full">
-              <h2 className="text-3xl font-extrabold mb-4 flex items-center gap-2 text-gray-800 dark:text-white">
-                Exam Details
-              </h2>
-              <div className="h-1 w-20 bg-purple-600 rounded-full mb-6"></div>
-              
-              <div className="prose dark:prose-invert max-w-none text-gray-600 dark:text-gray-300 text-base leading-relaxed mb-8">
-                {parse(exam.description || "<p>No description provided for this exam.</p>")}
-              </div>
-
-              <div className="flex flex-wrap gap-4">
-                {timeLeft === "STARTED" ? (
-                  <button
-                    onClick={() => handleOpenQuiz(exam.id)}
-                    className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-3 px-8 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 text-sm"
-                  >
-                    <FaPlay className="w-3.5 h-3.5" /> Start Exam Now
-                  </button>
-                ) : timeLeft === "ENDED" ? (
-                  <button
-                    disabled
-                    className="bg-red-50 dark:bg-red-950/20 text-red-500 dark:text-red-400 font-semibold py-3 px-8 rounded-xl border border-red-200/20 text-sm cursor-not-allowed"
-                  >
-                    Ended
-                  </button>
-                ) : (
-                  <button
-                    disabled
-                    className="bg-purple-50 dark:bg-neutral-800 text-purple-600 dark:text-purple-400 font-semibold py-3 px-8 rounded-xl border border-purple-200/20 text-sm cursor-not-allowed flex items-center gap-2"
-                  >
-                    <FaClock className="w-3.5 h-3.5 animate-pulse" /> {timeLeft || "Pending"}
-                  </button>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        </section>
-
-        {/* Guidelines / Features Section */}
-        <section className="py-16 bg-slate-100/50 dark:bg-neutral-900/30 border-t border-b border-slate-200/50 dark:border-neutral-800/40">
-          <div className="max-w-6xl mx-auto px-4">
-            <motion.h2 
-              className="text-3xl font-extrabold mb-12 text-center text-gray-800 dark:text-white"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              Exam Guidelines & Policy
-            </motion.h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                {
-                  icon: <FaClock className="w-7 h-7 text-purple-600 dark:text-purple-400" />,
-                  title: "Strict Time Window",
-                  description: "Once the timer begins, it cannot be paused or reset. Manage your pace to answer all shuffled questions."
-                },
-                {
-                  icon: <FaShieldAlt className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />,
-                  title: "Cheating Detection",
-                  description: "Tab switching, right clicking, copy-pasting, and print-screening are blocked. Violations result in automatic disqualification."
-                },
-                {
-                  icon: <FaCalendarAlt className="w-7 h-7 text-violet-600 dark:text-violet-400" />,
-                  title: "Verifiable Result",
-                  description: "Completed exams generate verifiable certifications of score. A certificate with a QR code is issued to passing candidates."
-                }
-              ].map((guideline, index) => (
-                <motion.div
-                  key={index}
-                  className="bg-white dark:bg-neutral-900 p-6 rounded-2xl shadow border border-purple-50/20 dark:border-neutral-800 flex flex-col items-center text-center hover:shadow-lg transition-shadow"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1, duration: 0.5 }}
-                  viewport={{ once: true }}
-                >
-                  <div className="p-3 bg-purple-50 dark:bg-neutral-800/60 rounded-xl mb-4">
-                    {guideline.icon}
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
-                    {guideline.title}
-                  </h3>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                    {guideline.description}
-                  </p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Bottom Callout Section */}
-        <section className="py-20 max-w-4xl mx-auto text-center px-4">
-          <div className="bg-gradient-to-tr from-purple-800 to-indigo-900 text-white rounded-3xl p-10 sm:p-14 shadow-2xl relative overflow-hidden">
-            <div className="absolute inset-0 bg-grid opacity-10 pointer-events-none"></div>
-            
-            <h2 className="text-3xl sm:text-4xl font-extrabold mb-4">Ready to test your limits?</h2>
-            <p className="text-purple-200 mb-8 max-w-lg mx-auto text-sm sm:text-base leading-relaxed">
-              Ensure you have a reliable network connection and a distraction-free environment before starting this official exam.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              {timeLeft === "STARTED" ? (
-                <button 
-                  onClick={() => handleOpenQuiz(exam.id)}
-                  className="bg-white hover:bg-slate-100 text-purple-700 font-bold py-3.5 px-8 rounded-2xl shadow-lg transition-all transform hover:scale-[1.02]"
-                >
-                  Start Exam Now
-                </button>
-              ) : timeLeft === "ENDED" ? (
-                <div className="bg-red-500/20 text-red-200 border border-red-400/30 py-3.5 px-8 rounded-2xl font-bold">
-                  Exam Has Closed
-                </div>
-              ) : (
-                <div className="bg-white/10 text-white border border-white/20 py-3.5 px-8 rounded-2xl font-mono font-bold backdrop-blur">
-                  {timeLeft || "Timer starting..."}
-                </div>
-              )}
-              <button 
-                onClick={() => navigate("/ContactUs")}
-                className="bg-transparent hover:bg-white/10 text-white font-bold py-3.5 px-8 rounded-2xl border border-white/30 transition-all flex items-center justify-center gap-2"
-              >
-                <FaHeadphones className="w-3.5 h-3.5" /> Support Desk
-              </button>
-            </div>
-          </div>
-        </section>
-
-      </div>
+      </main>
     </Layout>
   );
 };

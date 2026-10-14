@@ -222,10 +222,10 @@ export default function AboutPage() {
           </p>
           <div className="pt-2 flex flex-wrap gap-3">
             <Link
-              to="/Notes&Books"
+              to="/DownloadNotes"
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:bg-neutral-800 transition-colors shadow-xs"
             >
-              <span>Explore Free Notes & Books</span>
+              <span>Explore Study Notes</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
             <Link

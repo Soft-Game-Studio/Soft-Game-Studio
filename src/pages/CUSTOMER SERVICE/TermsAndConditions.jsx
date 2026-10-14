@@ -220,7 +220,7 @@ const TermsAndConditions = () => {
             </div>
             <div className="space-y-3 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
               <p>
-                All materials hosted on our domains—including course syllabi, PDF notes, quiz questionnaires, software architecture guides, company marks, and visual graphics—remain the exclusive property of Soft Game Studio.
+                All materials hosted on our domains, including course syllabi, PDF notes, quiz questionnaires, software architecture guides, company marks, and visual graphics, remain the exclusive property of Soft Game Studio.
               </p>
               <p>
                 Reproduction, commercial resale, public re-hosting, or automated data harvesting without prior written permission is prohibited and subject to legal prosecution under The Copyright Act, 1957.

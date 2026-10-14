@@ -28,7 +28,7 @@ const DevelopmentPage = () => {
       title: "SGS Web Engine & Learning Portal",
       description: "Production React 18 single-page application powering developer notes, interactive KaTeX math rendering, and multi-format curriculum viewers.",
       technologies: ["React", "TailwindCSS", "Framer Motion", "KaTeX", "Vite"],
-      link: "/Notes&Books"
+      link: "/DownloadNotes"
     },
     {
       id: 2,
@@ -100,11 +100,11 @@ const DevelopmentPage = () => {
       </Helmet>
 
       <main className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 selection:bg-neutral-800 selection:text-white dark:selection:bg-neutral-200 dark:selection:text-neutral-900">
-        
+
         {/* ── Header ────────────────────────────────────────────────── */}
         <header className="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 py-12 sm:py-16">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            
+
             <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 mb-6">
               <Link to="/" className="hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors">
                 Home
@@ -133,7 +133,7 @@ const DevelopmentPage = () => {
 
               <div className="shrink-0 flex items-center gap-3">
                 <Link
-                  to="/SGS-Projects"
+                  to="/Projects"
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:bg-neutral-800 transition-colors shadow-xs"
                 >
                   <Layers className="w-3.5 h-3.5" />
@@ -160,7 +160,7 @@ const DevelopmentPage = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              
+
               <div className="p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs">
                 <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
                   <Code className="w-5 h-5 text-[#00ACF0]" />

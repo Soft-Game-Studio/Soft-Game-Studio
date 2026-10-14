@@ -1,4 +1,4 @@
-import React, { useEffect,  lazy, Suspense } from "react";
+import React, { useEffect, lazy, Suspense } from "react";
 import {
   BrowserRouter as Router,
   Route,
@@ -28,7 +28,6 @@ const OurMembers = lazy(() => import("./components/Members/OurMembers"));
 const AboutExam = lazy(() => import("./pages/CUSTOMER SERVICE/AboutSGSExam"));
 const ProductDetailsPage = lazy(() => import("./pages/Projects/ProductDetail"));
 
-const FreeNotesAndBooks = lazy(() => import("./pages/NotesAndBooks/FreeNotesAndBooks.jsx"));
 const HomePage = lazy(() => import("./components/Hero/HeroSection.jsx"));
 
 const DisplayCourses = lazy(() => import("./pages/Courses/Courses.jsx"));
@@ -53,6 +52,7 @@ const ResultsPage = lazy(() => import("./Exams/Result/Result.jsx"));
 
 const CommunityMembers = lazy(() => import("./components/Members/CommunityMembers.jsx"));
 const CertificatePage = lazy(() => import("./pages/Certiificate/CertificatePage.jsx"));
+const ExamCertificates = lazy(() => import("./Exams/Certificates/ExamCertificates.jsx"));
 
 const ProjectDetailsPage = lazy(() => import("./pages/SGSProject/SGSProjectDetaisl.jsx"));
 
@@ -86,99 +86,103 @@ import LoadingSpinner from "./components/Loarding/LoadingSpinner.jsx";
 function App() {
   return (
     <Suspense fallback={<LoadingSpinner />}>
-   <MyProvider>
-      <Router
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
-        <ScrollToTop />
-        <Routes>
-          {/*  Basic Links  */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<UserLogin />} />
-          <Route path="/signup" element={<UserSignup />} />
-          <Route path="/resetpassword" element={<UserResetPasswordPage />} />
-          {/* Redirection and 404 */}
-          <Route path="/redirect" element={<RedirectPage />} />
-          <Route path="/404" element={<NotFoundPage />} />
-          <Route path="/CopyrightPage" element={<CopyrightPage />} />
-          <Route path="/PrivacyPolicy" element={<Privacy />} />
-          <Route path="/ReturnPolicy" element={<ReturnPolicy />} />
-          <Route path="/ContactUs" element={<ContactUs />} />
-          <Route path="/TermsAndConditions" element={<TermsAndConditions />} />
-          <Route path="/About-SGS" element={<About />} />
-          <Route path="/About-Exam" element={<AboutExam />} />
-          <Route path="/Feedback" element={<FeedbackSection />} />
-          <Route path="/FAQs" element={<FAQItem />} />
-          <Route path="/CookiesPolicy" element={<CookiesPolicy />} />
-          <Route path="/OurMembers" element={<OurMembers />} />
-          <Route path="/OurCommunity" element={<CommunityMembers/>} />
-          <Route path="/AboutDevelopmet" element={<DevelopmentPage />} />
-          <Route path="/SuportUS" element={<SupportUs />} />
+      <MyProvider>
+        <Router
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
+          <ScrollToTop />
+          <Routes>
+            {/*  Basic Links  */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<UserLogin />} />
+            <Route path="/signup" element={<UserSignup />} />
+            <Route path="/resetpassword" element={<UserResetPasswordPage />} />
+            {/* Redirection and 404 */}
+            <Route path="/redirect" element={<RedirectPage />} />
+            <Route path="/404" element={<NotFoundPage />} />
+            <Route path="/CopyrightPage" element={<CopyrightPage />} />
+            <Route path="/PrivacyPolicy" element={<Privacy />} />
+            <Route path="/ReturnPolicy" element={<ReturnPolicy />} />
+            <Route path="/ContactUs" element={<ContactUs />} />
+            <Route path="/TermsAndConditions" element={<TermsAndConditions />} />
+            <Route path="/About-SGS" element={<About />} />
+            <Route path="/About-Exam" element={<AboutExam />} />
+            <Route path="/Feedback" element={<FeedbackSection />} />
+            <Route path="/FAQs" element={<FAQItem />} />
+            <Route path="/CookiesPolicy" element={<CookiesPolicy />} />
+            <Route path="/OurMembers" element={<OurMembers />} />
+            <Route path="/OurCommunity" element={<CommunityMembers />} />
+            <Route path="/AboutDevelopmet" element={<DevelopmentPage />} />
+            <Route path="/SuportUS" element={<SupportUs />} />
 
-          {/*  Product and Roots  */}
-          <Route path="/Cart" element={<Cart />} />
-          <Route path="/Project" element={<ProductsPage />} />
-          <Route path="/Project-Details/:id" element={<ProductDetailsPage />} />
-        
-
-          {/* Notes & Books Routes */}
-          <Route path="/Notes&Books" element={<FreeNotesAndBooks />} />
-          <Route path="/UploadNotes" element={<UploadNotes />} />
-          <Route path="/DownloadNotes" element={<Notes />} />
-          <Route path="/DownloadNotes/:id" element={<NoteDetail />} />
-          <Route path="/NoteQuiz/:id" element={<NoteQuizExam />} />
-
-          {/* Our Corses */}
-
-          <Route path="/OurCourse" element={<DisplayCourses />} />
-          <Route path="/SingleCourse/:id" element={<SingleCourse />} />
-          <Route path="/PlayListCourse/:id" element={<PlayListCourse />} />
-
-          {/* Our Ebooks */}
-
-          <Route path="/E-Books" element={<EbookCatalog />} />
-          <Route path="/E-Books/:id" element={<EbookReader />} />
-
-          {/* User Profile */}
-
-          <Route path="/Profile" element={<ProfilePage />} />
-
-          {/* App Page */}
-
-          <Route path="/game" element={<GamesListPage />} />
-          <Route path="/game/:id" element={<GamePage />} />
-          
-
-          {/* SGS PROJECT PAGE */}
-
-          <Route path="/SGS-Projects" element={<SGSProject />} />
-           <Route path="/SGS-Projects/:id" element={<ProjectDetailsPage />} />
-
-   
-           {/* SGS Exams official */}
-          <Route path="/SGS-Quiz-Official" element={<OfficialQuizList/>} />
-          <Route path="/SGS-Quiz-Official/:id" element={<OfficialQuizExam/>} />
-          <Route path="/SGS-Details-Official/:id" element={<OfficialQuizDetails/>} />
-          <Route path="/Official-Results" element={<ResultsPage/>} />
-          <Route path="/SGSCERT/:rollNumber" element={<CertificatePage/>} />
-
-          {/* SGS official hackthone */}
-          <Route path="/event" element={<EventsListing/>} />
-          <Route path="/event/:id" element={<ProtectedRoute><DynamicEventPage/></ProtectedRoute>} />
+            {/*  Product and Roots  */}
+            <Route path="/Cart" element={<Cart />} />
+            <Route path="/Project" element={<ProductsPage />} />
+            <Route path="/Project-Details/:id" element={<ProductDetailsPage />} />
 
 
+            {/* Notes & Books Routes */}
+            <Route path="/Notes&Books" element={<Navigate to="/DownloadNotes" replace />} />
+            <Route path="/UploadNotes" element={<UploadNotes />} />
+            <Route path="/DownloadNotes" element={<Notes />} />
+            <Route path="/DownloadNotes/:id" element={<NoteDetail />} />
+            <Route path="/NoteQuiz/:id" element={<NoteQuizExam />} />
 
-          {/* Wildcard 404 Route */}
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-        <ToastContainer />
-      </Router>
-    </MyProvider>
+            {/* Our Corses */}
+
+            <Route path="/OurCourse" element={<DisplayCourses />} />
+            <Route path="/SingleCourse/:id" element={<SingleCourse />} />
+            <Route path="/PlayListCourse/:id" element={<PlayListCourse />} />
+
+            {/* Our Ebooks */}
+
+            <Route path="/E-Books" element={<EbookCatalog />} />
+            <Route path="/E-Books/:id" element={<EbookReader />} />
+
+            {/* User Profile */}
+
+            <Route path="/Profile" element={<ProfilePage />} />
+
+            {/* App Page */}
+
+            <Route path="/Game" element={<GamesListPage />} />
+            <Route path="/Game/:id" element={<GamePage />} />
+
+
+            {/* SGS PROJECT PAGE */}
+
+            <Route path="/Projects" element={<SGSProject />} />
+            <Route path="/Projects/:id" element={<ProjectDetailsPage />} />
+
+
+            {/* SGS Exams official */}
+            <Route path="/Exam" element={<OfficialQuizList />} />
+            <Route path="/Exam/:id" element={<OfficialQuizExam />} />
+            <Route path="/ExamDetails/:id" element={<OfficialQuizDetails />} />
+            <Route path="/Result" element={<ResultsPage />} />
+            <Route path="/Result/Certificates" element={<ExamCertificates />} />
+            <Route path="/Result/Certificates/:rollNumber" element={<ExamCertificates />} />
+            <Route path="/Exam/Certificates" element={<ExamCertificates />} />
+            <Route path="/Exam/Certificates/:rollNumber" element={<ExamCertificates />} />
+            <Route path="/SGSCERT/:rollNumber" element={<ExamCertificates />} />
+
+            {/* SGS official hackthone */}
+            <Route path="/event" element={<EventsListing />} />
+            <Route path="/event/:id" element={<ProtectedRoute><DynamicEventPage /></ProtectedRoute>} />
+
+
+
+            {/* Wildcard 404 Route */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+          <ToastContainer />
+        </Router>
+      </MyProvider>
     </Suspense>
- 
+
   );
 }
 
@@ -187,10 +191,10 @@ export default App;
 // user
 
 export const ProtectedRoute = ({ children }) => {
- const { user, loading } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
-    return <LoadingSpinner/>; // ⏳ prevent instant redirect
+    return <LoadingSpinner />; // ⏳ prevent instant redirect
   }
 
   return user ? children : <Navigate to="/login" />;

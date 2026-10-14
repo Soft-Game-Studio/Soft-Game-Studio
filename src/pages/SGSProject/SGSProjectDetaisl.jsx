@@ -156,10 +156,10 @@ export default function ProjectDetailsPage() {
       return isNaN(d.getTime())
         ? null
         : d.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-          });
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        });
     } catch {
       return null;
     }
@@ -220,7 +220,7 @@ export default function ProjectDetailsPage() {
       description: project.shortDescription || project.description,
       applicationCategory: project.category || project.projectType?.category || 'DeveloperApplication',
       operatingSystem: project.projectType?.platform || 'Web',
-      url: `https://softgamestudios.web.app/SGS-Projects/${project.id}`,
+      url: `https://softgamestudios.web.app/Projects/${project.id}`,
       author: {
         '@type': 'Organization',
         name: 'Soft Game Studio',
@@ -282,7 +282,7 @@ export default function ProjectDetailsPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-2.5 justify-center pt-2">
               <button
-                onClick={() => navigate('/SGS-Projects')}
+                onClick={() => navigate('/Projects')}
                 className="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 transition-colors"
               >
                 Browse All Projects
@@ -301,7 +301,7 @@ export default function ProjectDetailsPage() {
   const hasDescription = Boolean(project.description?.trim());
   const hasImage = Boolean(project.photoUrl);
   const hasLiveDemo = Boolean(project.deployLink?.trim());
-  const currentUrl = `https://softgamestudios.web.app/SGS-Projects/${project.id}`;
+  const currentUrl = `https://softgamestudios.web.app/Projects/${project.id}`;
 
   return (
     <Layout>
@@ -329,7 +329,7 @@ export default function ProjectDetailsPage() {
           {/* Top Breadcrumbs & Actions Toolbar */}
           <div className="flex flex-wrap items-center justify-between gap-4">
             <Link
-              to="/SGS-Projects"
+              to="/Projects"
               className="inline-flex items-center gap-2 text-xs font-semibold text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
             >
               <FaArrowLeft className="text-xs" /> Back to Projects Directory
@@ -407,9 +407,8 @@ export default function ProjectDetailsPage() {
                   <img
                     src={project.photoUrl}
                     alt={`${project.name} system preview`}
-                    className={`w-full h-full object-cover transition-opacity duration-300 ${
-                      imgLoaded ? 'opacity-100' : 'opacity-0'
-                    }`}
+                    className={`w-full h-full object-cover transition-opacity duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'
+                      }`}
                     loading="lazy"
                     onLoad={() => setImgLoaded(true)}
                     onError={(e) => {
@@ -435,9 +434,8 @@ export default function ProjectDetailsPage() {
                     )}
                   </div>
 
-                  <div className={`text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-line leading-relaxed ${
-                    !showFullDesc && project.description.length > 500 ? 'line-clamp-6' : ''
-                  }`}>
+                  <div className={`text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-line leading-relaxed ${!showFullDesc && project.description.length > 500 ? 'line-clamp-6' : ''
+                    }`}>
                     {project.description}
                   </div>
 
@@ -674,7 +672,7 @@ export default function ProjectDetailsPage() {
                 Inquire About Source Code
               </button>
               <Link
-                to="/SGS-Projects"
+                to="/Projects"
                 className="px-5 py-2.5 rounded-xl text-xs font-semibold border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
               >
                 Browse All Projects

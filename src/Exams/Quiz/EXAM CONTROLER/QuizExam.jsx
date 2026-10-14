@@ -7,167 +7,196 @@ import {
   query,
   where,
   getDocs,
-  runTransaction
+  runTransaction,
 } from "firebase/firestore";
 import { toast } from "react-toastify";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import Layout from "../../../components/layout/Layout";
+import ExamPanelNav from "../../Common/ExamPanelNav";
 import { fireDB } from "../../../DataBase/firebaseConfig";
 import { getUserData } from "../../../Modules/UserData";
 import { useAuth } from "../../../AuthProvide";
-import { FaLock, FaExclamationTriangle, FaCode, FaCheckCircle, FaAward, FaCalendarAlt, FaClock } from "react-icons/fa";
-import { motion } from "framer-motion";
+import {
+  Lock,
+  AlertTriangle,
+  Code,
+  CheckCircle2,
+  Award,
+  Calendar,
+  Clock,
+  Maximize2,
+  ShieldCheck,
+  ShieldAlert,
+  ArrowRight,
+  ArrowLeft,
+  XCircle,
+  Eye,
+  FileText,
+} from "lucide-react";
 
-const Certificate = ({ name, rollNumber, examName, date, language, score, Que }) => {
-  const progress = Que > 0 ? (score / Que) * 100 : 0;
-
-  return (
-    <div className="max-w-xl mx-auto bg-white dark:bg-neutral-900 border-4 border-double border-purple-500 rounded-3xl shadow-glow p-8 text-center font-sans relative overflow-hidden transition-all duration-300">
-      {/* Background Watermark/Badges */}
-      <div className="absolute -top-10 -right-10 w-40 h-40 bg-purple-100 dark:bg-purple-950/20 rounded-full blur-2xl pointer-events-none"></div>
-      <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-100 dark:bg-indigo-950/20 rounded-full blur-2xl pointer-events-none"></div>
-      
-      {/* Header */}
-      <div className="mb-6 relative z-10">
-        <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/40 rounded-full flex items-center justify-center mx-auto mb-3 shadow">
-          <FaAward className="w-8 h-8 text-purple-650 dark:text-purple-400" />
-        </div>
-        <h1 className="text-3xl font-black text-purple-900 dark:text-white tracking-tight">
-          Certificate of Achievement
-        </h1>
-        <p className="text-purple-600 dark:text-purple-300 text-xs font-semibold uppercase tracking-wider mt-1">
-          SGS Quiz Certification Panel
-        </p>
-      </div>
-
-      {/* User Info Card */}
-      <div className="bg-purple-50/50 dark:bg-neutral-800/60 border border-purple-100/20 rounded-2xl p-6 mb-6 shadow-inner text-left relative z-10">
-        <div className="space-y-2 text-sm sm:text-base">
-          <p className="text-gray-700 dark:text-gray-200">
-            Candidate Name: <span className="font-bold text-purple-900 dark:text-purple-400">{name}</span>
-          </p>
-          <p className="text-gray-700 dark:text-gray-200">
-            Registration Roll: <span className="font-mono font-bold">{rollNumber}</span>
-          </p>
-          <p className="text-gray-700 dark:text-gray-200">
-            Exam Cleared: <span className="font-bold text-gray-900 dark:text-white">{examName}</span>
-          </p>
-          <p className="text-gray-700 dark:text-gray-200">
-            Environment: <span className="font-semibold">{language}</span>
-          </p>
-          <p className="text-gray-700 dark:text-gray-200">
-            Issue Date: <span className="font-semibold">{date}</span>
-          </p>
-          <div className="pt-2 border-t border-purple-100 dark:border-neutral-800 mt-2 flex justify-between items-center">
-            <span className="text-gray-600 dark:text-gray-400 text-xs">Performance Grade</span>
-            <span className="font-black text-purple-850 dark:text-purple-300">{score} / {Que} ({Math.round(progress)}%)</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="mb-6 relative z-10">
-        <div className="w-full bg-purple-100 dark:bg-neutral-800 rounded-full h-3.5 overflow-hidden border border-purple-200/10">
-          <div
-            className="bg-gradient-to-r from-purple-600 to-indigo-650 h-full rounded-full transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          ></div>
-        </div>
-      </div>
-
-      {/* Footer Info */}
-      <div className="bg-purple-50 dark:bg-neutral-800/40 rounded-xl p-3 border border-purple-100/10 mb-4 text-xs text-purple-800 dark:text-purple-300">
-        This document acts as an official record of online examination. A verifiable digital copy is dispatched via email.
-      </div>
-
-      <div className="text-[10px] uppercase text-gray-400 dark:text-gray-500 tracking-widest mt-4">
-        SGS Code Labs | Secure Exam Authority
-      </div>
-    </div>
-  );
-};
-
-// Exam keystroke & focus blocker hook
+/**
+ * Proctor Security Keystroke & Mouse Event Blocker Hook
+ * Disables context menus, copy/paste, text selection, and modifier keys.
+ */
 const useExamKeyLock = (enableLock = true, onDisqualify) => {
-  const attemptCount = useRef(0);
-
   useEffect(() => {
     if (!enableLock) return;
 
-    const handleCheatingAttempt = (keyCombination = '') => {
-      attemptCount.current += 1;
-      
-      if (attemptCount.current < 3) {
-        toast.warning(
-          `Warning ${attemptCount.current}/3: Keystroke ${keyCombination} is blocked to ensure exam integrity.`,
-          { autoClose: 3000 }
-        );
-      } else if (attemptCount.current === 3) {
-        toast.error(
-          `Final Warning! Any further window switch or modifier keystroke will invalidate this attempt.`,
-          { autoClose: 4000 }
-        );
-      } else {
-        onDisqualify(`Disqualified: Used restricted keys / combos (${keyCombination})`);
-      }
-    };
-
     const handleKeyDown = (e) => {
-      // Block standard modifier shortcuts
-      if (e.ctrlKey || e.altKey || e.shiftKey || e.metaKey) {
+      // Block standard modifier shortcuts: Ctrl, Alt, Meta (Windows/Cmd)
+      if (e.ctrlKey || e.altKey || e.metaKey) {
         const modifiers = [];
-        if (e.ctrlKey) modifiers.push('Ctrl');
-        if (e.altKey) modifiers.push('Alt');
-        if (e.shiftKey) modifiers.push('Shift');
-        if (e.metaKey) modifiers.push('Cmd');
-        handleCheatingAttempt(modifiers.join('+'));
+        if (e.ctrlKey) modifiers.push("Ctrl");
+        if (e.altKey) modifiers.push("Alt");
+        if (e.metaKey) modifiers.push("Cmd/Win");
+        modifiers.push(e.key);
         e.preventDefault();
+        e.stopPropagation();
+        onDisqualify(`Restricted modifier key combination pressed: ${modifiers.join("+")}`);
         return;
       }
 
-      // Block navigation and tooling keys
+      // Block inspection, refresh, function, and navigation keys
       const blockedKeys = [
-        'Tab', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 
-        'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
-        'Escape', 'PrintScreen', 'Insert', 'Delete',
-        'Home', 'End', 'PageUp', 'PageDown',
-        'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'
+        "Tab",
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5",
+        "F6",
+        "F7",
+        "F8",
+        "F9",
+        "F10",
+        "F11",
+        "F12",
+        "Escape",
+        "PrintScreen",
+        "Insert",
+        "Delete",
+        "Home",
+        "End",
+        "PageUp",
+        "PageDown",
+        "ContextMenu",
       ];
 
       if (blockedKeys.includes(e.key)) {
-        handleCheatingAttempt(e.key);
         e.preventDefault();
+        e.stopPropagation();
+        onDisqualify(`Restricted function/system key detected: ${e.key}`);
         return;
       }
     };
 
-    const handleContextMenu = (e) => e.preventDefault();
-    const handleCopyPaste = (e) => e.preventDefault();
+    const handlePrevent = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    };
 
-    window.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('contextmenu', handleContextMenu);
-    document.addEventListener('copy', handleCopyPaste);
-    document.addEventListener('cut', handleCopyPaste);
-    document.addEventListener('paste', handleCopyPaste);
+    window.addEventListener("keydown", handleKeyDown, true);
+    document.addEventListener("contextmenu", handlePrevent, true);
+    document.addEventListener("copy", handlePrevent, true);
+    document.addEventListener("cut", handlePrevent, true);
+    document.addEventListener("paste", handlePrevent, true);
+    document.addEventListener("dragstart", handlePrevent, true);
+    document.addEventListener("drop", handlePrevent, true);
+    document.addEventListener("selectstart", handlePrevent, true);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('contextmenu', handleContextMenu);
-      document.removeEventListener('copy', handleCopyPaste);
-      document.removeEventListener('cut', handleCopyPaste);
-      document.removeEventListener('paste', handleCopyPaste);
+      window.removeEventListener("keydown", handleKeyDown, true);
+      document.removeEventListener("contextmenu", handlePrevent, true);
+      document.removeEventListener("copy", handlePrevent, true);
+      document.removeEventListener("cut", handlePrevent, true);
+      document.removeEventListener("paste", handlePrevent, true);
+      document.removeEventListener("dragstart", handlePrevent, true);
+      document.removeEventListener("drop", handlePrevent, true);
+      document.removeEventListener("selectstart", handlePrevent, true);
     };
   }, [enableLock, onDisqualify]);
 };
 
+/**
+ * Compact Credential Preview Card for Step 2
+ */
+const CertificateBadgeCard = ({ name, rollNumber, examName, date, language, score, Que }) => {
+  const progress = Que > 0 ? (score / Que) * 100 : 0;
+
+  return (
+    <div className="max-w-xl mx-auto bg-[#0a0a0a] border border-neutral-800 rounded-3xl p-8 text-center font-sans relative overflow-hidden transition-all shadow-2xl">
+      <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 text-emerald-400">
+        <Award className="w-8 h-8" />
+      </div>
+
+      <h2 className="text-2xl font-bold text-white tracking-tight mb-1">
+        Official Certificate of Competency
+      </h2>
+      <p className="text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-6">
+        Soft Game Studio Examination Authority
+      </p>
+
+      <div className="bg-black/90 border border-neutral-800 rounded-2xl p-6 text-left text-xs sm:text-sm space-y-2.5 mb-6">
+        <div className="flex justify-between border-b border-neutral-900 pb-2">
+          <span className="text-neutral-500">Candidate Name:</span>
+          <span className="font-bold text-white">{name}</span>
+        </div>
+        <div className="flex justify-between border-b border-neutral-900 pb-2">
+          <span className="text-neutral-500">Candidate Roll:</span>
+          <span className="font-mono font-bold text-emerald-400">{rollNumber}</span>
+        </div>
+        <div className="flex justify-between border-b border-neutral-900 pb-2">
+          <span className="text-neutral-500">Assessment:</span>
+          <span className="font-semibold text-white">{examName}</span>
+        </div>
+        <div className="flex justify-between border-b border-neutral-900 pb-2">
+          <span className="text-neutral-500">Domain / Language:</span>
+          <span className="text-neutral-200">{language}</span>
+        </div>
+        <div className="flex justify-between border-b border-neutral-900 pb-2">
+          <span className="text-neutral-500">Date Authenticated:</span>
+          <span className="text-neutral-200">{date}</span>
+        </div>
+        <div className="flex justify-between items-center pt-1">
+          <span className="text-neutral-500">Final Score:</span>
+          <span className="font-bold text-emerald-400 font-mono text-base">
+            {score} / {Que} ({Math.round(progress)}%)
+          </span>
+        </div>
+      </div>
+
+      <div className="w-full bg-neutral-900 rounded-full h-2.5 overflow-hidden border border-neutral-800 mb-6">
+        <div
+          className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <p className="text-[11px] text-neutral-500 uppercase tracking-widest">
+        Official Ledger Record • Cryptographically Verifiable
+      </p>
+    </div>
+  );
+};
+
+/**
+ * Production-Grade Examination Terminal
+ * Features:
+ * - Professional High-Contrast Pure Black Theme
+ * - Full Screen Lockdown & Window Resize Disqualification
+ * - Keystroke, ContextMenu, Text Selection, and Copy/Paste Blocking
+ * - Active Monitored Question Console
+ */
 const OfficialQuizExam = () => {
   const { id: quizId } = useParams();
   const [date, setDate] = useState("");
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(0); // 0 = Rules/Ready, 1 = Active Exam Terminal, 2 = Results
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [isAlreadySubmitted, setIsAlreadySubmitted] = useState(false);
   const [isDisqualified, setIsDisqualified] = useState(false);
+  const [disqualificationReason, setDisqualificationReason] = useState("");
   const [filteredUser, setFilteredUser] = useState({});
   const [loading, setLoading] = useState(true);
   const [quizData, setQuizData] = useState(null);
@@ -177,6 +206,10 @@ const OfficialQuizExam = () => {
   const [Que, setQue] = useState(0);
   const [isExamWindowValid, setIsExamWindowValid] = useState(true);
   const [examWindowText, setExamWindowText] = useState("");
+  const [cooldown, setCooldown] = useState(false);
+
+  // Baseline dimensions for resize monitoring
+  const baselineDimensions = useRef({ width: 0, height: 0 });
 
   // Fetch users
   useEffect(() => {
@@ -187,7 +220,7 @@ const OfficialQuizExam = () => {
     fetchData();
   }, []);
 
-  // Filter candidate
+  // Filter current authenticated candidate
   useEffect(() => {
     if (!user || !userList.length) return;
 
@@ -200,17 +233,111 @@ const OfficialQuizExam = () => {
 
   // Set date
   useEffect(() => {
-    setDate(new Date().toLocaleDateString('en-GB'));
+    setDate(new Date().toLocaleDateString("en-GB"));
   }, []);
 
-  // Before unload block
+  // Handle disqualification
+  const handleDisqualification = useCallback(
+    async (reason = "Cheating violation detected") => {
+      if (!filteredUser?.uid || !quizData || isDisqualified) return;
+
+      setDisqualificationReason(reason);
+      setIsDisqualified(true);
+
+      try {
+        await addDoc(collection(fireDB, "user_Quiz_Answers"), {
+          quizId,
+          uid: filteredUser.uid,
+          email: filteredUser.email,
+          name: filteredUser.name || "Candidate",
+          rollNumber: filteredUser.rollNumber || "N/A",
+          language: quizData.language || "Computer Science",
+          timestamp: new Date(),
+          disqualified: true,
+          reason: reason,
+        });
+        toast.error(`Exam Terminated: ${reason}`);
+      } catch (err) {
+        console.error("Disqualification sync error:", err);
+      }
+    },
+    [filteredUser, quizData, quizId, isDisqualified]
+  );
+
+  // Bind security keystroke lock during Step 1 (active test)
+  useExamKeyLock(step === 1 && !isAlreadySubmitted && !isDisqualified, handleDisqualification);
+
+  // Window Resize, Fullscreen, Blur & Tab Visibility Watchdog
+  useEffect(() => {
+    if (step !== 1 || isAlreadySubmitted || isDisqualified) return;
+
+    // Set baseline dimensions
+    baselineDimensions.current = {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    };
+
+    // 1. Detect Window Resizing (Split-screen, restore down, DevTools dock opening)
+    const handleWindowResize = () => {
+      if (step !== 1 || isAlreadySubmitted || isDisqualified) return;
+
+      const currentW = window.innerWidth;
+      const currentH = window.innerHeight;
+      const deltaW = Math.abs(currentW - baselineDimensions.current.width);
+      const deltaH = Math.abs(currentH - baselineDimensions.current.height);
+
+      if (deltaW > 25 || deltaH > 25) {
+        handleDisqualification("Window resize or split-screen detected during examination");
+      }
+    };
+
+    // 2. Detect Full-Screen Exit
+    const handleFullscreenChange = () => {
+      if (step !== 1 || isAlreadySubmitted || isDisqualified) return;
+
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        handleDisqualification("Full-screen mode terminated during examination session");
+      }
+    };
+
+    // 3. Detect Window Blur / Focus Loss (User clicked into another app or window)
+    const handleWindowBlur = () => {
+      if (step !== 1 || isAlreadySubmitted || isDisqualified) return;
+      handleDisqualification("Browser window lost focus or switched application");
+    };
+
+    // 4. Detect Tab Switch / Minimize
+    const handleVisibilityChange = () => {
+      if (document.hidden && step === 1 && !isAlreadySubmitted && !isDisqualified) {
+        handleDisqualification("Switched browser tab or minimized examination window");
+      }
+    };
+
+    window.addEventListener("resize", handleWindowResize);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    window.addEventListener("blur", handleWindowBlur);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("resize", handleWindowResize);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenExit);
+      window.removeEventListener("blur", handleWindowBlur);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [step, isAlreadySubmitted, isDisqualified, handleDisqualification]);
+
+  // Prevent back navigation or page unload
   useEffect(() => {
     const handlePopState = () => {
-      if (step === 1 && !isAlreadySubmitted) handleSubmit();
+      if (step === 1 && !isAlreadySubmitted && !isDisqualified) {
+        handleSubmit();
+      }
     };
 
     const handleBeforeUnload = (e) => {
-      if (step === 1 && !isAlreadySubmitted) {
+      if (step === 1 && !isAlreadySubmitted && !isDisqualified) {
         e.preventDefault();
         handleSubmit();
         e.returnValue = "";
@@ -219,56 +346,14 @@ const OfficialQuizExam = () => {
 
     window.addEventListener("popstate", handlePopState);
     window.addEventListener("beforeunload", handleBeforeUnload);
-    
+
     return () => {
       window.removeEventListener("popstate", handlePopState);
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [step, isAlreadySubmitted]);
+  }, [step, isAlreadySubmitted, isDisqualified]);
 
-  // Disqualify database submission
-  const handleDisqualification = useCallback(async (reason = "Cheating - switched tab") => {
-    if (!filteredUser?.uid || !quizData) return;
-    try {
-      await addDoc(collection(fireDB, "user_Quiz_Answers"), {
-        quizId,
-        uid: filteredUser.uid,
-        email: filteredUser.email,
-        name: filteredUser.name,
-        rollNumber: filteredUser.rollNumber,
-        language: quizData.language,
-        timestamp: new Date(),
-        disqualified: true,
-        reason: reason,
-      });
-      setIsDisqualified(true);
-      toast.error("You have been disqualified for violating exam regulations.");
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 3000);
-    } catch (err) {
-      console.error("Disqualification error:", err);
-    }
-  }, [filteredUser, quizData, quizId]);
-
-  // Tab change visibility listener
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden && step === 1 && !isAlreadySubmitted && !isDisqualified) {
-        handleDisqualification("Cheating - switched browser tab / window");
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [step, isAlreadySubmitted, isDisqualified, handleDisqualification]);
-
-  // Run key lock hooks
-  useExamKeyLock(step === 1, handleDisqualification);
-
-  // Fetch quiz and shuffle questions/options
+  // Fetch quiz & shuffle questions/options
   useEffect(() => {
     const fetchQuiz = async () => {
       if (!quizId) {
@@ -279,10 +364,11 @@ const OfficialQuizExam = () => {
       try {
         const docRef = doc(fireDB, "quizzes", quizId);
         const docSnap = await getDoc(docRef);
+
         if (docSnap.exists()) {
           const rawData = docSnap.data();
           if (rawData && rawData.questions && Array.isArray(rawData.questions)) {
-            // Shuffling options per question, keeping reference of correctAnswer
+            // Shuffle options per question
             const shuffledQuestions = rawData.questions.map((q) => {
               if (!q.options || !q.correctAnswer) return q;
 
@@ -292,7 +378,6 @@ const OfficialQuizExam = () => {
               );
 
               const shuffledEntries = [...optionEntries].sort(() => Math.random() - 0.5);
-
               const newOptions = {};
               let newCorrectAnswer = q.correctAnswer;
 
@@ -314,12 +399,12 @@ const OfficialQuizExam = () => {
               };
             });
 
-            // Fisher-Yates shuffle overall questions array
-            const fullyShuffledQuestions = [...shuffledQuestions].sort(() => Math.random() - 0.5);
+            // Shuffle questions overall
+            const fullyShuffled = [...shuffledQuestions].sort(() => Math.random() - 0.5);
 
             setQuizData({
               ...rawData,
-              questions: fullyShuffledQuestions,
+              questions: fullyShuffled,
             });
           } else {
             setQuizData(rawData);
@@ -334,17 +419,18 @@ const OfficialQuizExam = () => {
         setLoading(false);
       }
     };
+
     fetchQuiz();
   }, [quizId]);
 
-  // Client-side exam start & end window checker
+  // Window schedule checker
   useEffect(() => {
     if (!quizData) return;
 
     const checkWindow = () => {
       const now = Date.now();
       const startTime = quizData.examStart ? new Date(quizData.examStart).getTime() : null;
-      const endTime   = quizData.examEnd   ? new Date(quizData.examEnd).getTime()   : null;
+      const endTime = quizData.examEnd ? new Date(quizData.examEnd).getTime() : null;
 
       if (!startTime || !endTime) {
         setIsExamWindowValid(true);
@@ -357,10 +443,10 @@ const OfficialQuizExam = () => {
         const h = Math.floor(diff / 3600000);
         const m = Math.floor((diff % 3600000) / 60000);
         const s = Math.floor((diff % 60000) / 1000);
-        setExamWindowText(`Exam is upcoming. Starts in ${h}H ${m}M ${s}S`);
+        setExamWindowText(`Assessment scheduled. Starts in ${h}h ${m}m ${s}s`);
       } else if (now > endTime) {
         setIsExamWindowValid(false);
-        setExamWindowText("Exam window has already expired.");
+        setExamWindowText("Assessment window has expired.");
       } else {
         setIsExamWindowValid(true);
       }
@@ -371,7 +457,7 @@ const OfficialQuizExam = () => {
     return () => clearInterval(timer);
   }, [quizData]);
 
-  // Check if candidate already submitted
+  // Verify prior submission or disqualification
   useEffect(() => {
     const checkSubmission = async () => {
       if (!filteredUser?.uid || !quizData) return;
@@ -382,11 +468,13 @@ const OfficialQuizExam = () => {
           where("quizId", "==", quizId)
         );
         const querySnapshot = await getDocs(q);
+
         if (!querySnapshot.empty) {
           setIsAlreadySubmitted(true);
           const docData = querySnapshot.docs[0].data();
           if (docData?.disqualified) {
             setIsDisqualified(true);
+            setDisqualificationReason(docData.reason || "Disqualified for exam regulations breach");
           }
           setScore(docData.score || 0);
           setQue(docData.NoQuestion || 0);
@@ -397,6 +485,26 @@ const OfficialQuizExam = () => {
     };
     checkSubmission();
   }, [filteredUser, quizData, quizId]);
+
+  // Launch Fullscreen and transition to Step 1
+  const handleStartExam = async () => {
+    try {
+      if (document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+      } else if (document.documentElement.webkitRequestFullscreen) {
+        await document.documentElement.webkitRequestFullscreen();
+      }
+    } catch (err) {
+      console.warn("Fullscreen request error:", err);
+    }
+
+    baselineDimensions.current = {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    };
+
+    setStep(1);
+  };
 
   const handleRadioChange = (index, option) => {
     setSelectedAnswers((prev) => ({ ...prev, [index]: option }));
@@ -417,8 +525,8 @@ const OfficialQuizExam = () => {
 
   const generateCertificateNo = async () => {
     const currentYearShort = new Date().getFullYear().toString().slice(-2);
-    const prefix = `SGSCERT${currentYearShort}`;
-    const counterRef = doc(fireDB, 'CirtificateNo', `roll_numbers_${currentYearShort}`);
+    const prefix = `Result/Certificates${currentYearShort}`;
+    const counterRef = doc(fireDB, "CirtificateNo", `roll_numbers_${currentYearShort}`);
 
     try {
       let rollNumber;
@@ -428,55 +536,54 @@ const OfficialQuizExam = () => {
         const newNumber = lastNumber + 1;
 
         transaction.set(counterRef, { lastNumber: newNumber }, { merge: true });
-        rollNumber = `${prefix}${String(newNumber).padStart(4, '0')}`;
+        rollNumber = `${prefix}${String(newNumber).padStart(4, "0")}`;
       });
       return rollNumber;
     } catch (error) {
-      console.error("Certificate generation failed:", error);
-      return `${prefix}${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+      console.error("Certificate generation error:", error);
+      return `${prefix}${String(Math.floor(Math.random() * 10000)).padStart(4, "0")}`;
     }
   };
-
-  const [cooldown, setCooldown] = useState(false);
 
   const handleSubmit = async () => {
     if (isAlreadySubmitted || isDisqualified || cooldown) return;
 
     if (!filteredUser?.uid) {
-      toast.error("User authenticated details missing.");
+      toast.error("User authentication details missing.");
       return;
     }
 
-    if (!quizData) {
-      toast.error("Quiz data missing.");
+    if (!quizData || !quizData.questions) {
+      toast.error("Examination data unavailable.");
       return;
     }
 
     setCooldown(true);
-    setTimeout(() => setCooldown(false), 10000);
 
     let correctCount = 0;
-    quizData.questions.forEach((q, i) => {
-      if (selectedAnswers[i] === q.correctAnswer) correctCount++;
+    quizData.questions.forEach((q, index) => {
+      const selected = selectedAnswers[index];
+      if (selected && selected === q.correctAnswer) {
+        correctCount += 1;
+      }
     });
 
     const NoQuestion = quizData.questions.length;
+    const certificateNo = await generateCertificateNo();
+    const formattedDate = new Date().toLocaleDateString("en-GB");
 
     try {
-      const certificateNo = await generateCertificateNo();
-      const today = new Date();
-      const formattedDate = today.toLocaleDateString('en-GB');
-
       await addDoc(collection(fireDB, "user_Quiz_Answers"), {
         quizId,
-        language: quizData.language,
         uid: filteredUser.uid,
         email: filteredUser.email,
         name: filteredUser.name,
         rollNumber: filteredUser.rollNumber,
-        timestamp: new Date(),
-        score: correctCount,
         examName: quizData.name,
+        language: quizData.language,
+        score: correctCount,
+        selectedAnswers,
+        timestamp: new Date(),
         certificateNo,
         date: formattedDate,
         NoQuestion,
@@ -485,318 +592,490 @@ const OfficialQuizExam = () => {
       setIsAlreadySubmitted(true);
       setScore(correctCount);
       setQue(NoQuestion);
-      toast.success("Exam answers stored successfully!");
+      toast.success("Examination submitted and authenticated successfully!");
+
+      // Exit fullscreen mode upon completion
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+
       setStep(2);
     } catch (err) {
       console.error("Submit error:", err);
-      toast.error("Submission failed. Please contact the administrator.");
+      toast.error("Submission failed. Please contact administrator.");
+    } finally {
+      setCooldown(false);
     }
   };
 
+  // 1. Loading State
   if (loading) {
     return (
-      <Layout>
-        <div className="flex flex-col justify-center items-center min-h-[85vh] bg-slate-50 dark:bg-neutral-950 gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent shadow-md"></div>
-          <p className="text-purple-600 dark:text-purple-400 font-semibold">Validating session...</p>
-        </div>
-      </Layout>
+      <div className="flex flex-col justify-center items-center min-h-screen bg-black text-white gap-4">
+        <div className="w-12 h-12 border-3 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
+        <p className="text-neutral-400 font-mono text-xs uppercase tracking-widest">
+          Initiating Secure Assessment Session...
+        </p>
+      </div>
     );
   }
 
-  if (!quizData) {
+  // 2. Disqualified State (Absolute Screen Lockdown)
+  if (isDisqualified) {
     return (
-      <Layout>
-        <div className="max-w-4xl mx-auto p-8 text-center min-h-[70vh] flex flex-col items-center justify-center">
-          <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 p-8 rounded-3xl shadow">
-            <FaExclamationTriangle className="text-5xl mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Quiz Database Error</h2>
-            <p className="text-sm">The quiz requested could not be resolved in the database.</p>
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 select-none font-sans">
+        <div className="max-w-xl w-full bg-[#0a0a0a] border border-red-900/60 rounded-3xl p-8 sm:p-10 shadow-2xl text-center relative overflow-hidden">
+          <div className="w-20 h-20 bg-red-950/40 border border-red-500/30 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+            <ShieldAlert className="w-10 h-10" />
+          </div>
+
+          <span className="inline-block px-3 py-1 rounded-full text-xs font-mono font-bold uppercase bg-red-950/60 text-red-400 border border-red-800/80 mb-3 tracking-widest">
+            Security Infraction Detected
+          </span>
+
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-3">
+            Examination Terminated: Disqualified
+          </h1>
+
+          <p className="text-sm text-neutral-400 leading-relaxed mb-6">
+            In strict compliance with Soft Game Studio Anti-Cheat Proctoring Governance, this session has
+            been terminated and permanently logged as disqualified.
+          </p>
+
+          <div className="p-4 rounded-xl bg-black border border-neutral-800 text-left text-xs font-mono space-y-2 mb-8">
+            <div className="flex justify-between border-b border-neutral-900 pb-1.5">
+              <span className="text-neutral-500">Candidate:</span>
+              <span className="text-neutral-200">{filteredUser?.name || "Candidate"}</span>
+            </div>
+            <div className="flex justify-between border-b border-neutral-900 pb-1.5">
+              <span className="text-neutral-500">Roll Number:</span>
+              <span className="text-emerald-400 font-bold">{filteredUser?.rollNumber || "N/A"}</span>
+            </div>
+            <div className="flex justify-between border-b border-neutral-900 pb-1.5">
+              <span className="text-neutral-500">Assessment:</span>
+              <span className="text-neutral-200">{quizData?.name || "Exam"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-neutral-500">Policy Trigger:</span>
+              <span className="text-red-400 font-semibold">{disqualificationReason || "Infraction"}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <a
+              href="/"
+              className="flex-1 py-3 px-6 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-200 text-xs font-semibold border border-neutral-800 transition-colors"
+            >
+              Return to Home
+            </a>
+            <a
+              href="/ContactUs"
+              className="flex-1 py-3 px-6 rounded-xl bg-red-950/60 hover:bg-red-900 text-red-300 text-xs font-semibold border border-red-900 transition-colors"
+            >
+              Contact Administration
+            </a>
           </div>
         </div>
-      </Layout>
+      </div>
     );
   }
 
-  if (!user){
+  // 3. User Authentication Required
+  if (!user) {
     return (
       <Layout>
-        <div className="flex flex-col justify-center items-center min-h-[85vh] bg-slate-50 dark:bg-neutral-950 gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent shadow-md"></div>
-          <p className="text-purple-600 dark:text-purple-400 font-semibold">Please Login to Continue...</p>
+        <div className="flex flex-col justify-center items-center min-h-[85vh] bg-black text-white gap-4 p-6">
+          <div className="w-16 h-16 rounded-2xl bg-neutral-900 border border-neutral-800 flex items-center justify-center text-emerald-400 mb-2">
+            <Lock className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-bold">Authentication Required</h2>
+          <p className="text-neutral-400 text-sm max-w-sm text-center mb-4">
+            You must be logged into an authenticated candidate account to launch proctored examinations.
+          </p>
+          <a
+            href="/login"
+            className="px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors"
+          >
+            Candidate Login
+          </a>
         </div>
       </Layout>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-slate-50 dark:bg-neutral-950 text-gray-800 dark:text-gray-200 transition-colors duration-300">
-      
-      {/* STEP 0: Welcome and Instructions */}
-      {step === 0 && (
-        <Layout>
-          <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
-            <div className="bg-white dark:bg-neutral-900 border border-purple-50/50 dark:border-neutral-800 rounded-3xl shadow-xl overflow-hidden p-6 sm:p-10">
-              <h1 className="text-3xl font-black text-center text-purple-600 dark:text-purple-400 mb-2">
-                {quizData.name} Exam
-              </h1>
-              
-              <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-8">
-                Authenticated Candidate:{" "}
-                <span className="font-bold text-gray-800 dark:text-white">
-                  {filteredUser?.name || "N/A"}
+  // 4. STEP 0: Instructions & Full Screen Launch Console
+  if (step === 0) {
+    return (
+      <Layout>
+        <ExamPanelNav activeTab="exams" />
+        <main className="min-h-screen bg-black text-neutral-100 antialiased py-12 px-4 sm:px-6 lg:px-8 select-none">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-[#0a0a0a] border border-neutral-800 rounded-3xl p-6 sm:p-10 shadow-2xl">
+              {/* Header Title */}
+              <div className="text-center mb-8 pb-6 border-b border-neutral-800">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-neutral-900 border border-neutral-800 text-emerald-400 mb-3 uppercase tracking-wider">
+                  <ShieldCheck className="w-3.5 h-3.5" /> Proctored Examination Console
                 </span>
-              </p>
+                <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+                  {quizData?.name}
+                </h1>
+                <p className="text-xs sm:text-sm text-neutral-400 mt-2 font-mono">
+                  Candidate: <strong className="text-white">{filteredUser?.name || user.email}</strong> •
+                  Roll Number:{" "}
+                  <strong className="text-emerald-400">{filteredUser?.rollNumber || "Assigned"}</strong>
+                </p>
+              </div>
 
+              {/* Already Completed Notice */}
               {isAlreadySubmitted ? (
-                isDisqualified ? (
-                  <div className="bg-red-50 dark:bg-red-950/20 border border-red-200/20 text-red-500 dark:text-red-400 p-6 rounded-2xl text-center flex flex-col items-center gap-2">
-                    <FaExclamationTriangle className="text-3xl" />
-                    <h3 className="font-bold text-lg">Attempt Disqualified</h3>
-                    <p className="text-sm">This attempt was disqualified due to tab switches or restricted browser operations.</p>
+                <div className="space-y-6 text-center">
+                  <div className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-800 text-emerald-400 text-sm font-semibold flex items-center justify-center gap-2">
+                    <CheckCircle2 className="w-5 h-5" /> You have already completed this assessment.
                   </div>
-                ) : (
-                  <div className="space-y-8">
-                    <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/20 text-emerald-600 dark:text-emerald-400 p-4 rounded-2xl text-center font-bold flex items-center justify-center gap-2">
-                      <FaCheckCircle /> You have completed this exam.
-                    </div>
-                    
-                    <Certificate
-                      name={filteredUser.name}
-                      rollNumber={filteredUser.rollNumber}
-                      examName={quizData.name}
-                      date={date}
-                      language={quizData.language}
-                      score={score}
-                      Que={Que}
-                    />
+                  <CertificateBadgeCard
+                    name={filteredUser.name}
+                    rollNumber={filteredUser.rollNumber}
+                    examName={quizData.name}
+                    date={date}
+                    language={quizData.language}
+                    score={score}
+                    Que={Que}
+                  />
+                  <div className="pt-4 flex justify-center gap-4">
+                    <Link
+                      to={`/Result/Certificates/${encodeURIComponent(filteredUser.rollNumber)}`}
+                      className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors"
+                    >
+                      View in Certificate Registry
+                    </Link>
                   </div>
-                )
+                </div>
               ) : (
+                /* Protocol Checklist */
                 <div className="space-y-8">
-                  {/* Warning Alerts */}
-                  <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200/30 text-amber-700 dark:text-amber-400 p-5 rounded-2xl flex items-start gap-3">
-                    <FaExclamationTriangle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  {/* Strict Window Resize / Fullscreen Warning Alert */}
+                  <div className="p-5 rounded-2xl bg-red-950/30 border border-red-900/60 text-red-300 text-xs sm:text-sm flex items-start gap-3.5">
+                    <AlertTriangle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
                     <div>
-                      <h4 className="font-bold text-sm">Mandatory Regulations</h4>
-                      <p className="text-xs mt-1 leading-relaxed">
-                        Do not click away, switch windows, open developer tools, or press keys like Tab/Ctrl/PrintScreen. Your session is monitored; violations result in immediate disqualification.
+                      <h4 className="font-bold text-red-200 uppercase tracking-wider">
+                        Mandatory Full Screen & Anti-Cheat Policy
+                      </h4>
+                      <p className="mt-1 leading-relaxed text-red-300/90 text-xs">
+                        This examination requires an uncompromised full-screen terminal. <strong>Resizing the browser window, splitting screens, exiting full-screen mode, switching applications, or opening developer tools will cause immediate, irreversible disqualification.</strong>
                       </p>
                     </div>
                   </div>
 
-                  {/* Rules Checklist */}
-                  <div className="border border-purple-50 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-800/30 p-6 rounded-2xl space-y-6">
-                    <h3 className="text-lg font-bold text-gray-800 dark:text-white border-b border-purple-100 dark:border-neutral-850 pb-2">Exam Protocols</h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                      <div className="flex gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-950/30 flex items-center justify-center flex-shrink-0 text-purple-600 dark:text-purple-400">
-                          <FaLock />
-                        </div>
-                        <div>
-                          <h4 className="font-bold">Keystroke Restrictors</h4>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Copy, paste, cut, and printscreen functionality is restricted.</p>
-                        </div>
+                  {/* Rules Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div className="p-4 rounded-2xl bg-black border border-neutral-800/80">
+                      <div className="flex items-center gap-2 text-white font-bold mb-1">
+                        <Maximize2 className="w-4 h-4 text-emerald-400" />
+                        <span>Locked Full Screen</span>
                       </div>
+                      <p className="text-neutral-400 leading-relaxed">
+                        The test covers 100% of the display. Exiting full-screen aborts the session.
+                      </p>
+                    </div>
 
-                      <div className="flex gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-950/30 flex items-center justify-center flex-shrink-0 text-indigo-600 dark:text-indigo-400">
-                          <FaClock />
-                        </div>
-                        <div>
-                          <h4 className="font-bold">Shuffled Environment</h4>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Questions and matching options are generated randomly.</p>
-                        </div>
+                    <div className="p-4 rounded-2xl bg-black border border-neutral-800/80">
+                      <div className="flex items-center gap-2 text-white font-bold mb-1">
+                        <Lock className="w-4 h-4 text-emerald-400" />
+                        <span>System Keystroke Locks</span>
                       </div>
+                      <p className="text-neutral-400 leading-relaxed">
+                        Tab, Function keys (F1–F12), PrintScreen, and modifier shortcuts (Ctrl/Alt/Cmd) are strictly disabled.
+                      </p>
+                    </div>
 
-                      <div className="flex gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-950/30 flex items-center justify-center flex-shrink-0 text-violet-600 dark:text-violet-400">
-                          <FaCalendarAlt />
-                        </div>
-                        <div>
-                          <h4 className="font-bold">Auto-Submission</h4>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Closing browser or navigating back auto-submits current answers.</p>
-                        </div>
+                    <div className="p-4 rounded-2xl bg-black border border-neutral-800/80">
+                      <div className="flex items-center gap-2 text-white font-bold mb-1">
+                        <ShieldAlert className="w-4 h-4 text-amber-400" />
+                        <span>Window Resize Watchdog</span>
                       </div>
+                      <p className="text-neutral-400 leading-relaxed">
+                        Any screen dimension change or developer console docking triggers automated invalidation.
+                      </p>
+                    </div>
 
-                      <div className="flex gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-950/30 flex items-center justify-center flex-shrink-0 text-purple-600 dark:text-purple-400">
-                          <FaCheckCircle />
-                        </div>
-                        <div>
-                          <h4 className="font-bold">Passing Standards</h4>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Passing scores generate a verifiable PDF certificate on results release.</p>
-                        </div>
+                    <div className="p-4 rounded-2xl bg-black border border-neutral-800/80">
+                      <div className="flex items-center gap-2 text-white font-bold mb-1">
+                        <Award className="w-4 h-4 text-sky-400" />
+                        <span>Immediate Credentialing</span>
                       </div>
+                      <p className="text-neutral-400 leading-relaxed">
+                        Passing candidates receive official cryptographic credentials instantly upon submission.
+                      </p>
                     </div>
                   </div>
 
-                  {/* Window Validation Action Buttons */}
-                  <div className="flex flex-col items-center gap-3 pt-4">
+                  {/* Launch Action */}
+                  <div className="pt-6 border-t border-neutral-800 flex flex-col items-center gap-3">
                     {isExamWindowValid ? (
                       <button
-                        onClick={() => setStep(1)}
-                        className="bg-gradient-to-r from-purple-600 to-indigo-650 hover:from-purple-700 hover:to-indigo-750 px-10 py-4 rounded-2xl text-white font-bold shadow-lg transition-all transform hover:scale-[1.02]"
+                        type="button"
+                        onClick={handleStartExam}
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-10 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm tracking-wide shadow-xl shadow-emerald-950/60 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 cursor-pointer"
                       >
-                        Start Quiz Exam
+                        <Maximize2 className="w-4 h-4" />
+                        <span>Enter Full Screen & Start Examination</span>
                       </button>
                     ) : (
-                      <div className="w-full text-center">
-                        <div className="bg-red-50 dark:bg-red-950/20 border border-red-200/20 text-red-500 dark:text-red-400 p-4 rounded-2xl inline-flex items-center gap-2 text-sm font-semibold mb-3">
-                          <FaExclamationTriangle /> {examWindowText}
-                        </div>
-                        <div>
-                          <button
-                            disabled
-                            className="bg-gray-300 dark:bg-neutral-800 text-gray-400 dark:text-gray-600 px-10 py-4 rounded-2xl font-bold cursor-not-allowed"
-                          >
-                            Exam Lock Active
-                          </button>
-                        </div>
+                      <div className="text-center p-4 rounded-2xl bg-neutral-900 border border-neutral-800 text-xs text-neutral-400">
+                        {examWindowText || "Assessment window is currently closed."}
                       </div>
                     )}
+
+                    <span className="text-[11px] text-neutral-500 font-mono">
+                      By launching, you consent to automated screen monitoring and integrity rules.
+                    </span>
                   </div>
                 </div>
               )}
             </div>
           </div>
-        </Layout>
-      )}
+        </main>
+      </Layout>
+    );
+  }
 
-      {/* STEP 1: Exam Taking Window */}
-      {step === 1 && (
-        <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:py-10">
-          <div className="bg-white dark:bg-neutral-900 border border-purple-50/40 dark:border-neutral-800 rounded-3xl shadow-xl overflow-hidden p-6 sm:p-10">
-            
+  // 5. STEP 1: Fully Proctored Full-Screen Examination Console (Covering 100% Screen, Pure Black)
+  if (step === 1 && quizData && quizData.questions) {
+    const q = quizData.questions[currentQuestion];
+    const questionNumber = currentQuestion + 1;
+    const totalQuestions = quizData.questions.length;
+    const progressPercent = ((questionNumber / totalQuestions) * 100).toFixed(0);
+
+    return (
+      <div className="fixed inset-0 w-screen h-screen bg-black text-white flex flex-col justify-between overflow-hidden select-none z-[9999] font-sans">
+        {/* Top Proctor Monitored Bar */}
+        <header className="h-16 px-6 bg-[#080808] border-b border-neutral-850 flex items-center justify-between flex-shrink-0">
+          {/* Left Brand & Exam Info */}
+          <div className="flex items-center gap-3">
+            <span className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold font-mono text-xs">
+              SGS
+            </span>
+            <div className="hidden sm:block">
+              <span className="text-xs font-bold text-white tracking-wide block truncate max-w-xs">
+                {quizData.name}
+              </span>
+              <span className="text-[10px] text-neutral-500 font-mono">PROCTORED TERMINAL</span>
+            </div>
+          </div>
+
+          {/* Center Proctor Security Status */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-950 border border-neutral-800">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="text-[11px] font-mono text-emerald-400 font-bold uppercase tracking-wider hidden md:inline">
+              SECURE FULL-SCREEN ENVIRONMENT • MONITORED
+            </span>
+            <span className="text-[11px] font-mono text-emerald-400 font-bold uppercase tracking-wider md:hidden">
+              MONITORED
+            </span>
+          </div>
+
+          {/* Right Candidate Roll & Progress */}
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <span className="text-[10px] text-neutral-500 block uppercase font-mono">Candidate Roll</span>
+              <span className="text-xs font-mono font-bold text-emerald-400">
+                {filteredUser?.rollNumber || "AUTHENTICATED"}
+              </span>
+            </div>
+          </div>
+        </header>
+
+        {/* Center Question Viewport */}
+        <main className="flex-1 overflow-y-auto px-4 sm:px-8 py-8 flex justify-center items-center">
+          <div className="max-w-4xl w-full bg-[#0a0a0a] border border-neutral-850 rounded-3xl p-6 sm:p-10 shadow-2xl flex flex-col justify-between">
             {/* Question Progress Header */}
-            <div className="flex justify-between items-center mb-8 border-b border-purple-50 dark:border-neutral-850 pb-4">
-              <h2 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-purple-600 animate-pulse"></span>
-                Question {currentQuestion + 1} of {quizData.questions.length}
-              </h2>
-              <span className="bg-purple-100 dark:bg-purple-950/40 text-purple-750 dark:text-purple-300 text-xs font-black uppercase px-3 py-1 rounded-full border border-purple-200/25">
-                {quizData.language}
+            <div className="flex items-center justify-between pb-4 border-b border-neutral-800 mb-6">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono font-bold uppercase text-emerald-400 tracking-wider">
+                  QUESTION {String(questionNumber).padStart(2, "0")} OF {String(totalQuestions).padStart(2, "0")}
+                </span>
+              </div>
+              <span className="text-xs font-mono text-neutral-400">
+                {progressPercent}% Complete
               </span>
             </div>
 
-            {/* Question Container */}
+            {/* Question Body */}
             <div className="space-y-6">
-              <div className="bg-slate-50/60 dark:bg-neutral-800/40 border border-purple-50/10 p-6 rounded-2xl">
-                <h3 className="text-lg font-bold text-gray-850 dark:text-white leading-relaxed mb-6">
-                  {quizData.questions[currentQuestion]?.question}
-                </h3>
+              <h2 className="text-lg sm:text-2xl font-semibold text-white leading-relaxed">
+                {q?.question}
+              </h2>
 
-                {/* Optional code snippet */}
-                {quizData.questions[currentQuestion]?.code && (
-                  <div className="mb-6">
-                    <div className="bg-neutral-950 rounded-2xl overflow-hidden border border-neutral-800">
-                      <div className="bg-neutral-900 px-4 py-2 flex items-center gap-1.5 border-b border-neutral-850">
-                        <FaCode className="w-3.5 h-3.5 text-purple-400" />
-                        <span className="text-xs text-gray-400 font-mono">source.code</span>
-                      </div>
-                      <pre className="p-4 font-mono text-sm text-purple-200 overflow-x-auto whitespace-pre-wrap">
-                        {quizData.questions[currentQuestion].code}
-                      </pre>
-                    </div>
+              {/* Code Snippet Box (If present) */}
+              {q?.code && (
+                <div className="rounded-2xl bg-black border border-neutral-800 overflow-hidden">
+                  <div className="px-4 py-2 bg-neutral-900/80 border-b border-neutral-800 flex items-center justify-between text-xs text-neutral-400 font-mono">
+                    <span className="flex items-center gap-1.5">
+                      <Code className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>snippet.{quizData.language?.toLowerCase() || "code"}</span>
+                    </span>
+                    <span className="text-[10px] text-neutral-500">READ-ONLY BUFFER</span>
                   </div>
-                )}
+                  <pre className="p-4 font-mono text-xs sm:text-sm text-emerald-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                    {q.code}
+                  </pre>
+                </div>
+              )}
 
-                {/* Option Radios */}
-                <div className="space-y-3">
-                  {quizData.questions[currentQuestion]?.options ? (
-                    Object.entries(quizData.questions[currentQuestion].options).map(([key, value]) => {
-                      const isSelected = selectedAnswers[currentQuestion] === key;
-                      return (
-                        <label
-                          key={key}
-                          className={`flex items-start gap-4 p-4 rounded-xl cursor-pointer border transition-all ${
+              {/* Multiple Choice Options */}
+              <div className="space-y-3 pt-2">
+                {q?.options ? (
+                  Object.entries(q.options).map(([key, value]) => {
+                    const isSelected = selectedAnswers[currentQuestion] === key;
+                    const letter = key.toUpperCase();
+
+                    return (
+                      <label
+                        key={key}
+                        className={`flex items-start gap-4 p-4 rounded-2xl cursor-pointer border transition-all ${
+                          isSelected
+                            ? "bg-emerald-950/30 border-emerald-500 text-white shadow-lg ring-1 ring-emerald-500/40"
+                            : "bg-[#111111] border-neutral-800/80 text-neutral-300 hover:border-neutral-700 hover:bg-neutral-900"
+                        }`}
+                      >
+                        <div
+                          className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs font-mono flex-shrink-0 transition-colors ${
                             isSelected
-                              ? "bg-purple-50/50 dark:bg-purple-950/25 border-purple-400 dark:border-purple-650 text-purple-950 dark:text-purple-200 font-semibold"
-                              : "bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 text-gray-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-neutral-850"
+                              ? "bg-emerald-500 text-black font-extrabold shadow"
+                              : "bg-neutral-800 text-neutral-400 border border-neutral-700"
                           }`}
                         >
-                          <input
-                            type="radio"
-                            name={`question-${currentQuestion}`}
-                            value={key}
-                            checked={isSelected}
-                            onChange={() => handleRadioChange(currentQuestion, key)}
-                            className="mt-1.5 accent-purple-650 w-4 h-4 flex-shrink-0"
-                          />
-                          <span>{value}</span>
-                        </label>
-                      );
-                    })
-                  ) : (
-                    <p className="text-center py-4 text-gray-400">Options missing for this question entry.</p>
-                  )}
-                </div>
-              </div>
+                          {letter}
+                        </div>
 
-              {/* Navigation Action Buttons */}
-              <div className="flex justify-between pt-6 border-t border-purple-50 dark:border-neutral-850">
+                        <div className="flex-1 pt-0.5 text-sm sm:text-base leading-snug">
+                          {value}
+                        </div>
+
+                        <input
+                          type="radio"
+                          name={`question-${currentQuestion}`}
+                          value={key}
+                          checked={isSelected}
+                          onChange={() => handleRadioChange(currentQuestion, key)}
+                          className="sr-only"
+                        />
+                      </label>
+                    );
+                  })
+                ) : (
+                  <p className="text-neutral-500 text-xs">No options specified for this question entry.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </main>
+
+        {/* Bottom Dock Navigation */}
+        <footer className="h-20 px-6 bg-[#080808] border-t border-neutral-850 flex items-center justify-between flex-shrink-0">
+          <button
+            type="button"
+            onClick={handlePrevious}
+            disabled={currentQuestion === 0}
+            className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-semibold transition-colors ${
+              currentQuestion === 0
+                ? "bg-neutral-900 text-neutral-600 cursor-not-allowed border border-neutral-850"
+                : "bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-700"
+            }`}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Previous</span>
+          </button>
+
+          {/* Quick Questions Navigation Pills */}
+          <div className="hidden lg:flex items-center gap-1.5 overflow-x-auto max-w-md py-1">
+            {quizData.questions.map((_, idx) => {
+              const isAnswered = selectedAnswers[idx] !== undefined;
+              const isCurrent = idx === currentQuestion;
+
+              return (
                 <button
-                  onClick={handlePrevious}
-                  disabled={currentQuestion === 0}
-                  className={`px-6 py-3 rounded-xl font-bold transition-all text-sm ${
-                    currentQuestion === 0
-                      ? "bg-slate-100 dark:bg-neutral-800 text-gray-400 dark:text-gray-650 cursor-not-allowed"
-                      : "bg-slate-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-neutral-800"
+                  key={idx}
+                  type="button"
+                  onClick={() => setCurrentQuestion(idx)}
+                  className={`w-7 h-7 rounded-lg font-mono text-[11px] font-bold transition-all ${
+                    isCurrent
+                      ? "bg-emerald-500 text-black ring-2 ring-emerald-400"
+                      : isAnswered
+                      ? "bg-neutral-800 text-emerald-400 border border-emerald-900"
+                      : "bg-neutral-950 text-neutral-600 border border-neutral-850 hover:text-neutral-400"
                   }`}
                 >
-                  Previous
+                  {idx + 1}
                 </button>
-                
-                <button
-                  onClick={handleNext}
-                  className="bg-gradient-to-r from-purple-600 to-indigo-650 hover:from-purple-700 hover:to-indigo-750 text-white px-8 py-3 rounded-xl font-bold shadow-md transition-all text-sm"
-                >
-                  {currentQuestion === quizData.questions.length - 1
-                    ? "Submit Quiz Exam"
-                    : "Next Question"}
-                </button>
-              </div>
+              );
+            })}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleNext}
+            className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 cursor-pointer"
+          >
+            <span>{currentQuestion === totalQuestions - 1 ? "Submit Assessment" : "Next Question"}</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </footer>
+      </div>
+    );
+  }
+
+  // 6. STEP 2: Assessment Complete & Digital Credentialing
+  return (
+    <Layout>
+      <ExamPanelNav activeTab="exams" />
+      <main className="min-h-screen bg-black text-white antialiased py-12 px-4 sm:px-6 lg:px-8 select-none">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-[#0a0a0a] border border-neutral-800 rounded-3xl p-6 sm:p-10 shadow-2xl text-center">
+            <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="w-8 h-8" />
             </div>
 
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Assessment Completed Successfully
+            </h1>
+            <p className="text-sm text-neutral-400 max-w-md mx-auto mb-8 leading-relaxed">
+              Your responses have been validated and recorded. Review your performance scorecard below.
+            </p>
+
+            <CertificateBadgeCard
+              name={filteredUser.name}
+              rollNumber={filteredUser.rollNumber}
+              examName={quizData?.name}
+              date={date}
+              language={quizData?.language}
+              score={score}
+              Que={Que}
+            />
+
+            <div className="mt-8 pt-6 border-t border-neutral-800 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                to={`/Result/Certificates/${encodeURIComponent(filteredUser.rollNumber)}`}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors"
+              >
+                <Award className="w-4 h-4" />
+                <span>Verify in Certificate Registry</span>
+              </Link>
+
+              <Link
+                to="/Result"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-200 font-semibold text-xs border border-neutral-800 transition-colors"
+              >
+                <span>Check Competition Leaderboard</span>
+              </Link>
+            </div>
           </div>
         </div>
-      )}
-
-      {/* STEP 2: Congratulations & Certificate */}
-      {step === 2 && (
-        <Layout>
-          <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
-            <div className="bg-white dark:bg-neutral-900 border border-purple-50/50 dark:border-neutral-800 rounded-3xl shadow-xl overflow-hidden p-6 sm:p-10 text-center">
-              
-              <div className="mb-8">
-                <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/20 rounded-full flex items-center justify-center mx-auto mb-4 shadow">
-                  <FaCheckCircle className="w-8 h-8 text-emerald-500" />
-                </div>
-                <h1 className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mb-2">
-                  Exam Completed Successfully!
-                </h1>
-                <p className="text-gray-500 dark:text-gray-400 text-sm max-w-sm mx-auto">
-                  Your responses have been processed and locked. You can view your scorecard below.
-                </p>
-              </div>
-
-              <Certificate
-                name={filteredUser.name}
-                rollNumber={filteredUser.rollNumber}
-                examName={quizData.name}
-                date={date}
-                language={quizData.language}
-                score={score}
-                Que={Que}
-              />
-              
-            </div>
-          </div>
-        </Layout>
-      )}
-
-    </div>
+      </main>
+    </Layout>
   );
 };
 

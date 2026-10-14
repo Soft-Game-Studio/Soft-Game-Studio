@@ -621,7 +621,7 @@ export default function Notes() {
                       </div>
                       <div className="flex items-center gap-2 truncate">
                         <FaGraduationCap className="w-3.5 h-3.5 text-neutral-400 shrink-0" aria-hidden="true" />
-                        <span className="truncate">{note.course} {note.branch ? `— ${note.branch}` : ''}</span>
+                        <span className="truncate">{note.course} {note.branch ? `(${note.branch})` : ''}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="flex items-center gap-2">

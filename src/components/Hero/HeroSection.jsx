@@ -144,11 +144,10 @@ function StudioArchitectureInspector() {
               aria-controls={`panel-${pillar.id}`}
               id={`tab-${pillar.id}`}
               onClick={() => setActiveTab(pillar.id)}
-              className={`flex-1 min-w-[130px] px-3.5 py-2.5 text-xs font-medium transition-colors border-b-2 text-center whitespace-nowrap focus-visible:outline-none focus-visible:bg-neutral-200/50 dark:focus-visible:bg-neutral-800 ${
-                isActive
+              className={`flex-1 min-w-[130px] px-3.5 py-2.5 text-xs font-medium transition-colors border-b-2 text-center whitespace-nowrap focus-visible:outline-none focus-visible:bg-neutral-200/50 dark:focus-visible:bg-neutral-800 ${isActive
                   ? 'border-neutral-900 dark:border-white text-neutral-950 dark:text-white bg-white dark:bg-neutral-900 font-semibold'
                   : 'border-transparent text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
-              }`}
+                }`}
             >
               {pillar.name}
             </button>
@@ -353,7 +352,7 @@ const HomePage = () => {
             publisher: { '@id': 'https://softgamestudios.web.app/#organization' },
             potentialAction: {
               '@type': 'SearchAction',
-              target: 'https://softgamestudios.web.app/SGS-Projects?q={search_term_string}',
+              target: 'https://softgamestudios.web.app/Projects?q={search_term_string}',
               'query-input': 'required name=search_term_string',
             },
           },
@@ -515,7 +514,7 @@ const HomePage = () => {
                 className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto mb-10"
               >
                 <Link
-                  to="/SGS-Projects"
+                  to="/Projects"
                   className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-md font-semibold text-sm bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:focus-visible:ring-white focus-visible:ring-offset-2"
                 >
                   <span>Explore Engineering Work</span>

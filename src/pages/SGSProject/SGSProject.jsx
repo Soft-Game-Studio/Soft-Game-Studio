@@ -116,7 +116,7 @@ export default function SGSProject() {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
       name: 'Soft Game Studio Featured Engineering Projects',
-      url: 'https://softgamestudios.web.app/SGS-Projects',
+      url: 'https://softgamestudios.web.app/Projects',
       description: 'Explore full-stack web applications, game engines, and production-grade software engineered by Soft Game Studio.',
       publisher: {
         '@type': 'Organization',
@@ -129,7 +129,7 @@ export default function SGSProject() {
           '@type': 'ListItem',
           position: index + 1,
           name: p.name,
-          url: `https://softgamestudios.web.app/SGS-Projects/${p.id}`,
+          url: `https://softgamestudios.web.app/Projects/${p.id}`,
         })),
       },
     });
@@ -148,7 +148,7 @@ export default function SGSProject() {
           property="og:description"
           content="Explore production-grade software, interactive games, and web architectures engineered by Soft Game Studio."
         />
-        <meta property="og:url" content="https://softgamestudios.web.app/SGS-Projects" />
+        <meta property="og:url" content="https://softgamestudios.web.app/Projects" />
         <meta property="og:type" content="website" />
         <script type="application/ld+json">{structuredData}</script>
       </Helmet>
@@ -232,11 +232,10 @@ export default function SGSProject() {
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-3.5 py-1.5 rounded-lg font-semibold transition-colors whitespace-nowrap cursor-pointer ${
-                      selectedCategory === cat
+                    className={`px-3.5 py-1.5 rounded-lg font-semibold transition-colors whitespace-nowrap cursor-pointer ${selectedCategory === cat
                         ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-950 shadow-xs'
                         : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
-                    }`}
+                      }`}
                   >
                     {cat}
                   </button>
@@ -351,16 +350,14 @@ export default function SGSProject() {
                         {/* Status Badge */}
                         <div className="absolute top-3.5 right-3.5">
                           <span
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold backdrop-blur-md shadow-xs ${
-                              isLive
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold backdrop-blur-md shadow-xs ${isLive
                                 ? 'bg-emerald-500/90 text-white'
                                 : 'bg-neutral-900/80 text-white dark:bg-neutral-800/80'
-                            }`}
+                              }`}
                           >
                             <span
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                isLive ? 'bg-white animate-pulse' : 'bg-neutral-400'
-                              }`}
+                              className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-white animate-pulse' : 'bg-neutral-400'
+                                }`}
                             />
                             <span>{project.status || 'Completed'}</span>
                           </span>
@@ -407,7 +404,7 @@ export default function SGSProject() {
                         {/* Card Actions */}
                         <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800/80 flex items-center gap-2">
                           <Link
-                            to={`/SGS-Projects/${project.id}`}
+                            to={`/Projects/${project.id}`}
                             className="flex-1 py-2.5 px-4 rounded-xl text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 transition-colors shadow-xs flex items-center justify-center gap-2 text-center"
                           >
                             <span>Case Study</span>

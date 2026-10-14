@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react";
-import {
-  collection,
-  getDocs,
-  query,
-  where
-} from "firebase/firestore";
+import React, { useState, useEffect, useMemo } from "react";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { Helmet } from "react-helmet";
+import { Trophy, Medal, Crown, Filter, Award, CheckCircle2, Layers } from "lucide-react";
 import Layout from "../../components/layout/Layout";
-import { FaTrophy, FaMedal, FaCrown, FaFilter } from "react-icons/fa";
 import { fireDB } from "../../DataBase/firebaseConfig";
+import ExamPanelNav from "../Common/ExamPanelNav";
 
+/**
+ * Production-Grade Competition Results & Leaderboard
+ * Soft Game Studio Examination Authority
+ */
 const ResultsPage = () => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,169 +27,201 @@ const ResultsPage = () => {
     }
   };
 
-  useEffect(() => { fetchResults(); }, []);
+  useEffect(() => {
+    fetchResults();
+  }, []);
 
-  const filteredResults = selectedLanguage === "all"
-    ? results
-    : results.filter(r => r.language === selectedLanguage);
+  const filteredResults = useMemo(() => {
+    return selectedLanguage === "all"
+      ? results
+      : results.filter((r) => r.language === selectedLanguage);
+  }, [results, selectedLanguage]);
 
-  const getResultLanguages = () => {
-    const languages = [...new Set(results.map(r => r.language))];
+  const resultLanguages = useMemo(() => {
+    const languages = [...new Set(results.map((r) => r.language))];
     return ["all", ...languages].filter(Boolean);
-  };
+  }, [results]);
 
-  const RANK_GRADIENT = [
-    "from-yellow-400 to-amber-400",
-    "from-gray-300 to-gray-400",
-    "from-amber-600 to-amber-700",
-  ];
-  const RANK_LABELS = ["🥇 1st", "🥈 2nd", "🥉 3rd"];
   const RANK_BADGE_BG = [
-    "bg-yellow-400",
-    "bg-gray-300 dark:bg-gray-400",
-    "bg-amber-600",
+    "bg-amber-400 text-slate-950",
+    "bg-slate-300 text-slate-950",
+    "bg-amber-700 text-white",
   ];
 
-  if (loading) {
-    return (
-      <Layout>
-        <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 flex flex-col items-center justify-center gap-4">
-          <div className="animate-spin rounded-full h-14 w-14 border-4 border-purple-500 border-t-transparent"></div>
-          <p className="text-purple-600 dark:text-purple-400 font-medium">Loading results...</p>
-        </div>
-      </Layout>
-    );
-  }
+  const RANK_LABELS = ["1st Place Champion", "2nd Place Runner-Up", "3rd Place Honor"];
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 transition-colors duration-300">
-        {/* Hero */}
-        <div className="bg-gradient-to-br from-purple-700 via-indigo-700 to-blue-700 dark:from-purple-900 dark:via-indigo-900 dark:to-blue-900 py-16 px-4 relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-10 left-20 w-72 h-72 bg-yellow-300 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-0 right-10 w-48 h-48 bg-white rounded-full blur-3xl"></div>
-          </div>
-          <div className="relative max-w-5xl mx-auto text-center">
-            <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-5 backdrop-blur">
-              <FaTrophy className="w-10 h-10 text-yellow-300" />
+      <Helmet>
+        <title>Competition Results & Leaderboards | Soft Game Studio</title>
+        <meta
+          name="description"
+          content="Official merit leaderboard and verified winners for Soft Game Studio competitive programming examinations and quizzes."
+        />
+        <meta
+          name="keywords"
+          content="Soft Game Studio Results, SGS Leaderboard, Coding Quiz Winners, Exam Merit List"
+        />
+        <link rel="canonical" href="https://softgamestudios.web.app/Result" />
+      </Helmet>
+
+      {/* Unified Exam Panel Navigation */}
+      <ExamPanelNav activeTab="results" />
+
+      <main className="min-h-screen bg-slate-950 text-slate-100 antialiased pb-20">
+        {/* Header Hero Section */}
+        <section className="relative border-b border-slate-800 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 pt-12 pb-14 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="w-16 h-16 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Trophy className="w-8 h-8" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Competition Results</h1>
-            <p className="text-purple-100 text-lg max-w-2xl mx-auto">
-              Congratulations to all participants! Here are the top performers across all SGS quiz competitions.
+
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-4">
+              Official Competition Results
+            </h1>
+            <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
+              Congratulations to all candidates. Top scoring participants across verified competitive
+              assessments are authenticated and featured below.
             </p>
           </div>
-        </div>
+        </section>
 
-        {/* Filter */}
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          {getResultLanguages().length > 1 && (
-            <div className="flex items-center gap-3 mb-8 flex-wrap">
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm font-medium">
-                <FaFilter className="w-3.5 h-3.5" /> Filter:
+        {/* Content Container */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+          {/* Filter Bar */}
+          {resultLanguages.length > 1 && (
+            <div className="flex items-center gap-3 mb-8 flex-wrap p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
+              <div className="flex items-center gap-2 text-slate-400 text-xs font-semibold uppercase tracking-wider">
+                <Filter className="w-3.5 h-3.5 text-emerald-400" /> Filter Domain:
               </div>
               <div className="flex flex-wrap gap-2">
-                {getResultLanguages().map((lang) => (
+                {resultLanguages.map((lang) => (
                   <button
                     key={lang}
                     onClick={() => setSelectedLanguage(lang)}
-                    className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
                       selectedLanguage === lang
-                        ? "bg-purple-600 text-white border-purple-600 shadow-md"
-                        : "bg-white dark:bg-neutral-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-neutral-700 hover:border-purple-400 dark:hover:border-purple-500"
+                        ? "bg-slate-800 text-emerald-400 border border-slate-700 font-semibold shadow-xs"
+                        : "bg-slate-950 text-slate-400 border border-slate-800 hover:text-slate-200 hover:border-slate-700"
                     }`}
                   >
-                    {lang === "all" ? "All Languages" : lang}
+                    {lang === "all" ? "All Domains" : lang}
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Results */}
-          {filteredResults.length === 0 ? (
-            <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg p-16 text-center border border-gray-100 dark:border-neutral-800">
-              <div className="w-24 h-24 bg-purple-50 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                <FaTrophy className="text-5xl text-purple-400" />
+          {/* Results State */}
+          {loading ? (
+            <div className="py-24 text-center">
+              <div className="w-12 h-12 border-3 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-sm font-medium text-slate-300">
+                Fetching certified competition results...
+              </p>
+            </div>
+          ) : filteredResults.length === 0 ? (
+            <div className="rounded-3xl bg-slate-900/40 border border-slate-800 p-16 text-center max-w-xl mx-auto">
+              <div className="w-16 h-16 rounded-2xl bg-slate-800 text-slate-500 flex items-center justify-center mx-auto mb-4">
+                <Trophy className="w-8 h-8 text-slate-500" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Results Coming Soon</h2>
-              <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                The competition results are being finalized by our judging panel. Please check back later!
+              <h2 className="text-xl font-bold text-white mb-2">Results Finalization in Progress</h2>
+              <p className="text-xs text-slate-400 leading-relaxed max-w-md mx-auto">
+                Official scores are currently being validated by our proctoring review board. Authenticated
+                leaderboards will publish automatically upon completion.
               </p>
             </div>
           ) : (
-            <div className="space-y-10">
+            <div className="space-y-12">
               {filteredResults.map((result) => (
-                <div
+                <article
                   key={result.id}
-                  className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg overflow-hidden border border-gray-100 dark:border-neutral-800"
+                  className="rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden shadow-xl"
                 >
-                  {/* Card header */}
-                  <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 p-6">
-                    <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
-                      <div>
-                        <h2 className="text-2xl font-bold text-white">{result.examName}</h2>
-                        <p className="text-purple-200 text-sm mt-1">{result.language} · Competition</p>
-                      </div>
-                      <span className="inline-flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-full text-white text-sm font-semibold">
-                        <FaMedal /> {result.winners.length} Winners
-                      </span>
+                  {/* Card Header */}
+                  <div className="bg-slate-950 border-b border-slate-800 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-xl sm:text-2xl font-bold text-white">{result.examName}</h2>
+                      <p className="text-xs text-slate-400 mt-1 flex items-center gap-2">
+                        <span className="text-emerald-400 font-semibold">{result.language}</span>
+                        <span>•</span>
+                        <span>Official SGS Competition</span>
+                      </p>
                     </div>
+                    <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold">
+                      <Medal className="w-4 h-4 text-emerald-400" />
+                      <span>{result.winners?.length || 0} Authenticated Winners</span>
+                    </span>
                   </div>
 
-                  {/* Top 3 */}
+                  {/* Top 3 Podium Cards */}
                   <div className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
-                      {result.winners.slice(0, 3).map((winner, index) => (
-                        <div key={winner.id || index} className={`bg-gradient-to-br ${RANK_GRADIENT[index] || "from-purple-500 to-indigo-500"} p-0.5 rounded-2xl shadow-lg`}>
-                          <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 h-full text-center">
-                            <div className={`w-14 h-14 ${RANK_BADGE_BG[index] || "bg-purple-500"} rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-3 shadow`}>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+                      {result.winners?.slice(0, 3).map((winner, index) => (
+                        <div
+                          key={winner.id || index}
+                          className="rounded-2xl bg-slate-950 border border-slate-800 p-6 text-center flex flex-col justify-between"
+                        >
+                          <div>
+                            <div
+                              className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg mx-auto mb-3 shadow-md ${
+                                RANK_BADGE_BG[index] || "bg-slate-800 text-white"
+                              }`}
+                            >
                               {index + 1}
                             </div>
-                            <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">
+                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
                               {RANK_LABELS[index] || `Top ${index + 1}`}
+                            </span>
+                            <h3 className="text-base font-bold text-white">{winner.name}</h3>
+                            <p className="text-xs text-slate-400 font-mono mt-0.5">
+                              Roll: {winner.rollNumber}
                             </p>
-                            <h3 className="text-lg font-bold text-gray-800 dark:text-white">{winner.name}</h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Roll: {winner.rollNumber}</p>
-                            <div className="mt-4 bg-purple-50 dark:bg-purple-900/30 rounded-xl px-4 py-2">
-                              <p className="text-purple-700 dark:text-purple-300 font-bold text-lg">Score: {winner.score}</p>
-                            </div>
+                          </div>
+
+                          <div className="mt-5 pt-4 border-t border-slate-800/80">
+                            <span className="text-xs text-slate-400 block mb-0.5">Final Score</span>
+                            <span className="text-lg font-bold text-emerald-400 font-mono">
+                              {winner.score} pts
+                            </span>
                           </div>
                         </div>
                       ))}
                     </div>
 
-                    {/* 4th+ */}
-                    {result.winners.length > 3 && (
-                      <>
-                        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                          <FaCrown className="text-purple-400 w-3.5 h-3.5" /> Other Top Performers
+                    {/* Additional Top Performers List (4th+) */}
+                    {result.winners && result.winners.length > 3 && (
+                      <div className="border-t border-slate-800 pt-6">
+                        <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                          <Crown className="w-4 h-4 text-amber-400" /> Honorable Mentions (Ranks 4+)
                         </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                           {result.winners.slice(3).map((winner, index) => (
                             <div
                               key={winner.id || index}
-                              className="flex items-center gap-3 bg-gray-50 dark:bg-neutral-800 rounded-xl px-4 py-3 border border-gray-100 dark:border-neutral-700"
+                              className="flex items-center gap-3 bg-slate-950/80 rounded-xl px-4 py-3 border border-slate-800"
                             >
-                              <span className="w-8 h-8 min-w-[2rem] bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 rounded-full flex items-center justify-center text-sm font-bold">
+                              <span className="w-8 h-8 rounded-lg bg-slate-800 text-slate-300 rounded-full flex items-center justify-center text-xs font-bold font-mono">
                                 {index + 4}
                               </span>
-                              <div>
-                                <p className="font-semibold text-gray-800 dark:text-white text-sm">{winner.name}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Roll: {winner.rollNumber} · Score: {winner.score}</p>
+                              <div className="min-w-0 flex-1">
+                                <p className="font-semibold text-white text-xs truncate">{winner.name}</p>
+                                <p className="text-[11px] text-slate-400 font-mono truncate">
+                                  Roll: {winner.rollNumber} • {winner.score} pts
+                                </p>
                               </div>
                             </div>
                           ))}
                         </div>
-                      </>
+                      </div>
                     )}
                   </div>
-                </div>
+                </article>
               ))}
             </div>
           )}
         </div>
-      </div>
+      </main>
     </Layout>
   );
 };

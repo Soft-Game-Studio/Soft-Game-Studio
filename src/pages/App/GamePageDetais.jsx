@@ -1,16 +1,16 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { 
-  Gamepad2, 
-  Monitor, 
-  Smartphone, 
-  Download, 
-  ArrowLeft, 
-  Calendar, 
-  User, 
-  CheckCircle2, 
-  AlertCircle, 
+import {
+  Gamepad2,
+  Monitor,
+  Smartphone,
+  Download,
+  ArrowLeft,
+  Calendar,
+  User,
+  CheckCircle2,
+  AlertCircle,
   RefreshCw,
   Cpu,
   Layers,
@@ -18,7 +18,7 @@ import {
   ExternalLink
 } from "lucide-react";
 import Layout from "../../components/layout/Layout";
-import { gameService } from "./gameService";
+import { gameService } from "./GameService";
 import logo from "../../Assictes/23.png";
 
 const DownloadButton = ({ icon, label, sub, link, primary = false }) => (
@@ -26,11 +26,10 @@ const DownloadButton = ({ icon, label, sub, link, primary = false }) => (
     href={link}
     target="_blank"
     rel="noopener noreferrer"
-    className={`inline-flex items-center gap-3.5 px-5 py-3 rounded-md transition-colors text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-      primary
+    className={`inline-flex items-center gap-3.5 px-5 py-3 rounded-md transition-colors text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 ${primary
         ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-white focus:ring-neutral-900 dark:focus:ring-neutral-100"
         : "border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 focus:ring-neutral-900 dark:focus:ring-neutral-100"
-    }`}
+      }`}
   >
     <div className="text-base shrink-0">{icon}</div>
     <div className="text-left">
@@ -90,7 +89,7 @@ const GamePage = () => {
       "@graph": [
         {
           "@type": "VideoGame",
-          "@id": `https://softgamestudios.web.app/game/${id}#game`,
+          "@id": `https://softgamestudios.web.app/Game/${id}#game`,
           name: game.gameName || "Interactive Title",
           description: game.description || "2D interactive title engineered by Soft Game Studio.",
           author: {
@@ -108,7 +107,7 @@ const GamePage = () => {
           ].filter(Boolean).join(", ") || "Windows, Android",
           applicationCategory: "GameApplication",
           image: game.bannerImageUrl || undefined,
-          url: `https://softgamestudios.web.app/game/${id}`
+          url: `https://softgamestudios.web.app/Game/${id}`
         }
       ]
     });
@@ -119,39 +118,39 @@ const GamePage = () => {
       <Helmet>
         <html lang="en" />
         <title>
-          {game?.gameName 
-            ? `${game.gameName} | 2D Game Engineering | Soft Game Studio` 
+          {game?.gameName
+            ? `${game.gameName} | 2D Game Engineering | Soft Game Studio`
             : "Game Specification | Soft Game Studio"}
         </title>
         <meta
           name="description"
           content={game?.description || "Explore playable 2D game specifications and download binaries engineered by Soft Game Studio."}
         />
-        <link rel="canonical" href={`https://softgamestudios.web.app/game/${id}`} />
+        <link rel="canonical" href={`https://softgamestudios.web.app/Game/${id}`} />
 
         {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Soft Game Studio" />
-        <meta 
-          property="og:title" 
-          content={game?.gameName ? `${game.gameName} | Soft Game Studio` : "Game Specification"} 
+        <meta
+          property="og:title"
+          content={game?.gameName ? `${game.gameName} | Soft Game Studio` : "Game Specification"}
         />
-        <meta 
-          property="og:description" 
-          content={game?.description || "Playable standalone builds engineered by Soft Game Studio."} 
+        <meta
+          property="og:description"
+          content={game?.description || "Playable standalone builds engineered by Soft Game Studio."}
         />
-        <meta property="og:url" content={`https://softgamestudios.web.app/game/${id}`} />
+        <meta property="og:url" content={`https://softgamestudios.web.app/Game/${id}`} />
         {game?.bannerImageUrl && <meta property="og:image" content={game.bannerImageUrl} />}
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta 
-          name="twitter:title" 
-          content={game?.gameName ? `${game.gameName} | Soft Game Studio` : "Game Specification"} 
+        <meta
+          name="twitter:title"
+          content={game?.gameName ? `${game.gameName} | Soft Game Studio` : "Game Specification"}
         />
-        <meta 
-          name="twitter:description" 
-          content={game?.description || "Playable standalone builds engineered by Soft Game Studio."} 
+        <meta
+          name="twitter:description"
+          content={game?.description || "Playable standalone builds engineered by Soft Game Studio."}
         />
         {game?.bannerImageUrl && <meta name="twitter:image" content={game.bannerImageUrl} />}
 
@@ -163,8 +162,8 @@ const GamePage = () => {
         <nav aria-label="Breadcrumb" className="mb-6">
           <ol className="flex items-center gap-2 text-xs font-mono text-neutral-500 dark:text-neutral-400">
             <li>
-              <Link 
-                to="/game" 
+              <Link
+                to="/Game"
                 className="hover:text-neutral-900 dark:hover:text-neutral-100 flex items-center gap-1 transition-colors"
               >
                 <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
@@ -192,7 +191,7 @@ const GamePage = () => {
 
         {/* Error State */}
         {!loading && error && (
-          <div 
+          <div
             role="alert"
             className="p-8 text-center rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 max-w-xl mx-auto my-12"
           >
@@ -208,7 +207,7 @@ const GamePage = () => {
                 Retry
               </button>
               <Link
-                to="/game"
+                to="/Game"
                 className="px-4 py-2 rounded-md border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
               >
                 Browse All Titles
@@ -236,7 +235,7 @@ const GamePage = () => {
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                
+
                 {/* Title & Metadata Overlay */}
                 <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 text-white">
                   <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -265,7 +264,7 @@ const GamePage = () => {
                     <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
                       {game.description || "Original 2D game architecture built with optimized sprite pipelines and real-time state management."}
                     </p>
-                    
+
                     <div className="mt-4 flex flex-wrap items-center gap-4 text-xs font-mono text-neutral-500 dark:text-neutral-400">
                       <span className="flex items-center gap-1.5">
                         <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
@@ -350,57 +349,57 @@ const GamePage = () => {
             {/* System Requirements Matrix */}
             {((Array.isArray(game.windowsRequirements) && game.windowsRequirements.length > 0) ||
               (Array.isArray(game.androidRequirements) && game.androidRequirements.length > 0)) && (
-              <section aria-labelledby="requirements-heading" className="space-y-4">
-                <div className="border-b border-neutral-200 dark:border-neutral-800 pb-3">
-                  <h2 id="requirements-heading" className="text-base font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
-                    <Cpu className="w-4 h-4 text-neutral-500" aria-hidden="true" />
-                    Target Hardware &amp; OS Requirements
-                  </h2>
-                </div>
+                <section aria-labelledby="requirements-heading" className="space-y-4">
+                  <div className="border-b border-neutral-200 dark:border-neutral-800 pb-3">
+                    <h2 id="requirements-heading" className="text-base font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                      <Cpu className="w-4 h-4 text-neutral-500" aria-hidden="true" />
+                      Target Hardware &amp; OS Requirements
+                    </h2>
+                  </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
-                  {/* Windows Requirements */}
-                  {Array.isArray(game.windowsRequirements) && game.windowsRequirements.length > 0 && (
-                    <div className="p-6 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm">
-                      <div className="flex items-center gap-2 mb-4 pb-3 border-b border-neutral-100 dark:border-neutral-800">
-                        <Monitor className="w-4 h-4 text-cyan-500" aria-hidden="true" />
-                        <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                          Windows PC Specification
-                        </h3>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Windows Requirements */}
+                    {Array.isArray(game.windowsRequirements) && game.windowsRequirements.length > 0 && (
+                      <div className="p-6 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm">
+                        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                          <Monitor className="w-4 h-4 text-cyan-500" aria-hidden="true" />
+                          <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                            Windows PC Specification
+                          </h3>
+                        </div>
+                        <ul className="space-y-2.5">
+                          {game.windowsRequirements.map((req, i) => (
+                            <li key={i} className="flex items-start gap-2 text-xs text-neutral-700 dark:text-neutral-300">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-neutral-400 shrink-0 mt-0.5" aria-hidden="true" />
+                              <span>{req}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                      <ul className="space-y-2.5">
-                        {game.windowsRequirements.map((req, i) => (
-                          <li key={i} className="flex items-start gap-2 text-xs text-neutral-700 dark:text-neutral-300">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-neutral-400 shrink-0 mt-0.5" aria-hidden="true" />
-                            <span>{req}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Android Requirements */}
-                  {Array.isArray(game.androidRequirements) && game.androidRequirements.length > 0 && (
-                    <div className="p-6 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm">
-                      <div className="flex items-center gap-2 mb-4 pb-3 border-b border-neutral-100 dark:border-neutral-800">
-                        <Smartphone className="w-4 h-4 text-emerald-500" aria-hidden="true" />
-                        <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                          Android Device Specification
-                        </h3>
+                    {/* Android Requirements */}
+                    {Array.isArray(game.androidRequirements) && game.androidRequirements.length > 0 && (
+                      <div className="p-6 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm">
+                        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                          <Smartphone className="w-4 h-4 text-emerald-500" aria-hidden="true" />
+                          <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                            Android Device Specification
+                          </h3>
+                        </div>
+                        <ul className="space-y-2.5">
+                          {game.androidRequirements.map((req, i) => (
+                            <li key={i} className="flex items-start gap-2 text-xs text-neutral-700 dark:text-neutral-300">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-neutral-400 shrink-0 mt-0.5" aria-hidden="true" />
+                              <span>{req}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                      <ul className="space-y-2.5">
-                        {game.androidRequirements.map((req, i) => (
-                          <li key={i} className="flex items-start gap-2 text-xs text-neutral-700 dark:text-neutral-300">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-neutral-400 shrink-0 mt-0.5" aria-hidden="true" />
-                            <span>{req}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              </section>
-            )}
+                    )}
+                  </div>
+                </section>
+              )}
 
             {/* Studio Engineering Attribution */}
             <section aria-labelledby="studio-heading" className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 p-6 sm:p-8">
@@ -419,7 +418,7 @@ const GamePage = () => {
                   </p>
                   <div className="mt-4 flex flex-wrap justify-center sm:justify-start gap-3">
                     <Link
-                      to="/game"
+                      to="/Game"
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-white transition-colors"
                     >
                       <Gamepad2 className="w-3.5 h-3.5" aria-hidden="true" />
