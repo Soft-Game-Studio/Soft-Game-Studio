@@ -74,4 +74,6 @@ node_modules/
 
 dist 
 
-
+.claude
+.agents
+.claude/skills/ui-ux-pro-max
