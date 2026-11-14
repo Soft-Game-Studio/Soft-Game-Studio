@@ -517,7 +517,7 @@ export default function OurMembers() {
     "description": "Meet the team members of Soft Game Studio leading game engineering, edtech development, and operations.",
     "publisher": {
       "@type": "Organization",
-      "name": "Soft Game Studio Pvt. Ltd.",
+      "name": "Soft Game Studio",
       "url": "https://softgamestudios.web.app"
     }
   };

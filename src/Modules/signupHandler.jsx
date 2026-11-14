@@ -34,9 +34,12 @@ const generateUniqueRollNo = async () => {
   }
 };
 
-// Save user data in Firestore
+// Save user data and DPDP Act 2023 compliant Consent Artefact in Firestore
 export const addUserToFirestore = async (user, formData = null) => {
   const rollNumber = await generateUniqueRollNo();
+
+  const isMinor = Boolean(formData?.isMinor);
+  const userAge = formData?.age ? Number(formData.age) : null;
 
   const userData = {
     uid: user.uid,
@@ -46,6 +49,9 @@ export const addUserToFirestore = async (user, formData = null) => {
       : user.displayName || "No Name",
     phone: formData?.phone || "",
     rollNumber,
+    age: userAge,
+    isMinor,
+    parentConsentVerified: Boolean(formData?.parentConsent),
     address: {
       houseno: "",
       streetno: "",
@@ -53,11 +59,37 @@ export const addUserToFirestore = async (user, formData = null) => {
       city: "",
       state: "",
       pincode: "",
-      country: "",
+      country: "India",
     },
+    consentStatus: "GRANTED",
+    consentTimestamp: Timestamp.now(),
     time: Timestamp.now(),
   };
 
   const userRef = doc(fireDB, "users", user.uid);
   await setDoc(userRef, userData);
+
+  // Generate Immutable Consent Artefact (DPDP Act Section 6 & MeitY BRD)
+  try {
+    const consentId = `ca_${user.uid}_${Date.now()}`;
+    const consentRef = doc(fireDB, "consent_artefacts", consentId);
+    await setDoc(consentRef, {
+      consent_id: consentId,
+      data_principal_uid: user.uid,
+      purpose_spec_uri: [
+        "purpose:auth_service_v1",
+        "purpose:exam_cert_v1",
+        "purpose:support_crm_v1",
+      ],
+      notice_version: "v2026.1_DPDPA_8th_Schedule",
+      language: "en",
+      status: "GRANTED",
+      is_minor: isMinor,
+      parental_consent_verified: Boolean(formData?.parentConsent),
+      timestamp: Timestamp.now(),
+      created_at_iso: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.warn("[DPDP Audit] Consent artefact ledger write warning:", err);
+  }
 };

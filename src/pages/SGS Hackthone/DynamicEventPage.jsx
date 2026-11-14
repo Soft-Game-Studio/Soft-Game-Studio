@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { fireDB } from "../../DataBase/firebaseConfig";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import Layout from "../../components/layout/Layout";
 import { Helmet } from "react-helmet";
 import {
@@ -12,6 +12,7 @@ import {
   CalendarDays,
   Award,
   ChevronDown,
+  ChevronUp,
   CheckCircle2,
   Clock,
   MapPin,
@@ -19,8 +20,8 @@ import {
   Trophy,
   Target,
   Globe,
-  ChevronUp,
   Shield,
+  ShieldCheck,
   Tag,
   Share2,
   Rocket,
@@ -29,7 +30,6 @@ import {
   Copy,
   Check,
   X,
-  Building,
   ArrowRight,
   AlertTriangle,
   Sparkles,
@@ -37,12 +37,12 @@ import {
   Mail,
   Medal
 } from "lucide-react";
-import RegistrationForm from "./RegistrationForm";
 import { QRCodeSVG } from "qrcode.react";
 
 const EMPTY_EVENT = {
   basic: {
     title: "",
+    subtitle: "",
     tagline: "",
     shortDescription: "",
     longDescription: "",
@@ -57,7 +57,8 @@ const EMPTY_EVENT = {
     certificate: true,
     type: "HACKATHON",
     organizer: "Soft Game Studio",
-    website: ""
+    website: "",
+    prizePool: ""
   },
   team: { allowSolo: true, allowTeam: true, minSize: 1, maxSize: 4, maxTeams: 100 },
   problemStatements: [],
@@ -65,35 +66,47 @@ const EMPTY_EVENT = {
   judging: [],
   faq: [],
   prizes: [],
-  registrationFields: [],
+  registrationFields: []
 };
 
 const normEvent = (data) => {
   if (!data) return EMPTY_EVENT;
   const b = {
-    title:             data.title             || data.basic?.title             || "SGS Arena Challenge",
-    tagline:           data.tagline           || data.basic?.tagline           || "",
-    shortDescription:  data.shortDescription  || data.basic?.shortDescription  || "",
-    longDescription:   data.longDescription   || data.basic?.longDescription   || "",
-    coverImage:        data.coverImage        || data.basic?.coverImage        || "",
-    mode:              data.mode              || data.basic?.mode              || "ONLINE",
-    location:          data.location          || data.basic?.location          || "",
-    registrationOpen:  data.registrationOpen  || data.basic?.registrationOpen  || "",
+    title: data.title || data.basic?.title || "SGS Arena Challenge",
+    subtitle: data.subtitle || data.basic?.subtitle || data.tagline || data.basic?.tagline || "",
+    tagline: data.tagline || data.basic?.tagline || data.subtitle || data.basic?.subtitle || "",
+    shortDescription: data.shortDescription || data.basic?.shortDescription || "",
+    longDescription: data.longDescription || data.basic?.longDescription || "",
+    coverImage: data.coverImage || data.basic?.coverImage || "",
+    mode: (data.mode || data.basic?.mode || "ONLINE").toUpperCase(),
+    location: data.location || data.basic?.location || "",
+    registrationOpen: data.registrationOpen || data.basic?.registrationOpen || "",
     registrationClose: data.registrationClose || data.basic?.registrationClose || "",
-    eventStart:        data.eventStart        || data.basic?.eventStart        || "",
-    eventEnd:          data.eventEnd          || data.basic?.eventEnd          || "",
-    entryFee:   data.entryFee  !== undefined ? data.entryFee  : (data.basic?.entryFee  !== undefined ? data.basic.entryFee  : 0),
-    certificate:data.certificate!== undefined ? data.certificate:(data.basic?.certificate!== undefined ? data.basic.certificate: true),
-    type:       data.type       || data.basic?.type       || "HACKATHON",
-    organizer:  data.organizer  || data.basic?.organizer  || "Soft Game Studio",
-    website:    data.website    || data.basic?.website    || "",
+    eventStart: data.eventStart || data.basic?.eventStart || "",
+    eventEnd: data.eventEnd || data.basic?.eventEnd || "",
+    entryFee:
+      data.entryFee !== undefined
+        ? Number(data.entryFee)
+        : data.basic?.entryFee !== undefined
+        ? Number(data.basic.entryFee)
+        : 0,
+    certificate:
+      data.certificate !== undefined
+        ? data.certificate
+        : data.basic?.certificate !== undefined
+        ? data.basic.certificate
+        : true,
+    type: (data.type || data.basic?.type || "HACKATHON").toUpperCase(),
+    organizer: data.organizer || data.basic?.organizer || "Soft Game Studio",
+    website: data.website || data.basic?.website || "",
+    prizePool: data.prizePool || data.basic?.prizePool || ""
   };
   const t = {
     allowSolo: data.team?.allowSolo !== undefined ? data.team.allowSolo : true,
     allowTeam: data.team?.allowTeam !== undefined ? data.team.allowTeam : true,
-    minSize:   data.team?.minSize   !== undefined ? data.team.minSize   : 1,
-    maxSize:   data.team?.maxSize   !== undefined ? data.team.maxSize   : 4,
-    maxTeams:  data.team?.maxTeams  !== undefined ? data.team.maxTeams  : 100,
+    minSize: data.team?.minSize !== undefined ? data.team.minSize : 1,
+    maxSize: data.team?.maxSize !== undefined ? data.team.maxSize : 4,
+    maxTeams: data.team?.maxTeams !== undefined ? data.team.maxTeams : 100
   };
   return {
     ...data,
@@ -108,22 +121,34 @@ const normEvent = (data) => {
   };
 };
 
-const fmt = (d) => d ? new Date(d).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" }) : "TBA";
+const fmt = (d) => {
+  if (!d) return "TBA";
+  const parsed = new Date(d);
+  return isNaN(parsed.getTime())
+    ? "TBA"
+    : parsed.toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" });
+};
 
-/* Accessible FAQ Accordion */
-function FaqItem({ q, a, index }) {
+/* Accessible Monochrome FAQ Accordion */
+function FaqItem({ q, a }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-left transition hover:border-[#00ACF0]/40 overflow-hidden shadow-sm">
+    <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#111827] text-left transition overflow-hidden shadow-sm">
       <button
         onClick={() => setOpen((prev) => !prev)}
         aria-expanded={open}
-        className="w-full flex items-center justify-between p-5 text-left gap-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors"
+        className="w-full flex items-center justify-between p-5 text-left gap-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer"
       >
-        <span className="font-semibold text-neutral-900 dark:text-white text-sm sm:text-base leading-snug">{q}</span>
-        <div className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
-          open ? "bg-[#00ACF0] text-white" : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500"
-        }`}>
+        <span className="font-semibold text-neutral-900 dark:text-white text-sm sm:text-base leading-snug">
+          {q}
+        </span>
+        <div
+          className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+            open
+              ? "bg-black dark:bg-white text-white dark:text-black shadow-sm"
+              : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
+          }`}
+        >
           {open ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </div>
       </button>
@@ -139,7 +164,6 @@ function FaqItem({ q, a, index }) {
 export default function DynamicEventPage() {
   const { id: eventId } = useParams();
   const navigate = useNavigate();
-  const shouldReduceMotion = useReducedMotion();
 
   const [event, setEvent] = useState(EMPTY_EVENT);
   const [loading, setLoading] = useState(true);
@@ -152,17 +176,17 @@ export default function DynamicEventPage() {
   // Real-time Countdown
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, ended: false });
 
-  // Scroll detection
+  // Scroll detection for in-page tabs
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 400);
 
-      const sections = ["about", "problems", "timeline", "prizes", "rules", "judging", "faq", "register-section"];
+      const sections = ["about", "problems", "timeline", "prizes", "rules", "judging", "faq", "register-cta"];
       for (const s of sections) {
         const el = document.getElementById(s);
         if (el) {
           const rect = el.getBoundingClientRect();
-          if (rect.top <= 200 && rect.bottom >= 200) {
+          if (rect.top <= 220 && rect.bottom >= 220) {
             setActiveSection(s);
             break;
           }
@@ -173,7 +197,7 @@ export default function DynamicEventPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Fetch event document
+  // Fetch event document from Firestore
   useEffect(() => {
     let isMounted = true;
     const fetchEvent = async () => {
@@ -227,70 +251,76 @@ export default function DynamicEventPage() {
     }
   };
 
+  /* Navigation to Separate Registration Page */
+  const handleGoToRegistration = () => {
+    navigate(`/event/${eventId}/register`);
+  };
+
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    if (typeof window !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
   };
 
   const getCalendarUrl = () => {
-    const title = encodeURIComponent(event.basic.title || "SGS Hackathon");
-    const details = encodeURIComponent(event.basic.tagline || event.basic.shortDescription || "Join this premier hackathon hosted on Soft Game Studio.");
-    const location = encodeURIComponent(event.basic.location || "Online");
-    const start = event.basic.eventStart ? new Date(event.basic.eventStart).toISOString().replace(/-|:|\.\d\d\d/g, "") : "";
-    const end = event.basic.eventEnd ? new Date(event.basic.eventEnd).toISOString().replace(/-|:|\.\d\d\d/g, "") : start;
+    const title = encodeURIComponent(event.basic?.title || "SGS Hackathon");
+    const details = encodeURIComponent(
+      event.basic?.tagline || event.basic?.shortDescription || "Join this premier hackathon hosted on Soft Game Studio."
+    );
+    const location = encodeURIComponent(event.basic?.location || "Online");
+    let start = "";
+    let end = "";
+    try {
+      if (event.basic?.eventStart && !isNaN(new Date(event.basic.eventStart).getTime())) {
+        start = new Date(event.basic.eventStart).toISOString().replace(/-|:|\.\d\d\d/g, "");
+      }
+      if (event.basic?.eventEnd && !isNaN(new Date(event.basic.eventEnd).getTime())) {
+        end = new Date(event.basic.eventEnd).toISOString().replace(/-|:|\.\d\d\d/g, "");
+      } else {
+        end = start;
+      }
+    } catch {
+      // fallback safe
+    }
     return `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${start}/${end}`;
   };
 
   const now = new Date();
-  const { registrationOpen: rO, registrationClose: rC, eventStart: eS, eventEnd: eE } = event.basic;
-  const isRegOpen = rO && rC && new Date(rO) <= now && new Date(rC) >= now;
-  const isConcluded = eE && new Date(eE) < now;
+  const { registrationOpen: rO, registrationClose: rC, eventEnd: eE, status } = event.basic || {};
 
-  const { basic, team, problemStatements, timeline, judging, faq, prizes, registrationFields } = event;
+  // Timezone-safe and end-of-day resilient dates
+  const openTime = rO ? (rO.length <= 10 ? new Date(`${rO}T00:00:00`) : new Date(rO)) : null;
+  const closeTime = rC ? (rC.length <= 10 ? new Date(`${rC}T23:59:59.999`) : new Date(rC)) : null;
+  const endTime = eE ? (eE.length <= 10 ? new Date(`${eE}T23:59:59.999`) : new Date(eE)) : null;
 
-  // JSON-LD Event Schema
-  const eventSchema = {
-    "@context": "https://schema.org",
-    "@type": "Event",
-    "name": basic.title || "SGS Challenge",
-    "description": basic.shortDescription || basic.tagline || "Official developer hackathon and competition.",
-    "startDate": basic.eventStart || undefined,
-    "endDate": basic.eventEnd || basic.eventStart || undefined,
-    "eventAttendanceMode": basic.mode === "ONLINE"
-      ? "https://schema.org/OnlineEventAttendanceMode"
-      : basic.mode === "OFFLINE"
-      ? "https://schema.org/OfflineEventAttendanceMode"
-      : "https://schema.org/MixedEventAttendanceMode",
-    "eventStatus": isConcluded
-      ? "https://schema.org/EventMovedOnline"
-      : "https://schema.org/EventScheduled",
-    "location": {
-      "@type": basic.mode === "ONLINE" ? "VirtualLocation" : "Place",
-      "name": basic.location || "Soft Game Studio Virtual Arena",
-      "url": window.location.href
-    },
-    "organizer": {
-      "@type": "Organization",
-      "name": basic.organizer || "Soft Game Studio",
-      "url": "https://softgamestudios.web.app"
-    },
-    "offers": {
-      "@type": "Offer",
-      "price": basic.entryFee || "0",
-      "priceCurrency": "INR",
-      "availability": isRegOpen ? "https://schema.org/InStock" : "https://schema.org/SoldOut",
-      "validFrom": basic.registrationOpen || undefined
-    }
-  };
+  const hasValidOpen = openTime && !isNaN(openTime.getTime());
+  const hasValidClose = closeTime && !isNaN(closeTime.getTime());
+  const hasValidEnd = endTime && !isNaN(endTime.getTime());
+
+  const isConcluded =
+    (status && (status.toUpperCase() === "CLOSED" || status.toUpperCase() === "CONCLUDED")) ||
+    (hasValidEnd && endTime < now) ||
+    (hasValidClose && closeTime < now);
+
+  const isPending = hasValidOpen && openTime > now;
+  const isRegOpen =
+    !isConcluded &&
+    ((hasValidOpen && openTime <= now && (!hasValidClose || closeTime >= now)) ||
+      (status && (status.toUpperCase() === "OPEN" || status.toUpperCase() === "PUBLISHED" || status.toUpperCase() === "ACTIVE")));
+
+  const { basic, team, problemStatements, timeline, judging, faq, prizes } = event;
 
   /* LOADING STATE */
   if (loading) {
     return (
       <Layout>
-        <div className="flex flex-col items-center justify-center min-h-[70vh] bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100">
-          <div className="w-10 h-10 rounded-full border-2 border-[#00ACF0] border-t-transparent animate-spin mb-4" />
-          <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">Loading Challenge Data...</span>
+        <div className="flex flex-col items-center justify-center min-h-[70vh] bg-white dark:bg-[#000000] text-neutral-900 dark:text-neutral-100">
+          <div className="w-10 h-10 rounded-full border-2 border-black dark:border-white border-t-transparent animate-spin mb-4" />
+          <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">
+            Loading Arena Telemetry...
+          </span>
         </div>
       </Layout>
     );
@@ -300,19 +330,22 @@ export default function DynamicEventPage() {
   if (notFound) {
     return (
       <Layout>
-        <div className="flex flex-col items-center justify-center min-h-[70vh] bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 px-6 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center justify-center mb-4 text-amber-600">
+        <div className="flex flex-col items-center justify-center min-h-[70vh] bg-white dark:bg-[#000000] text-neutral-900 dark:text-neutral-100 px-6 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 flex items-center justify-center mb-4 text-neutral-900 dark:text-white">
             <AlertTriangle size={32} />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Challenge Not Found</h1>
-          <p className="text-neutral-600 dark:text-neutral-400 max-w-md mb-6 text-sm">
+          <h1 className="text-2xl sm:text-3xl font-extrabold mb-2 text-neutral-950 dark:text-white tracking-tight">
+            Challenge Not Found
+          </h1>
+          <p className="text-neutral-600 dark:text-neutral-400 max-w-md mb-6 text-xs sm:text-sm font-mono">
             The event arena you are seeking may have concluded, been archived, or the link has changed.
           </p>
           <button
             onClick={() => navigate("/event")}
-            className="px-6 py-2.5 rounded-xl bg-[#00ACF0] hover:bg-[#0092cc] text-white font-semibold text-sm transition flex items-center gap-2 shadow-sm"
+            className="px-6 py-2.5 rounded-lg bg-black text-white dark:bg-white dark:text-black font-bold text-xs uppercase tracking-wider transition flex items-center gap-2 shadow-sm cursor-pointer"
           >
-            Browse All Arenas <ArrowRight size={16} />
+            <span>Browse All Arenas</span>
+            <ArrowRight size={14} />
           </button>
         </div>
       </Layout>
@@ -322,20 +355,28 @@ export default function DynamicEventPage() {
   return (
     <Layout>
       <Helmet>
-        <title>{`${basic.title} | SGS Hackathons`}</title>
+        <title>{`${basic.title} | Soft Game Studio Arena`}</title>
         <meta
           name="description"
-          content={basic.shortDescription || basic.tagline || `Join ${basic.title} hosted by Soft Game Studio. Compete, build projects, and claim verified credentials.`}
+          content={
+            basic.shortDescription ||
+            basic.tagline ||
+            `Join ${basic.title} hosted by Soft Game Studio. Compete, build projects, and claim verified credentials.`
+          }
         />
-        <link rel="canonical" href={`https://softgamestudios.web.app/event/${eventId}`} />
+        <link rel="canonical" href={`https://softgamestudio.in/event/${eventId}`} />
 
         {/* Open Graph */}
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={`https://softgamestudios.web.app/event/${eventId}`} />
+        <meta property="og:url" content={`https://softgamestudio.in/event/${eventId}`} />
         <meta property="og:title" content={`${basic.title} | Soft Game Studio`} />
         <meta
           property="og:description"
-          content={basic.shortDescription || basic.tagline || "Official hackathon and developer competition hosted on Soft Game Studio."}
+          content={
+            basic.shortDescription ||
+            basic.tagline ||
+            "Official hackathon and developer competition hosted on Soft Game Studio."
+          }
         />
         {basic.coverImage && <meta property="og:image" content={basic.coverImage} />}
 
@@ -347,95 +388,140 @@ export default function DynamicEventPage() {
           name="twitter:description"
           content={basic.tagline || basic.shortDescription || "Participate in this official coding challenge."}
         />
-
-        {/* Schema */}
-        <script type="application/ld+json">{JSON.stringify(eventSchema)}</script>
       </Helmet>
 
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
-        {/* Sticky Floating Top Bar */}
+      {/* Main Container - Grounded Dual-Mode Canvas (White in Light, Black in Dark) */}
+      <div className="min-h-screen bg-white dark:bg-[#000000] text-neutral-900 dark:text-[#F9FAFB] font-sans antialiased selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-200">
+        {/* Sticky Floating Action Bar (Visible upon scroll) */}
         {scrolled && (
-          <div className="fixed top-0 left-0 right-0 z-40 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 px-4 sm:px-8 py-3 shadow-sm transition">
+          <div className="fixed top-0 left-0 right-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 px-4 sm:px-8 py-3 shadow-md transition">
             <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0">
-                <span className={`w-2.5 h-2.5 rounded-full ${isRegOpen ? "bg-emerald-500 animate-pulse" : "bg-neutral-400"}`} />
-                <h3 className="text-sm font-bold text-neutral-900 dark:text-white truncate max-w-[200px] sm:max-w-xs">{basic.title}</h3>
-                <span className="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-mono bg-sky-50 dark:bg-sky-950/60 text-[#00ACF0] uppercase">
+                <span
+                  className={`w-2.5 h-2.5 rounded-full ${
+                    isRegOpen ? "bg-black dark:bg-white animate-pulse" : "bg-neutral-400"
+                  }`}
+                />
+                <h3 className="text-sm font-bold text-neutral-950 dark:text-white truncate max-w-[200px] sm:max-w-xs">
+                  {basic.title}
+                </h3>
+                <span className="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 uppercase border border-neutral-300 dark:border-neutral-800">
                   {basic.type}
                 </span>
               </div>
 
-              <div className="flex items-center gap-3 shrink-0">
+              <div className="flex items-center gap-2.5 shrink-0">
                 {!timeLeft.ended && (
-                  <div className="hidden md:flex items-center gap-1.5 text-xs font-mono text-neutral-600 dark:text-neutral-400 px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800">
-                    <Clock size={13} className="text-[#00ACF0]" />
-                    <span>{timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m left</span>
+                  <div className="hidden md:flex items-center gap-1.5 text-xs font-mono text-neutral-700 dark:text-neutral-300 px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                    <Clock size={13} />
+                    <span>
+                      {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m left
+                    </span>
                   </div>
                 )}
 
                 <button
                   onClick={() => setShowShareModal(true)}
-                  className="p-2 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 transition"
+                  className="p-2 rounded-lg border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-900 text-neutral-800 dark:text-neutral-200 transition cursor-pointer"
                   title="Share event link"
                 >
                   <Share2 size={14} />
                 </button>
 
-                <button
-                  onClick={() => scrollToSection("register-section")}
-                  className="px-4 py-2 rounded-xl bg-[#00ACF0] hover:bg-[#0092cc] text-white font-semibold text-xs transition shadow-sm flex items-center gap-1.5"
-                >
-                  Register <Rocket size={13} />
-                </button>
+                {isRegOpen ? (
+                  <button
+                    onClick={handleGoToRegistration}
+                    className="px-4 py-2 rounded-lg bg-black hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-black font-bold text-xs uppercase tracking-wider transition shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95"
+                  >
+                    <span>Register for Challenge</span>
+                    <ArrowRight size={13} />
+                  </button>
+                ) : isConcluded ? (
+                  <button
+                    onClick={handleGoToRegistration}
+                    className="px-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200 font-bold text-xs uppercase tracking-wider transition cursor-pointer"
+                  >
+                    Registration Closed
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleGoToRegistration}
+                    className="px-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200 font-bold text-xs uppercase tracking-wider transition cursor-pointer"
+                  >
+                    Upcoming / Waitlist
+                  </button>
+                )}
               </div>
             </div>
           </div>
         )}
 
         {/* Hero Section */}
-        <header className="relative pt-24 pb-14 px-4 bg-gradient-to-b from-neutral-100 via-neutral-50 to-neutral-50 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-950 border-b border-neutral-200 dark:border-neutral-800">
+        <header className="relative pt-12 pb-14 px-4 bg-white dark:bg-[#000000] border-b border-neutral-200 dark:border-neutral-800">
           <div className="max-w-7xl mx-auto">
             {/* Breadcrumb Navigation */}
-            <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 mb-6">
-              <Link to="/event" className="hover:text-[#00ACF0] transition-colors">Arenas</Link>
+            <nav
+              aria-label="Breadcrumb"
+              className="flex items-center gap-2 text-xs font-mono text-neutral-500 dark:text-neutral-400 mb-6"
+            >
+              <Link to="/event" className="hover:text-black dark:hover:text-white transition-colors">
+                Arenas
+              </Link>
               <span>/</span>
-              <span className="uppercase font-semibold text-[#00ACF0]">{basic.type}</span>
+              <span className="uppercase font-semibold text-neutral-700 dark:text-neutral-300">
+                {basic.type}
+              </span>
               <span>/</span>
-              <span className="truncate max-w-xs text-neutral-700 dark:text-neutral-300">{basic.title}</span>
+              <span className="truncate max-w-xs text-neutral-900 dark:text-white font-bold">
+                {basic.title}
+              </span>
             </nav>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              {/* Left Column */}
+              {/* Left Column: Heading, Telemetry, Countdown, Actions */}
               <div className="lg:col-span-7 space-y-5 text-left">
+                {/* Status Badges Row */}
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
-                    isRegOpen
-                      ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300"
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wider uppercase border ${
+                      isRegOpen
+                        ? "bg-black dark:bg-white text-white dark:text-black border-black dark:border-white"
+                        : isConcluded
+                        ? "bg-neutral-100 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400"
+                        : "bg-neutral-100 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200"
+                    }`}
+                  >
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        isRegOpen ? "bg-white dark:bg-black animate-pulse" : "bg-neutral-400"
+                      }`}
+                    />
+                    {isRegOpen
+                      ? "Registrations Open"
                       : isConcluded
-                      ? "bg-neutral-100 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700 text-neutral-500"
-                      : "bg-sky-50 dark:bg-sky-950/40 border-sky-300 dark:border-sky-800 text-[#00ACF0]"
-                  }`}>
-                    <span className={`w-2 h-2 rounded-full ${isRegOpen ? "bg-emerald-500 animate-pulse" : "bg-neutral-400"}`} />
-                    {isRegOpen ? "Registrations Open" : isConcluded ? "Concluded" : "Registrations Closed"}
+                      ? "Challenge Concluded"
+                      : "Registrations Closed"}
                   </span>
 
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold uppercase bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+                  <span className="px-2.5 py-1 rounded-full text-xs font-mono font-bold uppercase bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-800">
                     {basic.type}
                   </span>
 
                   {basic.certificate && (
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1">
-                      <Award size={12} className="text-amber-500" /> Certificate Included
+                    <span className="px-2.5 py-1 rounded-full text-xs font-mono font-semibold bg-neutral-50 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 flex items-center gap-1">
+                      <Award size={12} /> Verified Certificate
                     </span>
                   )}
                 </div>
 
-                <h1 className="text-3xl sm:text-5xl font-extrabold text-neutral-900 dark:text-white tracking-tight leading-tight">
+                {/* Main H1 Title */}
+                <h1 className="text-3xl sm:text-5xl font-extrabold text-neutral-950 dark:text-white tracking-tight leading-tight">
                   {basic.title}
                 </h1>
 
+                {/* Subtitle / Tagline */}
                 {(basic.tagline || basic.shortDescription) && (
-                  <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-2xl">
+                  <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-2xl font-normal">
                     {basic.tagline || basic.shortDescription}
                   </p>
                 )}
@@ -443,8 +529,8 @@ export default function DynamicEventPage() {
                 {/* Real-time Countdown Timer Clock */}
                 {!timeLeft.ended && (
                   <div className="pt-2">
-                    <span className="block text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-2 flex items-center gap-1.5">
-                      <Clock size={13} className="text-[#00ACF0]" /> Registration Deadline
+                    <span className="block text-xs font-mono font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-2 flex items-center gap-1.5">
+                      <Clock size={13} /> Registration Countdown
                     </span>
                     <div className="grid grid-cols-4 gap-2.5 sm:gap-3 max-w-sm">
                       {[
@@ -453,11 +539,14 @@ export default function DynamicEventPage() {
                         { label: "MINS", value: timeLeft.minutes },
                         { label: "SECS", value: timeLeft.seconds }
                       ].map((item, idx) => (
-                        <div key={idx} className="p-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-center shadow-sm">
-                          <span className="block text-2xl font-bold font-mono text-neutral-900 dark:text-white">
+                        <div
+                          key={idx}
+                          className="p-3 rounded-xl bg-neutral-50/70 dark:bg-[#111827] border border-neutral-200 dark:border-neutral-800 text-center shadow-sm"
+                        >
+                          <span className="block text-2xl font-extrabold font-mono text-neutral-950 dark:text-white">
                             {String(item.value).padStart(2, "0")}
                           </span>
-                          <span className="block text-[10px] font-semibold text-neutral-400 uppercase mt-0.5">
+                          <span className="block text-[10px] font-mono font-bold text-neutral-500 uppercase mt-0.5">
                             {item.label}
                           </span>
                         </div>
@@ -467,28 +556,36 @@ export default function DynamicEventPage() {
                 )}
 
                 {/* Metadata Row */}
-                <div className="flex flex-wrap gap-3 pt-1 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400">
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
-                    <MapPin size={14} className="text-[#00ACF0]" />
-                    <span>{basic.mode} {basic.location && `- ${basic.location}`}</span>
+                <div className="flex flex-wrap gap-2.5 pt-1 text-xs text-neutral-700 dark:text-neutral-300 font-mono">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                    <MapPin size={13} />
+                    <span>
+                      {basic.mode} {basic.location && `• ${basic.location}`}
+                    </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
-                    <Calendar size={14} className="text-[#00ACF0]" />
-                    <span>{fmt(basic.eventStart)} {basic.eventEnd && `to ${fmt(basic.eventEnd)}`}</span>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                    <Calendar size={13} />
+                    <span>
+                      {fmt(basic.eventStart)} {basic.eventEnd && `to ${fmt(basic.eventEnd)}`}
+                    </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
-                    <Tag size={14} className="text-emerald-500" />
-                    <span className={`font-semibold ${basic.entryFee === 0 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                    <Tag size={13} />
+                    <span className="font-bold">
                       {basic.entryFee === 0 ? "Free Entry" : `₹${basic.entryFee.toLocaleString("en-IN")}`}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
-                    <Users size={14} className="text-sky-500" />
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                    <Users size={13} />
                     <span>
-                      {team.allowSolo && team.allowTeam ? `Solo or Squad (${team.minSize} to ${team.maxSize})` : team.allowSolo ? "Solo Only" : `Squad (${team.minSize} to ${team.maxSize})`}
+                      {team.allowSolo && team.allowTeam
+                        ? `Solo or Squad (${team.minSize}-${team.maxSize})`
+                        : team.allowSolo
+                        ? "Solo Only"
+                        : `Squad (${team.minSize}-${team.maxSize})`}
                     </span>
                   </div>
                 </div>
@@ -496,27 +593,36 @@ export default function DynamicEventPage() {
                 {/* Primary Action Buttons */}
                 <div className="flex flex-wrap items-center gap-3 pt-2">
                   <button
-                    onClick={() => scrollToSection("register-section")}
-                    className="px-6 py-3 rounded-xl bg-[#00ACF0] hover:bg-[#0092cc] text-white font-semibold text-sm shadow-sm transition flex items-center gap-2"
+                    onClick={handleGoToRegistration}
+                    className="px-6 py-3 rounded-lg bg-black hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-black font-bold text-xs uppercase tracking-wider shadow-sm transition flex items-center gap-2 cursor-pointer active:scale-95"
                   >
-                    Register For Challenge <Rocket size={16} />
+                    <span>
+                      {isConcluded
+                        ? "Registration Closed"
+                        : isPending
+                        ? "Opens Soon / Waitlist"
+                        : "Register for Challenge"}
+                    </span>
+                    <ArrowRight size={15} />
                   </button>
 
                   <button
                     onClick={() => setShowShareModal(true)}
-                    className="px-4 py-3 rounded-xl border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-semibold text-sm transition flex items-center gap-2"
+                    className="px-4 py-3 rounded-lg border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-900 text-neutral-800 dark:text-neutral-200 font-semibold text-xs transition flex items-center gap-2 cursor-pointer"
                   >
-                    <Share2 size={15} /> Share
+                    <Share2 size={14} />
+                    <span>Share</span>
                   </button>
 
                   <a
                     href={getCalendarUrl()}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-4 py-3 rounded-xl border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-sm font-semibold transition flex items-center gap-1.5"
+                    className="px-4 py-3 rounded-lg border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-900 text-neutral-800 dark:text-neutral-200 text-xs font-semibold transition flex items-center gap-1.5"
                     title="Add to Google Calendar"
                   >
-                    <CalendarDays size={15} /> Add to Calendar
+                    <CalendarDays size={14} />
+                    <span>Add to Calendar</span>
                   </a>
 
                   {basic.website && (
@@ -524,9 +630,11 @@ export default function DynamicEventPage() {
                       href={basic.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-4 py-3 rounded-xl border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-sm font-semibold transition flex items-center gap-1.5"
+                      className="px-4 py-3 rounded-lg border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-900 text-neutral-800 dark:text-neutral-200 text-xs font-semibold transition flex items-center gap-1.5"
                     >
-                      <Globe size={15} /> Website <ExternalLink size={13} />
+                      <Globe size={14} />
+                      <span>Website</span>
+                      <ExternalLink size={12} />
                     </a>
                   )}
                 </div>
@@ -534,31 +642,41 @@ export default function DynamicEventPage() {
 
               {/* Right Column: Event Media Card */}
               <div className="lg:col-span-5 flex justify-center">
-                <div className="w-full max-w-md rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3 shadow-sm">
-                  <div className="aspect-[4/3] rounded-xl overflow-hidden relative bg-neutral-100 dark:bg-neutral-800">
+                <div className="w-full max-w-md rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#111827] p-3 shadow-md">
+                  <div className="aspect-[4/3] rounded-xl overflow-hidden relative bg-neutral-900">
                     {basic.coverImage ? (
                       <img
                         src={basic.coverImage}
                         alt={basic.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover grayscale opacity-80"
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-sky-50 dark:bg-sky-950/20">
-                        <Trophy size={48} className="text-[#00ACF0] mb-2" />
-                        <span className="text-sm font-bold text-neutral-900 dark:text-white uppercase">{basic.type}</span>
-                        <span className="text-xs text-neutral-500 mt-1">{basic.organizer}</span>
+                      <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-neutral-900 text-white">
+                        <Trophy size={48} className="mb-2 text-white" />
+                        <span className="text-sm font-bold uppercase tracking-wider font-mono">
+                          {basic.type}
+                        </span>
+                        <span className="text-xs text-neutral-400 mt-1 font-mono">{basic.organizer}</span>
                       </div>
                     )}
                   </div>
 
                   <div className="p-4 grid grid-cols-2 gap-3 text-left">
-                    <div className="p-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/50">
-                      <span className="block text-[11px] text-neutral-500 uppercase font-semibold">Organized By</span>
-                      <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 truncate block mt-0.5">{basic.organizer}</span>
+                    <div className="p-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                      <span className="block text-[10px] font-mono text-neutral-500 uppercase font-semibold">
+                        Organized By
+                      </span>
+                      <span className="text-xs font-bold text-neutral-950 dark:text-white truncate block mt-0.5">
+                        {basic.organizer}
+                      </span>
                     </div>
-                    <div className="p-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/50">
-                      <span className="block text-[11px] text-neutral-500 uppercase font-semibold">Squad Capacity</span>
-                      <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 block mt-0.5">{team.minSize} to {team.maxSize} Members</span>
+                    <div className="p-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+                      <span className="block text-[10px] font-mono text-neutral-500 uppercase font-semibold">
+                        Squad Capacity
+                      </span>
+                      <span className="text-xs font-bold text-neutral-950 dark:text-white block mt-0.5 font-mono">
+                        {team.minSize} to {team.maxSize} Members
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -568,30 +686,43 @@ export default function DynamicEventPage() {
         </header>
 
         {/* In-page Anchor Navigation Bar */}
-        <div className="sticky top-0 z-30 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 px-4">
-          <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto py-2.5 scrollbar-none">
-            {[
-              { id: "about", label: "Overview", show: true },
-              { id: "problems", label: "Problem Tracks", show: problemStatements.length > 0 },
-              { id: "timeline", label: "Timeline", show: timeline.length > 0 },
-              { id: "prizes", label: "Prizes", show: prizes.length > 0 },
-              { id: "rules", label: "Rules", show: true },
-              { id: "judging", label: "Judging Criteria", show: judging.length > 0 },
-              { id: "faq", label: "FAQ", show: faq.length > 0 },
-              { id: "register-section", label: "Register", show: true }
-            ].filter((t) => t.show).map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => scrollToSection(tab.id)}
-                className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap ${
-                  activeSection === tab.id
-                    ? "bg-[#00ACF0] text-white shadow-sm"
-                    : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+        <div className="sticky top-0 z-30 bg-white/95 dark:bg-black/95 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 px-4">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 py-2.5">
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+              {[
+                { id: "about", label: "Overview", show: true },
+                { id: "problems", label: "Problem Tracks", show: problemStatements.length > 0 },
+                { id: "timeline", label: "Timeline", show: timeline.length > 0 },
+                { id: "prizes", label: "Prizes", show: prizes.length > 0 },
+                { id: "rules", label: "Rules", show: true },
+                { id: "judging", label: "Judging Criteria", show: judging.length > 0 },
+                { id: "faq", label: "FAQ", show: faq.length > 0 },
+                { id: "register-cta", label: "Registration Portal", show: true }
+              ]
+                .filter((t) => t.show)
+                .map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => scrollToSection(tab.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition whitespace-nowrap cursor-pointer ${
+                      activeSection === tab.id
+                        ? "bg-black text-white dark:bg-white dark:text-black font-bold shadow-sm"
+                        : "text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+            </div>
+
+            {/* Direct Link to Register in Tab Bar */}
+            <button
+              onClick={handleGoToRegistration}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-black text-white dark:bg-white dark:text-black font-bold text-xs uppercase tracking-wider shrink-0 cursor-pointer shadow-sm active:scale-95"
+            >
+              <span>Register</span>
+              <ArrowRight size={12} />
+            </button>
           </div>
         </div>
 
@@ -599,54 +730,56 @@ export default function DynamicEventPage() {
         <section id="about" className="py-16 px-4 max-w-7xl mx-auto text-left">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-7 space-y-4">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-100 dark:bg-sky-950/60 text-[#00ACF0] text-xs font-semibold uppercase">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 text-neutral-900 dark:text-white text-xs font-mono font-semibold uppercase">
                 <BookOpen size={12} /> Overview
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-950 dark:text-white tracking-tight">
                 About the Challenge
               </h2>
               <div className="text-neutral-600 dark:text-neutral-400 text-sm sm:text-base leading-relaxed space-y-3 whitespace-pre-line">
-                {basic.longDescription || basic.shortDescription || "Welcome to the official challenge. Prepare your technical approach, assemble your squad, and build solutions."}
+                {basic.longDescription ||
+                  basic.shortDescription ||
+                  "Welcome to the official challenge. Prepare your technical approach, assemble your squad, and build solutions."}
               </div>
             </div>
 
             <div className="lg:col-span-5 grid grid-cols-2 gap-4">
-              <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-1.5 shadow-sm">
-                <div className="w-9 h-9 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-[#00ACF0] flex items-center justify-center mb-2">
+              <div className="p-5 rounded-2xl bg-white dark:bg-[#111827] border border-neutral-200 dark:border-neutral-800 space-y-1.5 shadow-sm">
+                <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-950 dark:text-white flex items-center justify-center mb-2">
                   <Trophy size={18} />
                 </div>
-                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Recognition</h3>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                <h3 className="text-sm font-bold text-neutral-950 dark:text-white">Recognition</h3>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
                   Grants, certificates of excellence, and verified Soft Game Studio credentials.
                 </p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-1.5 shadow-sm">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 flex items-center justify-center mb-2">
+              <div className="p-5 rounded-2xl bg-white dark:bg-[#111827] border border-neutral-200 dark:border-neutral-800 space-y-1.5 shadow-sm">
+                <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-950 dark:text-white flex items-center justify-center mb-2">
                   <Users size={18} />
                 </div>
-                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Collaboration</h3>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                <h3 className="text-sm font-bold text-neutral-950 dark:text-white">Collaboration</h3>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
                   Compete individually or assemble a squad of up to {team.maxSize} developers.
                 </p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-1.5 shadow-sm">
-                <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 flex items-center justify-center mb-2">
+              <div className="p-5 rounded-2xl bg-white dark:bg-[#111827] border border-neutral-200 dark:border-neutral-800 space-y-1.5 shadow-sm">
+                <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-950 dark:text-white flex items-center justify-center mb-2">
                   <Sparkles size={18} />
                 </div>
-                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Constructive Feedback</h3>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                <h3 className="text-sm font-bold text-neutral-950 dark:text-white">Constructive Feedback</h3>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
                   Submissions are reviewed by seasoned engineers with actionable feedback.
                 </p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-1.5 shadow-sm">
-                <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-500 flex items-center justify-center mb-2">
+              <div className="p-5 rounded-2xl bg-white dark:bg-[#111827] border border-neutral-200 dark:border-neutral-800 space-y-1.5 shadow-sm">
+                <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-950 dark:text-white flex items-center justify-center mb-2">
                   <Rocket size={18} />
                 </div>
-                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Showcase Opportunities</h3>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                <h3 className="text-sm font-bold text-neutral-950 dark:text-white">Showcase Opportunities</h3>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
                   Top projects receive dedicated showcases across our developer community.
                 </p>
               </div>
@@ -656,12 +789,15 @@ export default function DynamicEventPage() {
 
         {/* SECTION: PROBLEM STATEMENTS */}
         {problemStatements.length > 0 && (
-          <section id="problems" className="py-16 px-4 max-w-7xl mx-auto border-t border-neutral-200 dark:border-neutral-800 text-left">
+          <section
+            id="problems"
+            className="py-16 px-4 max-w-7xl mx-auto border-t border-neutral-200 dark:border-neutral-800 text-left"
+          >
             <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-100 dark:bg-sky-950/60 text-[#00ACF0] text-xs font-semibold uppercase">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 text-neutral-900 dark:text-white text-xs font-mono font-semibold uppercase">
                 <Target size={12} /> Innovation Tracks
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-950 dark:text-white tracking-tight">
                 Problem Statements
               </h2>
               <p className="text-neutral-600 dark:text-neutral-400 text-sm">
@@ -673,17 +809,17 @@ export default function DynamicEventPage() {
               {problemStatements.map((track, idx) => (
                 <div
                   key={idx}
-                  className="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 flex flex-col justify-between space-y-4 hover:border-[#00ACF0]/40 transition shadow-sm"
+                  className="rounded-2xl bg-white dark:bg-[#111827] border border-neutral-200 dark:border-neutral-800 p-6 flex flex-col justify-between space-y-4 hover:border-neutral-400 dark:hover:border-neutral-600 transition shadow-sm"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold bg-sky-50 dark:bg-sky-950/60 text-[#00ACF0] border border-sky-200 dark:border-sky-800">
+                      <span className="px-2.5 py-0.5 rounded-md text-xs font-mono font-bold bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-white border border-neutral-300 dark:border-neutral-700">
                         {track.track || `Track 0${idx + 1}`}
                       </span>
-                      <Target size={16} className="text-[#00ACF0]" />
+                      <Target size={16} className="text-neutral-600 dark:text-neutral-400" />
                     </div>
 
-                    <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
+                    <h3 className="text-lg font-bold text-neutral-950 dark:text-white">
                       {track.name}
                     </h3>
 
@@ -692,8 +828,8 @@ export default function DynamicEventPage() {
                     </p>
                   </div>
 
-                  <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs text-neutral-500">
-                    Deliverable: Working code prototype & documentation
+                  <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs font-mono text-neutral-500">
+                    Deliverable: Working code prototype &amp; documentation
                   </div>
                 </div>
               ))}
@@ -703,12 +839,15 @@ export default function DynamicEventPage() {
 
         {/* SECTION: TIMELINE */}
         {timeline.length > 0 && (
-          <section id="timeline" className="py-16 px-4 max-w-3xl mx-auto border-t border-neutral-200 dark:border-neutral-800 text-left">
+          <section
+            id="timeline"
+            className="py-16 px-4 max-w-3xl mx-auto border-t border-neutral-200 dark:border-neutral-800 text-left"
+          >
             <div className="text-center mb-12 space-y-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-100 dark:bg-sky-950/60 text-[#00ACF0] text-xs font-semibold uppercase">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 text-neutral-900 dark:text-white text-xs font-mono font-semibold uppercase">
                 <CalendarDays size={12} /> Schedule
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-950 dark:text-white tracking-tight">
                 Challenge Roadmap
               </h2>
               <p className="text-neutral-600 dark:text-neutral-400 text-sm">
@@ -716,21 +855,21 @@ export default function DynamicEventPage() {
               </p>
             </div>
 
-            <div className="relative pl-6 border-l-2 border-[#00ACF0]/40 space-y-8">
+            <div className="relative pl-6 border-l-2 border-neutral-300 dark:border-neutral-700 space-y-8">
               {timeline.map((item, i) => (
                 <div key={i} className="relative">
-                  <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-white dark:bg-neutral-900 border-2 border-[#00ACF0]" />
-                  <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-1.5">
+                  <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-white dark:bg-black border-2 border-black dark:border-white shadow-sm" />
+                  <div className="p-5 rounded-2xl bg-white dark:bg-[#111827] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-1.5">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-xs font-mono font-bold text-[#00ACF0] uppercase">
-                        {fmt(item.date)} {item.time && `- ${item.time}`}
+                      <span className="text-xs font-mono font-bold text-neutral-950 dark:text-white uppercase">
+                        {fmt(item.date)} {item.time && `• ${item.time}`}
                       </span>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-neutral-100 dark:bg-neutral-800 text-neutral-500">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
                         Phase {i + 1}
                       </span>
                     </div>
 
-                    <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                    <h3 className="text-base font-bold text-neutral-950 dark:text-white">
                       {item.title}
                     </h3>
 
@@ -748,16 +887,19 @@ export default function DynamicEventPage() {
 
         {/* SECTION: PRIZES */}
         {prizes.length > 0 && (
-          <section id="prizes" className="py-16 px-4 max-w-7xl mx-auto border-t border-neutral-200 dark:border-neutral-800 text-left">
+          <section
+            id="prizes"
+            className="py-16 px-4 max-w-7xl mx-auto border-t border-neutral-200 dark:border-neutral-800 text-left"
+          >
             <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-xs font-semibold uppercase">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 text-neutral-900 dark:text-white text-xs font-mono font-semibold uppercase">
                 <Trophy size={12} /> Recognition
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
-                Prizes & Awards
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-950 dark:text-white tracking-tight">
+                Prizes &amp; Awards
               </h2>
               <p className="text-neutral-600 dark:text-neutral-400 text-sm">
-                Acknowledged achievements and verified certificates.
+                Acknowledged achievements and verified credentials.
               </p>
             </div>
 
@@ -771,20 +913,18 @@ export default function DynamicEventPage() {
                     key={i}
                     className={`rounded-2xl p-6 text-center border transition shadow-sm flex flex-col justify-between ${
                       isFirst
-                        ? "bg-amber-50/40 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800"
-                        : isSecond
-                        ? "bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800"
-                        : "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800"
+                        ? "bg-neutral-50 dark:bg-[#111827] border-neutral-400 dark:border-neutral-600"
+                        : "bg-white dark:bg-[#111827] border-neutral-200 dark:border-neutral-800"
                     }`}
                   >
                     <div className="space-y-3">
-                      <div className="w-12 h-12 mx-auto rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center">
+                      <div className="w-12 h-12 mx-auto rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 flex items-center justify-center text-neutral-950 dark:text-white">
                         {isFirst ? (
-                          <Trophy className="w-6 h-6 text-amber-500" />
+                          <Trophy className="w-6 h-6" />
                         ) : isSecond ? (
-                          <Medal className="w-6 h-6 text-slate-400" />
+                          <Medal className="w-6 h-6" />
                         ) : (
-                          <Award className="w-6 h-6 text-[#00ACF0]" />
+                          <Award className="w-6 h-6" />
                         )}
                       </div>
 
@@ -792,7 +932,7 @@ export default function DynamicEventPage() {
                         {p.title || `Rank 0${i + 1}`}
                       </span>
 
-                      <div className="text-2xl font-bold font-mono text-neutral-900 dark:text-white">
+                      <div className="text-2xl font-extrabold font-mono text-neutral-950 dark:text-white">
                         {p.amount && p.amount !== "0"
                           ? `₹${Number(p.amount).toLocaleString("en-IN")}`
                           : "Excellence Grant"}
@@ -805,9 +945,9 @@ export default function DynamicEventPage() {
                       )}
                     </div>
 
-                    <div className="pt-4 mt-4 border-t border-neutral-200 dark:border-neutral-800 text-xs text-neutral-600 dark:text-neutral-400 flex items-center justify-center gap-1.5">
-                      <CheckCircle2 size={13} className="text-emerald-500" />
-                      <span>Official Trophy & Certificate</span>
+                    <div className="pt-4 mt-4 border-t border-neutral-200 dark:border-neutral-800 text-xs text-neutral-600 dark:text-neutral-400 flex items-center justify-center gap-1.5 font-mono">
+                      <CheckCircle2 size={13} />
+                      <span>Official Trophy &amp; Certificate</span>
                     </div>
                   </div>
                 );
@@ -817,13 +957,16 @@ export default function DynamicEventPage() {
         )}
 
         {/* SECTION: RULES */}
-        <section id="rules" className="py-16 px-4 max-w-7xl mx-auto border-t border-neutral-200 dark:border-neutral-800 text-left">
+        <section
+          id="rules"
+          className="py-16 px-4 max-w-7xl mx-auto border-t border-neutral-200 dark:border-neutral-800 text-left"
+        >
           <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-100 dark:bg-sky-950/60 text-[#00ACF0] text-xs font-semibold uppercase">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 text-neutral-900 dark:text-white text-xs font-mono font-semibold uppercase">
               <Shield size={12} /> Compliance
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
-              Rules & Guidelines
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-950 dark:text-white tracking-tight">
+              Rules &amp; Guidelines
             </h2>
             <p className="text-neutral-600 dark:text-neutral-400 text-sm">
               Standard competition code of conduct ensuring fairness and collaboration.
@@ -831,25 +974,37 @@ export default function DynamicEventPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-2">
-              <span className="w-8 h-8 rounded-lg bg-sky-50 dark:bg-sky-950/40 text-[#00ACF0] font-bold text-xs flex items-center justify-center">1</span>
-              <h3 className="text-base font-bold text-neutral-900 dark:text-white">Eligibility & Squad Limits</h3>
+            <div className="p-6 rounded-2xl bg-white dark:bg-[#111827] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-2">
+              <span className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-neutral-950 dark:text-white font-mono font-bold text-xs flex items-center justify-center">
+                1
+              </span>
+              <h3 className="text-base font-bold text-neutral-950 dark:text-white">
+                Eligibility &amp; Squad Limits
+              </h3>
               <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
                 Open to developers and students worldwide. Team sizes must comply with the minimum ({team.minSize}) and maximum ({team.maxSize}) member limits.
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-2">
-              <span className="w-8 h-8 rounded-lg bg-sky-50 dark:bg-sky-950/40 text-[#00ACF0] font-bold text-xs flex items-center justify-center">2</span>
-              <h3 className="text-base font-bold text-neutral-900 dark:text-white">Original Engineering</h3>
+            <div className="p-6 rounded-2xl bg-white dark:bg-[#111827] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-2">
+              <span className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-neutral-950 dark:text-white font-mono font-bold text-xs flex items-center justify-center">
+                2
+              </span>
+              <h3 className="text-base font-bold text-neutral-950 dark:text-white">
+                Original Engineering
+              </h3>
               <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
                 All source code must be authored within the active hackathon schedule. Open-source libraries and public frameworks are permitted with attribution.
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-2">
-              <span className="w-8 h-8 rounded-lg bg-sky-50 dark:bg-sky-950/40 text-[#00ACF0] font-bold text-xs flex items-center justify-center">3</span>
-              <h3 className="text-base font-bold text-neutral-900 dark:text-white">Submission Deliverables</h3>
+            <div className="p-6 rounded-2xl bg-white dark:bg-[#111827] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-2">
+              <span className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 text-neutral-950 dark:text-white font-mono font-bold text-xs flex items-center justify-center">
+                3
+              </span>
+              <h3 className="text-base font-bold text-neutral-950 dark:text-white">
+                Submission Deliverables
+              </h3>
               <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
                 Teams must submit a working repository, video demonstration, and architectural overview before the announced deadline.
               </p>
@@ -859,12 +1014,15 @@ export default function DynamicEventPage() {
 
         {/* SECTION: JUDGING CRITERIA */}
         {judging.length > 0 && (
-          <section id="judging" className="py-16 px-4 max-w-7xl mx-auto border-t border-neutral-200 dark:border-neutral-800 text-left">
+          <section
+            id="judging"
+            className="py-16 px-4 max-w-7xl mx-auto border-t border-neutral-200 dark:border-neutral-800 text-left"
+          >
             <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold uppercase">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 text-neutral-900 dark:text-white text-xs font-mono font-semibold uppercase">
                 <Lightbulb size={12} /> Rubric
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-950 dark:text-white tracking-tight">
                 Judging Criteria
               </h2>
               <p className="text-neutral-600 dark:text-neutral-400 text-sm">
@@ -874,17 +1032,20 @@ export default function DynamicEventPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {judging.map((item, idx) => (
-                <div key={idx} className="p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-3 flex flex-col justify-between">
+                <div
+                  key={idx}
+                  className="p-5 rounded-2xl bg-white dark:bg-[#111827] border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-3 flex flex-col justify-between"
+                >
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-mono text-neutral-500 uppercase">Weight</span>
                       {item.weight && (
-                        <span className="px-2 py-0.5 rounded text-xs font-mono font-semibold bg-sky-50 dark:bg-sky-950/60 text-[#00ACF0]">
+                        <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-white border border-neutral-300 dark:border-neutral-700">
                           {item.weight}%
                         </span>
                       )}
                     </div>
-                    <h3 className="text-base font-bold text-neutral-900 dark:text-white">{item.name}</h3>
+                    <h3 className="text-base font-bold text-neutral-950 dark:text-white">{item.name}</h3>
                     <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
                       {item.description || "Evaluated for execution quality, depth, and practical viability."}
                     </p>
@@ -892,7 +1053,10 @@ export default function DynamicEventPage() {
 
                   {item.weight && (
                     <div className="w-full bg-neutral-200 dark:bg-neutral-800 h-1 rounded-full overflow-hidden">
-                      <div className="bg-[#00ACF0] h-full rounded-full" style={{ width: `${item.weight}%` }} />
+                      <div
+                        className="bg-black dark:bg-white h-full rounded-full"
+                        style={{ width: `${item.weight}%` }}
+                      />
                     </div>
                   )}
                 </div>
@@ -903,12 +1067,15 @@ export default function DynamicEventPage() {
 
         {/* SECTION: FAQS */}
         {faq.length > 0 && (
-          <section id="faq" className="py-16 px-4 max-w-3xl mx-auto border-t border-neutral-200 dark:border-neutral-800 text-left">
+          <section
+            id="faq"
+            className="py-16 px-4 max-w-3xl mx-auto border-t border-neutral-200 dark:border-neutral-800 text-left"
+          >
             <div className="text-center mb-12 space-y-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-100 dark:bg-sky-950/60 text-[#00ACF0] text-xs font-semibold uppercase">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 text-neutral-900 dark:text-white text-xs font-mono font-semibold uppercase">
                 <HelpCircle size={12} /> Answers
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-950 dark:text-white tracking-tight">
                 Frequently Asked Questions
               </h2>
               <p className="text-neutral-600 dark:text-neutral-400 text-sm">
@@ -922,95 +1089,191 @@ export default function DynamicEventPage() {
               ))}
             </div>
 
-            <div className="mt-8 p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+            <div className="mt-8 p-5 rounded-2xl bg-white dark:bg-[#111827] border border-neutral-200 dark:border-neutral-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
               <div>
-                <h4 className="text-sm font-bold text-neutral-900 dark:text-white">Have additional questions?</h4>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Reach out to the Soft Game Studio coordination team.</p>
+                <h4 className="text-sm font-bold text-neutral-950 dark:text-white">
+                  Have additional questions?
+                </h4>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  Reach out to the Soft Game Studio coordination team.
+                </p>
               </div>
               <a
                 href="mailto:sgs.web.app@gmail.com"
-                className="px-4 py-2 rounded-xl border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold text-xs transition flex items-center gap-1.5 shrink-0"
+                className="px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-900 text-neutral-800 dark:text-neutral-200 font-semibold text-xs transition flex items-center gap-1.5 shrink-0"
               >
-                <Mail size={13} /> Contact Support
+                <Mail size={13} />
+                <span>Contact Support</span>
               </a>
             </div>
           </section>
         )}
 
-        {/* SECTION: REGISTRATION PORTAL */}
-        <section id="register-section" className="py-20 px-4 max-w-7xl mx-auto border-t border-neutral-200 dark:border-neutral-800">
-          <RegistrationForm
-            eventId={eventId}
-            eventTitle={basic.title}
-            dynamicFields={registrationFields}
-            onClose={() => scrollToSection("about")}
-          />
+        {/* ────────────────────────────────────────────────────────────
+            SECTION: SEPARATE REGISTRATION PORTAL CALL-TO-ACTION
+            (Never combines embedded form; routes to /event/:id/register)
+        ──────────────────────────────────────────────────────────── */}
+        <section
+          id="register-cta"
+          aria-labelledby="register-cta-heading"
+          className="py-20 px-4 max-w-7xl mx-auto border-t border-neutral-200 dark:border-neutral-800 text-center"
+        >
+          <div className="max-w-3xl mx-auto rounded-3xl bg-neutral-50 dark:bg-[#111827] border border-neutral-200 dark:border-neutral-800 p-8 sm:p-12 shadow-xl space-y-6">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-mono font-bold tracking-widest uppercase bg-black text-white dark:bg-white dark:text-black">
+              <Rocket size={13} />
+              <span>OFFICIAL REGISTRATION PORTAL</span>
+            </div>
+
+            <h2
+              id="register-cta-heading"
+              className="text-2xl sm:text-4xl font-extrabold text-neutral-950 dark:text-white tracking-tight"
+            >
+              {isConcluded
+                ? `${basic.title} — Registration Concluded`
+                : isPending
+                ? `${basic.title} — Registration Opens Soon`
+                : `Ready to Compete in ${basic.title}?`}
+            </h2>
+
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-xl mx-auto leading-relaxed">
+              {isConcluded
+                ? "The registration deadline has passed and this competition has concluded. You can still track your candidate pass or explore active arenas."
+                : isPending
+                ? `Registration officially opens on ${fmt(rO)}. Join the priority waitlist to be notified immediately when spots open.`
+                : "Registration is hosted on our dedicated registration portal. Submit your squad details, verify developer credentials, and obtain your cryptographic entry pass."}
+            </p>
+
+            {/* Feature Highlights Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs font-mono text-neutral-700 dark:text-neutral-300">
+              <div className="p-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex items-center justify-center gap-1.5">
+                <CheckCircle2 size={14} className="text-black dark:text-white" />
+                <span>DPDP Act 2023 Compliant</span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex items-center justify-center gap-1.5">
+                <Users size={14} className="text-black dark:text-white" />
+                <span>
+                  {team.allowSolo && team.allowTeam ? "Solo & Squad Entry" : team.allowSolo ? "Solo Entry" : "Squad Entry"}
+                </span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex items-center justify-center gap-1.5">
+                <Shield size={14} className="text-black dark:text-white" />
+                <span>Encrypted Entry Pass</span>
+              </div>
+            </div>
+
+            {/* Main Action Button */}
+            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                onClick={handleGoToRegistration}
+                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-black hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-black font-extrabold text-xs uppercase tracking-wider transition-colors shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                <span>
+                  {isConcluded
+                    ? "View Registration Status"
+                    : isPending
+                    ? "Pre-Register / Waitlist"
+                    : "Proceed to Registration Form"}
+                </span>
+                <ArrowRight size={15} />
+              </button>
+
+              <button
+                onClick={() => navigate(`/event/${eventId}/track`)}
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 font-semibold text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <span>Track Application</span>
+                <ShieldCheck size={14} />
+              </button>
+
+              <button
+                onClick={() => navigate("/event")}
+                className="w-full sm:w-auto px-5 py-3.5 rounded-xl bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-900 text-neutral-600 dark:text-neutral-400 font-semibold text-xs transition cursor-pointer"
+              >
+                Back to All Events
+              </button>
+            </div>
+          </div>
         </section>
 
         {/* SHARE & QR MODAL */}
         <AnimatePresence>
           {showShareModal && (
             <div
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/70 backdrop-blur-sm"
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm"
               onClick={() => setShowShareModal(false)}
             >
               <div
-                className="w-full max-w-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 relative shadow-xl text-left"
+                className="w-full max-w-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 relative shadow-2xl text-left"
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
                   onClick={() => setShowShareModal(false)}
-                  className="absolute right-4 top-4 p-2 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-white transition"
+                  className="absolute right-4 top-4 p-2 rounded-lg text-neutral-400 hover:text-black dark:hover:text-white transition cursor-pointer"
+                  aria-label="Close share modal"
                 >
                   <X size={16} />
                 </button>
 
-                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-1">Share Event</h3>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-6">Invite your teammates to register for {basic.title}.</p>
+                <h3 className="text-lg font-bold text-neutral-950 dark:text-white mb-1">
+                  Share Challenge
+                </h3>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-6">
+                  Invite your teammates or colleagues to register for {basic.title}.
+                </p>
 
                 <div className="p-4 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex flex-col items-center justify-center mb-5">
-                  <QRCodeSVG value={window.location.href} size={140} level="M" />
-                  <span className="text-[11px] font-mono font-medium text-neutral-500 mt-2">Scan with mobile camera</span>
+                  <QRCodeSVG value={typeof window !== "undefined" ? window.location.href : ""} size={140} level="M" />
+                  <span className="text-[11px] font-mono font-medium text-neutral-500 mt-2">
+                    Scan with mobile camera
+                  </span>
                 </div>
 
-                <div className="flex items-center gap-2 p-2 rounded-xl border border-neutral-200 dark:border-neutral-700 mb-5">
+                <div className="flex items-center gap-2 p-2 rounded-xl border border-neutral-300 dark:border-neutral-700 mb-5">
                   <input
                     type="text"
                     readOnly
-                    value={window.location.href}
-                    className="bg-transparent border-0 text-xs text-neutral-700 dark:text-neutral-300 px-2 flex-1 focus:outline-none"
+                    value={typeof window !== "undefined" ? window.location.href : ""}
+                    className="bg-transparent border-0 text-xs text-neutral-800 dark:text-neutral-200 px-2 flex-1 focus:outline-none font-mono"
                   />
                   <button
                     onClick={handleCopyLink}
-                    className="px-3 py-1.5 rounded-lg bg-[#00ACF0] hover:bg-[#0092cc] text-white font-semibold text-xs flex items-center gap-1 transition"
+                    className="px-3 py-1.5 rounded-lg bg-black text-white dark:bg-white dark:text-black font-semibold text-xs flex items-center gap-1 transition cursor-pointer"
                   >
                     {copied ? <Check size={13} /> : <Copy size={13} />}
                     <span>{copied ? "Copied" : "Copy"}</span>
                   </button>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-2 text-xs font-semibold">
                   <a
-                    href={`https://wa.me/?text=${encodeURIComponent(`Register for ${basic.title} on Soft Game Studio: ${window.location.href}`)}`}
+                    href={`https://wa.me/?text=${encodeURIComponent(
+                      `Register for ${basic.title} on Soft Game Studio: ${typeof window !== "undefined" ? window.location.href : ""}`
+                    )}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-center text-xs font-semibold text-neutral-700 dark:text-neutral-300 transition block"
+                    className="p-2.5 rounded-lg border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-center text-neutral-800 dark:text-neutral-200 transition block"
                   >
                     WhatsApp
                   </a>
                   <a
-                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out ${basic.title} at Soft Game Studio: ${window.location.href}`)}`}
+                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                      `Check out ${basic.title} at Soft Game Studio: ${typeof window !== "undefined" ? window.location.href : ""}`
+                    )}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-center text-xs font-semibold text-neutral-700 dark:text-neutral-300 transition block"
+                    className="p-2.5 rounded-lg border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-center text-neutral-800 dark:text-neutral-200 transition block"
                   >
                     Twitter / X
                   </a>
                   <a
-                    href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`}
+                    href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+                      typeof window !== "undefined" ? window.location.href : ""
+                    )}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-center text-xs font-semibold text-neutral-700 dark:text-neutral-300 transition block"
+                    className="p-2.5 rounded-lg border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-center text-neutral-800 dark:text-neutral-200 transition block"
                   >
                     LinkedIn
                   </a>

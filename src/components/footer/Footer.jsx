@@ -36,9 +36,10 @@ const FOOTER_SECTIONS = [
     title: 'Resources & Tech',
     links: [
       { name: 'Interactive Games', path: '/Game' },
-      { name: 'Web Courses', path: '/OurCourse' },
+      // { name: 'Web Courses', path: '/OurCourse' },
       { name: 'Technical Notes', path: '/DownloadNotes' },
-      { name: 'E-Books Library', path: '/E-Books' },
+      // { name: 'Competition Leaderboard', path: '/Result' },
+      // { name: 'Verify Certificates', path: '/Result/Certificates' },
       { name: 'Hackathons & Events', path: '/event' },
     ],
   },
@@ -56,9 +57,9 @@ const FOOTER_SECTIONS = [
     title: 'Legal & Policies',
     links: [
       { name: 'Privacy Policy', path: '/PrivacyPolicy' },
-      { name: 'Terms and Conditions', path: '/TermsAndConditions' },
-      { name: 'Return Policy', path: '/ReturnPolicy' },
+      { name: 'Terms & Conditions', path: '/TermsAndConditions' },
       { name: 'Cookies Policy', path: '/CookiesPolicy' },
+      { name: 'Return Policy', path: '/ReturnPolicy' },
       { name: 'Copyright Notice', path: '/CopyrightPage' },
     ],
   },
@@ -190,9 +191,9 @@ const Footer = () => {
 
         {/* Bottom Metadata & Copyright Notice */}
         <div className="pt-8 border-t border-neutral-200 dark:border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-neutral-500 dark:text-neutral-400">
-          <p>© {new Date().getFullYear()} Soft Game Studio All rights reserved.</p>
-          <div className="flex items-center gap-4">
-            <span>React 18 &amp; Vite</span>
+          <p>© {new Date().getFullYear()} Soft Game Studio. All rights reserved.</p>
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="text-emerald-600 dark:text-emerald-400 font-semibold">DPDP Act 2023 Compliant</span>
             <span className="text-neutral-300 dark:text-neutral-700" aria-hidden="true">/</span>
             <span>WCAG 2.1 AA Compliant</span>
           </div>

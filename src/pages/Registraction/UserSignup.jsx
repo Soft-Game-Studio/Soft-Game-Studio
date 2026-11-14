@@ -37,7 +37,10 @@ export default function UserSignup() {
     lastName: "",
     email: "",
     phone: "",
+    age: "",
     password: "",
+    agreePrivacy: false,
+    parentConsent: false,
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -45,6 +48,11 @@ export default function UserSignup() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
+
+  const isMinor = useMemo(() => {
+    const ageNum = Number(formData.age);
+    return ageNum > 0 && ageNum < 18;
+  }, [formData.age]);
 
   // Real-time password criteria
   const passwordCriteria = useMemo(() => {
@@ -62,8 +70,12 @@ export default function UserSignup() {
   }, [passwordCriteria]);
 
   const handleChange = (e) => {
-    const { id, value } = e.target;
-    setFormData((prev) => ({ ...prev, [id]: value }));
+    const { id, name, value, type, checked } = e.target;
+    const key = id || name;
+    setFormData((prev) => ({
+      ...prev,
+      [key]: type === "checkbox" ? checked : value,
+    }));
     if (errorMessage) setErrorMessage("");
   };
 
@@ -87,6 +99,21 @@ export default function UserSignup() {
       return;
     }
 
+    if (!formData.age || Number(formData.age) <= 0) {
+      setErrorMessage("Please specify your age for statutory DPDP compliance.");
+      return;
+    }
+
+    if (!formData.agreePrivacy) {
+      setErrorMessage("Please accept the Terms & Conditions and Privacy Policy.");
+      return;
+    }
+
+    if (isMinor && !formData.parentConsent) {
+      setErrorMessage("Under Section 9 of the DPDP Act 2023, individuals under 18 require verifiable parental/guardian authorization.");
+      return;
+    }
+
     if (!isPasswordValid) {
       setShowCriteria(true);
       setErrorMessage("Please make sure your password satisfies all security criteria.");
@@ -96,16 +123,20 @@ export default function UserSignup() {
     setLoading(true);
 
     try {
+      // Set local safety flags for AdSense/tracking isolation
+      localStorage.setItem("sgs_user_is_minor", isMinor ? "true" : "false");
+
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         formData.email.trim().toLowerCase(),
         formData.password
       );
 
-      // Save user record with sequential roll-number in Firestore
+      // Save user record with sequential roll-number and cryptographic consent artefact in Firestore
       await addUserToFirestore(userCredential.user, {
         ...formData,
         phone: cleanPhone,
+        isMinor,
       });
 
       toast.success("Account created successfully! Redirecting to login...", {
@@ -252,24 +283,48 @@ export default function UserSignup() {
               </div>
 
               {/* Phone Number */}
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="phone"
-                  className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
-                >
-                  Phone Number
-                </label>
-                <div className="relative">
-                  <FaPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 text-xs" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="phone"
+                    className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+                  >
+                    Phone Number
+                  </label>
+                  <div className="relative">
+                    <FaPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 text-xs" />
+                    <input
+                      id="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="10-digit mobile number"
+                      autoComplete="tel"
+                      required
+                      className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/40 text-neutral-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white transition-colors"
+                    />
+                  </div>
+                </div>
+
+                {/* Age (DPDP Act 2023 Section 9 Verification) */}
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="age"
+                    className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300"
+                  >
+                    Age (Years)
+                  </label>
                   <input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone}
+                    id="age"
+                    name="age"
+                    type="number"
+                    min="10"
+                    max="100"
+                    value={formData.age}
                     onChange={handleChange}
-                    placeholder="10-digit mobile number"
-                    autoComplete="tel"
+                    placeholder="e.g. 21"
                     required
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/40 text-neutral-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white transition-colors"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/40 text-neutral-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white transition-colors"
                   />
                 </div>
               </div>
@@ -330,6 +385,46 @@ export default function UserSignup() {
                       </div>
                     </div>
                   </div>
+                )}
+              </div>
+
+              {/* Statutory Privacy & Consent Checkboxes (DPDP Act 2023 Compliant) */}
+              <div className="space-y-2.5 pt-2">
+                <label className="flex items-start gap-2.5 cursor-pointer text-left select-none">
+                  <input
+                    id="agreePrivacy"
+                    name="agreePrivacy"
+                    type="checkbox"
+                    checked={formData.agreePrivacy}
+                    onChange={handleChange}
+                    className="mt-0.5 w-4 h-4 rounded text-neutral-900 dark:text-white border-neutral-300 dark:border-neutral-700 focus:ring-neutral-900"
+                  />
+                  <span className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                    I agree to the{" "}
+                    <Link to="/TermsAndConditions" target="_blank" className="font-semibold text-neutral-900 dark:text-white underline">
+                      Terms of Service
+                    </Link>{" "}
+                    and consent to personal data processing as detailed in the{" "}
+                    <Link to="/PrivacyPolicy" target="_blank" className="font-semibold text-[#00ACF0] underline">
+                      Privacy Policy
+                    </Link>.
+                  </span>
+                </label>
+
+                {isMinor && (
+                  <label className="flex items-start gap-2.5 cursor-pointer text-left select-none p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+                    <input
+                      id="parentConsent"
+                      name="parentConsent"
+                      type="checkbox"
+                      checked={formData.parentConsent}
+                      onChange={handleChange}
+                      className="mt-0.5 w-4 h-4 rounded text-amber-600 border-amber-300 focus:ring-amber-500"
+                    />
+                    <span className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
+                      <strong>Minor Account Notice (DPDP Act Section 9):</strong> As a user under 18, I confirm that my parent or legal guardian has authorized this registration. Behavioral ad-tracking is permanently disabled on this account.
+                    </span>
+                  </label>
                 )}
               </div>
 

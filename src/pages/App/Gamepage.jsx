@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
@@ -6,15 +6,12 @@ import {
   Gamepad2,
   Search,
   Calendar,
-  Download,
   AlertCircle,
   RefreshCw,
   ArrowRight,
   Monitor,
   Smartphone,
   ExternalLink,
-  Layers,
-  Sparkles
 } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import { gameService } from './GameService';
@@ -34,7 +31,7 @@ const GamesListPage = () => {
     try {
       const gamesData = await gameService.getAllGames();
       setGames(gamesData);
-    } catch (err) {
+    } catch {
       setError("Unable to load game titles. Please verify your connection and try again.");
     } finally {
       setLoading(false);

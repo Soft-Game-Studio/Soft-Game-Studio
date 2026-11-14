@@ -372,30 +372,7 @@ export default function HomeBelowFold() {
     []
   );
 
-  /* Developer Events Memoized */
-  const events = useMemo(
-    () => [
-      {
-        id: 1,
-        img: 'https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Our%20Social%20Work%2FIMG-20250319-WA0005.jpg?alt=media&token=1be384ea-b1c2-4728-a2cd-e26752f0c14e',
-        title: 'Code Vortex',
-        tag: 'Coding Competition',
-        description:
-          'Live programming challenges and algorithmic problem solving designed for student developers and tech enthusiasts.',
-        link: '/event',
-      },
-      {
-        id: 2,
-        img: 'https://firebasestorage.googleapis.com/v0/b/soft-game-studio.firebasestorage.app/o/Our%20Social%20Work%2FWhatsApp%20Image%202025-10-29%20at%202.41.56%20PM%20(2).jpeg?alt=media&token=f748965f-07dc-4881-9946-6f0c32e18a2c',
-        title: 'Code Clash',
-        tag: 'Hackathon',
-        description:
-          'A competitive hackathon focused on speed of execution, algorithmic design, and real-world web application development.',
-        link: '/event',
-      },
-    ],
-    []
-  );
+ 
 
   return (
     <>
@@ -679,66 +656,7 @@ export default function HomeBelowFold() {
         </div>
       </section>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* COMMUNITY EVENTS & HACKATHONS                                      */}
-      {/* ------------------------------------------------------------------ */}
-      <section
-        id="community"
-        aria-labelledby="community-heading"
-        className="py-20 sm:py-28 border-t border-neutral-200 dark:border-neutral-800 max-w-7xl mx-auto px-5 sm:px-8"
-      >
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-12 sm:mb-16">
-          <SectionHeader
-            id="community-heading"
-            kicker="Community &amp; Culture"
-            title="Developer events and coding competitions"
-            description="Educational hackathons and coding tournaments organized by Soft Game Studio for the emerging student developer community."
-          />
-          <Link
-            to="/event"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white underline-offset-4 hover:underline transition-colors mb-12 sm:mb-16 flex-shrink-0"
-          >
-            <span>View all events</span>
-            <HiOutlineArrowNarrowRight aria-hidden="true" className="w-4 h-4" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {events.map((item) => (
-            <Link
-              key={item.id}
-              to={item.link}
-              className="group block border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden bg-white dark:bg-neutral-900 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:focus-visible:ring-white focus-visible:ring-offset-2"
-              aria-label={`${item.title}: ${item.tag}`}
-            >
-              <div className="relative aspect-[16/9] w-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
-                <img
-                  loading="lazy"
-                  decoding="async"
-                  src={item.img}
-                  alt={`${item.title} hackathon session`}
-                  width={720}
-                  height={405}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div aria-hidden="true" className="absolute inset-0 bg-neutral-950/20" />
-                <span className="absolute top-3 left-3 px-2 py-0.5 text-xs font-mono font-medium rounded bg-neutral-900/85 text-white backdrop-blur-sm">
-                  {item.tag}
-                </span>
-              </div>
-
-              <div className="p-5">
-                <h3 className="text-base font-semibold text-neutral-950 dark:text-neutral-100 mb-1.5 group-hover:text-neutral-700 dark:group-hover:text-neutral-300 transition-colors">
-                  {item.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                  {item.description}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+   
 
       {/* ------------------------------------------------------------------ */}
       {/* DIRECT CONTACT SECTION                                             */}
@@ -814,7 +732,6 @@ export default function HomeBelowFold() {
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">Mon to Fri, 10:00 to 18:00 IST</p>
               <div className="text-xs font-mono space-y-1">
                 <p>
-                  <span className="text-neutral-500 dark:text-neutral-400">Hindi: </span>
                   <a
                     href="tel:+919914267704"
                     className="text-neutral-950 dark:text-neutral-100 hover:underline underline-offset-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-900"
@@ -822,15 +739,7 @@ export default function HomeBelowFold() {
                     +91 9914267704
                   </a>
                 </p>
-                <p>
-                  <span className="text-neutral-500 dark:text-neutral-400">English: </span>
-                  <a
-                    href="tel:+916283400770"
-                    className="text-neutral-950 dark:text-neutral-100 hover:underline underline-offset-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-900"
-                  >
-                    +91 6283400770
-                  </a>
-                </p>
+                
               </div>
             </motion.div>
           </motion.div>

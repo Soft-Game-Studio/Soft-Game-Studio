@@ -144,9 +144,9 @@ const OfficialQuizDetails = () => {
     return (
       <Layout>
         <ExamPanelNav activeTab="exams" />
-        <div className="flex flex-col justify-center items-center min-h-[75vh] bg-slate-950 gap-4">
+        <div className="flex flex-col justify-center items-center min-h-[75vh] bg-neutral-950 gap-4">
           <div className="w-12 h-12 border-3 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin shadow-md"></div>
-          <p className="text-slate-400 font-medium text-sm">Retrieving examination syllabus...</p>
+          <p className="text-neutral-400 font-medium text-sm">Retrieving examination syllabus...</p>
         </div>
       </Layout>
     );
@@ -156,18 +156,18 @@ const OfficialQuizDetails = () => {
     return (
       <Layout>
         <ExamPanelNav activeTab="exams" />
-        <div className="flex flex-col items-center justify-center min-h-[75vh] bg-slate-950 text-center p-6">
+        <div className="flex flex-col items-center justify-center min-h-[75vh] bg-neutral-950 text-center p-6">
           <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto mb-4">
             <AlertTriangle className="w-8 h-8" />
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Examination Record Not Found</h2>
-          <p className="text-slate-400 mb-8 max-w-md text-sm leading-relaxed">
+          <p className="text-neutral-400 mb-8 max-w-md text-sm leading-relaxed">
             The requested assessment may have concluded, been archived, or had its identifier modified.
           </p>
           <button
             type="button"
             onClick={() => navigate("/Exam")}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-semibold border border-neutral-700 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Return to Examination Catalog</span>
@@ -200,15 +200,15 @@ const OfficialQuizDetails = () => {
       {/* Unified Examination Panel Header */}
       <ExamPanelNav activeTab="exams" />
 
-      <main className="min-h-screen bg-slate-950 text-slate-100 antialiased pb-20">
+      <main className="min-h-screen bg-neutral-950 text-neutral-100 antialiased pb-20">
         {/* Hero Section */}
-        <section className="relative border-b border-slate-800 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 pt-12 pb-14 px-4 sm:px-6 lg:px-8">
+        <section className="relative border-b border-neutral-800 bg-gradient-to-b from-neutral-900 via-neutral-900 to-neutral-950 pt-12 pb-14 px-4 sm:px-6 lg:px-8">
           <div className="max-w-5xl mx-auto text-center">
             {/* Breadcrumb back link */}
             <div className="flex justify-start mb-6">
               <Link
                 to="/Exam"
-                className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Back to Competitions</span>
@@ -220,7 +220,7 @@ const OfficialQuizDetails = () => {
               initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/80 border border-slate-700 text-xs text-slate-300 font-medium mb-4 shadow-xs"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-neutral-800/80 border border-neutral-700 text-xs text-neutral-300 font-medium mb-4 shadow-xs"
             >
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
               <span>Standardized Technical Assessment</span>
@@ -240,7 +240,7 @@ const OfficialQuizDetails = () => {
               initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.1, duration: 0.4 }}
-              className="text-base text-slate-400 max-w-xl mx-auto mb-8"
+              className="text-base text-neutral-400 max-w-xl mx-auto mb-8"
             >
               Assessment Domain:{" "}
               <span className="font-semibold text-emerald-400">{exam.language || "Computer Science"}</span>
@@ -258,11 +258,11 @@ const OfficialQuizDetails = () => {
                   <span>Launch Secure Full-Screen Window</span>
                 </button>
               ) : isEnded ? (
-                <div className="w-full sm:w-auto px-6 py-3 rounded-xl bg-slate-900 text-slate-500 border border-slate-800 text-xs font-semibold">
+                <div className="w-full sm:w-auto px-6 py-3 rounded-xl bg-neutral-900 text-neutral-500 border border-neutral-800 text-xs font-semibold">
                   Examination Concluded
                 </div>
               ) : (
-                <div className="w-full sm:w-auto inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 text-sky-400 font-mono text-sm font-semibold border border-slate-800">
+                <div className="w-full sm:w-auto inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-neutral-900 text-sky-400 font-mono text-sm font-semibold border border-neutral-800">
                   <Clock className="w-4 h-4 text-sky-400" />
                   <span>{timeLeft ? `Starts in ${timeLeft}` : "Scheduled Assessment"}</span>
                 </div>
@@ -270,9 +270,9 @@ const OfficialQuizDetails = () => {
 
               <a
                 href="#specifications"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-semibold border border-neutral-700 transition-colors"
               >
-                <Info className="w-4 h-4 text-slate-400" />
+                <Info className="w-4 h-4 text-neutral-400" />
                 <span>Review Syllabus & Guidelines</span>
               </a>
             </div>
@@ -285,18 +285,18 @@ const OfficialQuizDetails = () => {
             {/* Left 2 Cols: Description & Syllabus */}
             <div className="lg:col-span-2 space-y-8">
               {/* Exam Overview Card */}
-              <article className="p-6 sm:p-8 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+              <article className="p-6 sm:p-8 rounded-2xl bg-neutral-900 border border-neutral-800 shadow-xl">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                   <Layers className="w-5 h-5 text-emerald-400" />
                   <span>Syllabus & Curriculum Overview</span>
                 </h2>
 
-                <div className="prose dark:prose-invert max-w-none text-slate-300 text-sm leading-relaxed mb-6">
+                <div className="prose dark:prose-invert max-w-none text-neutral-300 text-sm leading-relaxed mb-6">
                   {parse(exam.description || "<p>Standardized domain evaluation for software engineering students and practitioners.</p>")}
                 </div>
 
                 {isLive && (
-                  <div className="pt-6 border-t border-slate-800">
+                  <div className="pt-6 border-t border-neutral-800">
                     <button
                       type="button"
                       onClick={() => handleOpenQuiz(exam.id)}
@@ -310,45 +310,45 @@ const OfficialQuizDetails = () => {
               </article>
 
               {/* Proctoring Rules */}
-              <article className="p-6 sm:p-8 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+              <article className="p-6 sm:p-8 rounded-2xl bg-neutral-900 border border-neutral-800 shadow-xl">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                   <ShieldCheck className="w-5 h-5 text-amber-400" />
                   <span>Proctoring & Anti-Cheat Governance</span>
                 </h2>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-slate-300">
-                  <div className="p-4 rounded-xl bg-slate-950 border border-slate-800/80">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-neutral-300">
+                  <div className="p-4 rounded-xl bg-neutral-950 border border-neutral-800/80">
                     <span className="font-semibold text-white block mb-1">
                       No Tab or Window Switching
                     </span>
-                    <span className="text-slate-400">
+                    <span className="text-neutral-400">
                       Leaving the assessment tab triggers automated proctor warnings. Repeated infractions result in immediate disqualification.
                     </span>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-slate-950 border border-slate-800/80">
+                  <div className="p-4 rounded-xl bg-neutral-950 border border-neutral-800/80">
                     <span className="font-semibold text-white block mb-1">
                       Restricted Keystroke Operations
                     </span>
-                    <span className="text-slate-400">
+                    <span className="text-neutral-400">
                       Clipboard cut/copy/paste, printscreen, developer inspection tools, and keyboard shortcuts are disabled during test sessions.
                     </span>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-slate-950 border border-slate-800/80">
+                  <div className="p-4 rounded-xl bg-neutral-950 border border-neutral-800/80">
                     <span className="font-semibold text-white block mb-1">
                       Randomized Question Sequences
                     </span>
-                    <span className="text-slate-400">
+                    <span className="text-neutral-400">
                       Questions and choice sequences are dynamically permuted per candidate to prevent synchronous collusion.
                     </span>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-slate-950 border border-slate-800/80">
+                  <div className="p-4 rounded-xl bg-neutral-950 border border-neutral-800/80">
                     <span className="font-semibold text-white block mb-1">
                       Passing Grade & Certification
                     </span>
-                    <span className="text-slate-400">
+                    <span className="text-neutral-400">
                       Achieving 50% or above generates an authenticated certificate with verifiable roll registry metadata.
                     </span>
                   </div>
@@ -359,8 +359,8 @@ const OfficialQuizDetails = () => {
             {/* Right Col: Quick Specifications Sidebar */}
             <aside className="space-y-6">
               {/* Media Card */}
-              <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
-                <div className="h-44 bg-slate-950 rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center p-3 mb-5">
+              <div className="p-5 rounded-2xl bg-neutral-900 border border-neutral-800 shadow-xl">
+                <div className="h-44 bg-neutral-950 rounded-xl overflow-hidden border border-neutral-800 flex items-center justify-center p-3 mb-5">
                   {exam.imageUrl ? (
                     <img
                       src={exam.imageUrl}
@@ -368,55 +368,55 @@ const OfficialQuizDetails = () => {
                       className="h-full w-full object-contain"
                     />
                   ) : (
-                    <Code className="w-12 h-12 text-slate-600" />
+                    <Code className="w-12 h-12 text-neutral-600" />
                   )}
                 </div>
 
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4 border-b border-slate-800 pb-3">
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4 border-b border-neutral-800 pb-3">
                   Specification Snapshot
                 </h3>
 
                 <dl className="space-y-3 text-xs">
                   <div className="flex items-center justify-between">
-                    <dt className="text-slate-400">Assessment ID</dt>
-                    <dd className="font-mono text-slate-200">{exam.id.slice(0, 8)}</dd>
+                    <dt className="text-neutral-400">Assessment ID</dt>
+                    <dd className="font-mono text-neutral-200">{exam.id.slice(0, 8)}</dd>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <dt className="text-slate-400">Subject Domain</dt>
+                    <dt className="text-neutral-400">Subject Domain</dt>
                     <dd className="font-semibold text-emerald-400">{exam.language || "General"}</dd>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <dt className="text-slate-400">Question Pool</dt>
-                    <dd className="font-semibold text-slate-200">{questionCount} items</dd>
+                    <dt className="text-neutral-400">Question Pool</dt>
+                    <dd className="font-semibold text-neutral-200">{questionCount} items</dd>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <dt className="text-slate-400">Evaluation Type</dt>
-                    <dd className="text-slate-200">Multiple Choice Matrix</dd>
+                    <dt className="text-neutral-400">Evaluation Type</dt>
+                    <dd className="text-neutral-200">Multiple Choice Matrix</dd>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <dt className="text-slate-400">Issuing Body</dt>
-                    <dd className="text-slate-200">Soft Game Studio</dd>
+                    <dt className="text-neutral-400">Issuing Body</dt>
+                    <dd className="text-neutral-200">Soft Game Studio</dd>
                   </div>
                 </dl>
 
-                <div className="mt-6 pt-4 border-t border-slate-800">
+                <div className="mt-6 pt-4 border-t border-neutral-800">
                   <Link
                     to="/About-Exam"
-                    className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors"
+                    className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-xs font-medium transition-colors"
                   >
-                    <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
+                    <HelpCircle className="w-3.5 h-3.5 text-neutral-400" />
                     <span>General Examination FAQs</span>
                   </Link>
                 </div>
               </div>
 
               {/* Support Callout */}
-              <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 text-xs text-slate-400">
-                <div className="flex items-center gap-2 text-slate-200 font-semibold mb-2">
+              <div className="p-5 rounded-2xl bg-neutral-900/60 border border-neutral-800/80 text-xs text-neutral-400">
+                <div className="flex items-center gap-2 text-neutral-200 font-semibold mb-2">
                   <Headphones className="w-4 h-4 text-emerald-400" />
                   <span>Technical Support Desk</span>
                 </div>

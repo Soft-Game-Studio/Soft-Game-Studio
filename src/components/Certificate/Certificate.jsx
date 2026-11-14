@@ -92,45 +92,45 @@ const Certificate = ({
     }
   };
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 p-4 sm:p-10">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-900 p-4 sm:p-10">
       {/* Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 mb-8">
         <button
           onClick={handleDownload}
           className=" text-white font-semibold px-8 py-3 rounded-lg transition bg-purple-400"
-          
+
         >
           Download Certificate
         </button>
       </div>
 
-     
+
       {/* Certificate Preview Area */}
       <div className="overflow-scroll w-screen md:w-full">
         <div
           ref={printRef}
           className="relative w-[1123px] h-[794px] bg-no-repeat bg-cover bg-center" style={{ backgroundImage: `url(${Cer})` }}>
           <div className="  certificate relative w-full h-full  text-black  p-12 sm:p-16 rounded-lg ">
-           <div className="absolute bottom-8 right-8 w-32 h-auto">
-        <img src={msme} alt="" />
-      </div>
+            <div className="absolute bottom-8 right-8 w-32 h-auto">
+              <img src={msme} alt="" />
+            </div>
 
 
 
 
             {/* Certificate Text */}
             <div className="text-center px-4 sm:px-20">
-            <div className="flex flex-col text-center items-center justify-center">
-             
-              <strong className="font-bold text-2xl font-serif text-gray-900">SOFT GAME STUDIO</strong>
-             </div>
+              <div className="flex flex-col text-center items-center justify-center">
+
+                <strong className="font-bold text-2xl font-serif text-gray-900">SOFT GAME STUDIO</strong>
+              </div>
               <h1 className="text-4xl sm:text-5xl font-extrabold text-black mb-2">
                 CERTIFICATE
               </h1>
               <h2 className="text-xl sm:text-2xl text-black tracking-widest mb-4">
                 OF PARTICIPATION
               </h2>
-             
+
               <p className="uppercase tracking-wider text-sm text-black mt-4">
                 Presented To
               </p>
@@ -139,29 +139,29 @@ const Certificate = ({
               </h3>
               <div className="mt-2 space-y-2">
                 <div className="flex justify-evenly text-center">
- <p><strong>Roll No.:</strong> {rollNumber}</p>
-        <p><strong>Certificate No.:</strong> {certificateNo}</p>
-        <p><strong>Grade:</strong> {score}/{Que} ({percentage}%)</p>
-       
+                  <p><strong>Roll No.:</strong> {rollNumber}</p>
+                  <p><strong>Certificate No.:</strong> {certificateNo}</p>
+                  <p><strong>Grade:</strong> {score}/{Que} ({percentage}%)</p>
+
                 </div>
-        <br />
-      </div>
+                <br />
+              </div>
 
-      <p className="mt-2 ml-32 mr-32">
-        This certificate is proudly awarded for successfully completing the&nbsp;
-        <strong className="text-black">{examName}</strong> in&nbsp;
-        <strong className="text-black">{language}</strong> Quiz Competition, conducted by&nbsp;
-        <strong className="text-black">Soft Game Studio</strong>.
-      </p>
+              <p className="mt-2 ml-32 mr-32">
+                This certificate is proudly awarded for successfully completing the&nbsp;
+                <strong className="text-black">{examName}</strong> in&nbsp;
+                <strong className="text-black">{language}</strong> Quiz Competition, conducted by&nbsp;
+                <strong className="text-black">Soft Game Studio</strong>.
+              </p>
 
-      
-      <p className="mt-2 ml-28 mr-28">
-        Your achievement highlights not only your strong grasp of the subject matter but also your outstanding dedication, focus, and perseverance.
-        We commend your hard work, resilience, and passion for continuous learning. This accomplishment stands as a testament to your commitment
-        to excellence and your determination to succeed.
-      </p>
 
-             
+              <p className="mt-2 ml-28 mr-28">
+                Your achievement highlights not only your strong grasp of the subject matter but also your outstanding dedication, focus, and perseverance.
+                We commend your hard work, resilience, and passion for continuous learning. This accomplishment stands as a testament to your commitment
+                to excellence and your determination to succeed.
+              </p>
+
+
 
             </div>
 
@@ -191,7 +191,7 @@ const Certificate = ({
             <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-sm text-gray-500">
               <strong className="text-xs text-black">License No.: UDYAM-PB-06-0032977/85499</strong>
             </div>
-           
+
           </div>
         </div>
       </div>

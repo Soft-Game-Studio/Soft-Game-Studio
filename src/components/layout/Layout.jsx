@@ -1,8 +1,7 @@
 import React, { Fragment, useContext, use, useState, useEffect } from "react";
 import { NavbarMenu } from "../navbar/Navbar";
 import Footer from "../footer/Footer";
-import { Link } from "react-router-dom";
-import SGSChatWidget from "../Chatbot/SGSChatWidget";
+
 
 
 
@@ -18,11 +17,6 @@ function Layout({ children }) {
       <div className="">
         <div className="content">{children}</div>
       </div>
-      {/* <SGSChatWidget
-        position="bottom-right"
-        showIcon={true}
-        initialMessage="Hello! Welcome to Soft Game Studio. How can I assist you today?"
-      /> */}
       <Footer />
     </div>
   );

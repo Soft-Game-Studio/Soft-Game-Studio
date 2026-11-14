@@ -1177,7 +1177,7 @@ export default function CommunityMembers() {
     "description": "Join our community of aspiring and professional game creators, designers, and students.",
     "publisher": {
       "@type": "Organization",
-      "name": "Soft Game Studio Pvt. Ltd.",
+      "name": "Soft Game Studio",
       "url": "https://softgamestudios.web.app"
     }
   };

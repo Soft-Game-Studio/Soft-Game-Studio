@@ -74,6 +74,14 @@ const EventsListing = lazy(() =>
   import("./pages/SGS Hackthone/EventsListing.jsx")
 );
 
+const RegistrationForm = lazy(() =>
+  import("./pages/SGS Hackthone/RegistrationForm.jsx")
+);
+
+const RegistrationTracker = lazy(() =>
+  import("./pages/SGS Hackthone/RegistrationTracker.jsx")
+);
+
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ScrollToTop from "./ScrollToTop";
@@ -171,7 +179,15 @@ function App() {
 
             {/* SGS official hackthone */}
             <Route path="/event" element={<EventsListing />} />
-            <Route path="/event/:id" element={<ProtectedRoute><DynamicEventPage /></ProtectedRoute>} />
+            <Route path="/events" element={<Navigate to="/event" replace />} />
+            <Route path="/event/:id" element={<DynamicEventPage />} />
+            <Route path="/events/:id" element={<Navigate to="/event/:id" replace />} />
+            <Route path="/event/:id/register" element={<ProtectedRoute><RegistrationForm /></ProtectedRoute>} />
+            <Route path="/events/:id/register" element={<Navigate to="/event/:id/register" replace />} />
+            <Route path="/event/track" element={<ProtectedRoute><RegistrationTracker /></ProtectedRoute>} />
+            <Route path="/events/track" element={<Navigate to="/event/track" replace />} />
+            <Route path="/event/:id/track" element={<ProtectedRoute><RegistrationTracker /></ProtectedRoute>} />
+            <Route path="/events/:id/track" element={<Navigate to="/event/:id/track" replace />} />
 
 
 

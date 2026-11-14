@@ -146,20 +146,20 @@ const SGSChatWidget = () => {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 px-4 py-4 overflow-y-auto bg-slate-50 scroll-smooth">
+          <div className="flex-1 px-4 py-4 overflow-y-auto bg-neutral-50 scroll-smooth">
             <div className="space-y-4">
               {messages.map((m) => (
                 <div
                   key={m.id}
                   className={`flex ${m.sender === "user"
-                      ? "justify-end"
-                      : "justify-start"
+                    ? "justify-end"
+                    : "justify-start"
                     }`}
                 >
                   <div
                     className={`px-4 py-3 rounded-2xl text-sm leading-relaxed max-w-[85%] shadow-sm ${m.sender === "user"
-                        ? "bg-indigo-600 text-white rounded-br-sm"
-                        : "bg-white border border-gray-100 text-gray-700 rounded-bl-sm"
+                      ? "bg-indigo-600 text-white rounded-br-sm"
+                      : "bg-white border border-gray-100 text-gray-700 rounded-bl-sm"
                       }`}
                   >
                     <ReactMarkdown

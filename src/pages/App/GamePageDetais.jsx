@@ -1,19 +1,17 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+/* eslint-disable react/prop-types */
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   Gamepad2,
   Monitor,
   Smartphone,
-  Download,
   ArrowLeft,
   Calendar,
   User,
   CheckCircle2,
   AlertCircle,
-  RefreshCw,
   Cpu,
-  Layers,
   Sparkles,
   ExternalLink
 } from "lucide-react";
@@ -56,7 +54,7 @@ const GamePage = () => {
       } else {
         setError("The requested game title could not be found.");
       }
-    } catch (err) {
+    } catch {
       setError("Unable to load title specifications. Please verify your connection.");
     } finally {
       setLoading(false);

@@ -23,8 +23,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { fireDB } from "../../DataBase/firebaseConfig";
-import Layout from "../../components/layout/Layout";
-import ExamPanelNav from "../Common/ExamPanelNav";
+import LayoutExam from "../../components/layout/LayoutEaxm";
 
 /**
  * Isolated Countdown and Status Component
@@ -85,14 +84,14 @@ const ExamStatusTracker = ({ examStart, examEnd }) => {
 
   if (timerState.isEnded) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700">
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-neutral-800 text-neutral-400 border border-neutral-700">
         Concluded
       </span>
     );
   }
 
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-medium bg-slate-800 text-sky-400 border border-slate-700">
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-medium bg-neutral-800 text-sky-400 border border-neutral-700">
       <Clock className="w-3.5 h-3.5 text-sky-400" />
       {timerState.label}
     </span>
@@ -250,7 +249,7 @@ const OfficialQuizList = () => {
   }, [quizzes]);
 
   return (
-    <Layout>
+    <LayoutExam>
       <Helmet>
         <title>Official Examination & Assessment Portal | Soft Game Studio</title>
         <meta
@@ -272,18 +271,16 @@ const OfficialQuizList = () => {
       </Helmet>
 
       {/* Unified Examination Panel Header Navigation */}
-      <ExamPanelNav activeTab="exams" />
-
-      <main className="min-h-screen bg-slate-950 text-slate-100 antialiased pb-20">
+      <main className="min-h-screen bg-neutral-950 text-neutral-100 antialiased pb-20">
         {/* Hero Section */}
-        <section className="relative border-b border-slate-800 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 pt-12 pb-14 px-4 sm:px-6 lg:px-8">
+        <section className="relative border-b border-neutral-800 bg-gradient-to-b from-neutral-900 via-neutral-900 to-neutral-950 pt-12 pb-14 px-4 sm:px-6 lg:px-8">
           <div className="max-w-5xl mx-auto text-center">
             {/* Tagline */}
             <motion.div
               initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/80 border border-slate-700 text-xs text-slate-300 font-medium mb-5 shadow-xs"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-neutral-800/80 border border-neutral-700 text-xs text-neutral-300 font-medium mb-5 shadow-xs"
             >
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
               <span>Proctored Assessments & Verifiable Credentials</span>
@@ -304,7 +301,7 @@ const OfficialQuizList = () => {
               initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
-              className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto mb-8 leading-relaxed"
+              className="text-base sm:text-lg text-neutral-400 max-w-2xl mx-auto mb-8 leading-relaxed"
             >
               Test your engineering knowledge in timed, proctored developer competitions. Questions are
               randomized every session, and verified passing scores earn official digital credentials.
@@ -317,8 +314,8 @@ const OfficialQuizList = () => {
               transition={{ duration: 0.4, delay: 0.15 }}
               className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto mb-10 text-left"
             >
-              <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800">
-                <span className="text-xs text-slate-500 uppercase font-semibold tracking-wider block">
+              <div className="p-3.5 rounded-xl bg-neutral-900/80 border border-neutral-800">
+                <span className="text-xs text-neutral-500 uppercase font-semibold tracking-wider block">
                   Active Live
                 </span>
                 <span className="text-xl font-bold text-emerald-400 flex items-center gap-1.5 mt-0.5">
@@ -327,8 +324,8 @@ const OfficialQuizList = () => {
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800">
-                <span className="text-xs text-slate-500 uppercase font-semibold tracking-wider block">
+              <div className="p-3.5 rounded-xl bg-neutral-900/80 border border-neutral-800">
+                <span className="text-xs text-neutral-500 uppercase font-semibold tracking-wider block">
                   Upcoming
                 </span>
                 <span className="text-xl font-bold text-sky-400 mt-0.5 block">
@@ -336,20 +333,20 @@ const OfficialQuizList = () => {
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800">
-                <span className="text-xs text-slate-500 uppercase font-semibold tracking-wider block">
+              <div className="p-3.5 rounded-xl bg-neutral-900/80 border border-neutral-800">
+                <span className="text-xs text-neutral-500 uppercase font-semibold tracking-wider block">
                   Total Assessments
                 </span>
-                <span className="text-xl font-bold text-slate-200 mt-0.5 block">
+                <span className="text-xl font-bold text-neutral-200 mt-0.5 block">
                   {catalogStats.totalExams}
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800">
-                <span className="text-xs text-slate-500 uppercase font-semibold tracking-wider block">
+              <div className="p-3.5 rounded-xl bg-neutral-900/80 border border-neutral-800">
+                <span className="text-xs text-neutral-500 uppercase font-semibold tracking-wider block">
                   Question Bank
                 </span>
-                <span className="text-xl font-bold text-slate-200 mt-0.5 block">
+                <span className="text-xl font-bold text-neutral-200 mt-0.5 block">
                   {catalogStats.totalQuestions}+
                 </span>
               </div>
@@ -359,21 +356,21 @@ const OfficialQuizList = () => {
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Link
                 to="/Result"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-semibold border border-neutral-700 transition-colors"
               >
                 <Trophy className="w-4 h-4 text-amber-400" />
                 <span>View Winner Leaderboards</span>
               </Link>
               <Link
                 to="/Result/Certificates"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-semibold border border-neutral-700 transition-colors"
               >
                 <Award className="w-4 h-4 text-emerald-400" />
                 <span>Verify Your Certificate</span>
               </Link>
               <Link
                 to="/About-Exam"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-xs font-medium border border-slate-800 transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 text-xs font-medium border border-neutral-800 transition-colors"
               >
                 <Info className="w-4 h-4" />
                 <span>Anti-Cheat Guidelines</span>
@@ -385,23 +382,23 @@ const OfficialQuizList = () => {
         {/* Catalog and Filters Section */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
           {/* Controls Bar: Search + Status Tabs + Language Selection */}
-          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 pb-8 border-b border-slate-800">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 pb-8 border-b border-neutral-800">
             {/* Search Input */}
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
               <input
                 type="text"
                 placeholder="Search assessments by name or language..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-9 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-200 placeholder-slate-500 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors"
+                className="w-full pl-10 pr-9 py-2.5 bg-neutral-900 border border-neutral-800 rounded-xl text-neutral-200 placeholder-neutral-500 text-xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors"
                 aria-label="Search examinations"
               />
               {search && (
                 <button
                   type="button"
                   onClick={() => setSearch("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-500 hover:text-slate-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-neutral-500 hover:text-neutral-300"
                   aria-label="Clear search input"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -415,7 +412,7 @@ const OfficialQuizList = () => {
               <div
                 role="radiogroup"
                 aria-label="Filter by exam status"
-                className="flex items-center p-1 rounded-xl bg-slate-900 border border-slate-800 text-xs"
+                className="flex items-center p-1 rounded-xl bg-neutral-900 border border-neutral-800 text-xs"
               >
                 {[
                   { id: "all", label: "All" },
@@ -429,11 +426,10 @@ const OfficialQuizList = () => {
                     role="radio"
                     aria-checked={statusFilter === tab.id}
                     onClick={() => setStatusFilter(tab.id)}
-                    className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${
-                      statusFilter === tab.id
-                        ? "bg-slate-800 text-emerald-400 font-semibold shadow-xs"
-                        : "text-slate-400 hover:text-slate-200"
-                    }`}
+                    className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${statusFilter === tab.id
+                      ? "bg-neutral-800 text-emerald-400 font-semibold shadow-xs"
+                      : "text-neutral-400 hover:text-neutral-200"
+                      }`}
                   >
                     {tab.label}
                   </button>
@@ -446,7 +442,7 @@ const OfficialQuizList = () => {
                   <select
                     value={languageFilter}
                     onChange={(e) => setLanguageFilter(e.target.value)}
-                    className="text-xs bg-slate-900 text-slate-300 border border-slate-800 rounded-xl px-3 py-2 focus:border-emerald-500 focus:outline-none"
+                    className="text-xs bg-neutral-900 text-neutral-300 border border-neutral-800 rounded-xl px-3 py-2 focus:border-emerald-500 focus:outline-none"
                     aria-label="Filter by language"
                   >
                     {availableLanguages.map((lang) => (
@@ -461,11 +457,11 @@ const OfficialQuizList = () => {
           </div>
 
           {/* Results Summary and Active Count */}
-          <div className="flex items-center justify-between py-4 text-xs text-slate-400">
+          <div className="flex items-center justify-between py-4 text-xs text-neutral-400">
             <span>
               Showing{" "}
-              <strong className="text-slate-200">{filteredQuizzes.length}</strong> of{" "}
-              <strong className="text-slate-200">{quizzes.length}</strong> registered assessments
+              <strong className="text-neutral-200">{filteredQuizzes.length}</strong> of{" "}
+              <strong className="text-neutral-200">{quizzes.length}</strong> registered assessments
             </span>
             {(search || statusFilter !== "all" || languageFilter !== "all") && (
               <button
@@ -486,19 +482,19 @@ const OfficialQuizList = () => {
           {loading ? (
             <div className="py-24 text-center">
               <div className="w-12 h-12 border-3 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-sm font-medium text-slate-300">
+              <p className="text-sm font-medium text-neutral-300">
                 Loading competitive examination schedules...
               </p>
-              <p className="text-xs text-slate-500 mt-1">Connecting to Soft Game Studio cloud database</p>
+              <p className="text-xs text-neutral-500 mt-1">Connecting to Soft Game Studio cloud database</p>
             </div>
           ) : filteredQuizzes.length === 0 ? (
             /* Empty State */
-            <div className="py-20 text-center max-w-md mx-auto rounded-3xl bg-slate-900/40 border border-slate-800/80 p-8">
-              <div className="w-14 h-14 rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center mx-auto mb-4">
-                <Layers className="w-6 h-6 text-slate-500" />
+            <div className="py-20 text-center max-w-md mx-auto rounded-3xl bg-neutral-900/40 border border-neutral-800/80 p-8">
+              <div className="w-14 h-14 rounded-2xl bg-neutral-800 text-neutral-400 flex items-center justify-center mx-auto mb-4">
+                <Layers className="w-6 h-6 text-neutral-500" />
               </div>
               <h2 className="text-lg font-bold text-white mb-2">No Matching Examinations Found</h2>
-              <p className="text-xs text-slate-400 leading-relaxed mb-6">
+              <p className="text-xs text-neutral-400 leading-relaxed mb-6">
                 {search || statusFilter !== "all" || languageFilter !== "all"
                   ? "No competitions matched your current filter criteria. Try adjusting or clearing your filters."
                   : "There are currently no active competitions scheduled. New examinations are published weekly."}
@@ -510,7 +506,7 @@ const OfficialQuizList = () => {
                   setStatusFilter("all");
                   setLanguageFilter("all");
                 }}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors"
+                className="px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-semibold border border-neutral-700 transition-colors"
               >
                 Clear Search & Filters
               </button>
@@ -527,23 +523,22 @@ const OfficialQuizList = () => {
                 return (
                   <article
                     key={quiz.id}
-                    className="group rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex flex-col justify-between overflow-hidden transition-all duration-200 shadow-lg hover:shadow-xl hover:shadow-black/60"
+                    className="group rounded-2xl bg-neutral-900 border border-neutral-800 hover:border-neutral-700 flex flex-col justify-between overflow-hidden transition-all duration-200 shadow-lg hover:shadow-xl hover:shadow-black/60"
                   >
                     <div>
                       {/* Top Status Accent Border */}
                       <div
-                        className={`h-1 w-full ${
-                          isActive
-                            ? "bg-emerald-500"
-                            : isEnded
-                            ? "bg-slate-700"
+                        className={`h-1 w-full ${isActive
+                          ? "bg-emerald-500"
+                          : isEnded
+                            ? "bg-neutral-700"
                             : "bg-sky-500"
-                        }`}
+                          }`}
                       />
 
                       {/* Card Media Preview */}
                       <div className="p-5 pb-3">
-                        <div className="relative h-44 bg-slate-950 rounded-xl overflow-hidden border border-slate-800/80 flex items-center justify-center">
+                        <div className="relative h-44 bg-neutral-950 rounded-xl overflow-hidden border border-neutral-800/80 flex items-center justify-center">
                           {quiz.imageUrl ? (
                             <img
                               src={quiz.imageUrl}
@@ -552,8 +547,8 @@ const OfficialQuizList = () => {
                               className="h-full w-full object-contain p-4 group-hover:scale-102 transition-transform duration-300"
                             />
                           ) : (
-                            <div className="flex flex-col items-center justify-center text-slate-600 gap-2">
-                              <Code className="w-10 h-10 text-slate-500" />
+                            <div className="flex flex-col items-center justify-center text-neutral-600 gap-2">
+                              <Code className="w-10 h-10 text-neutral-500" />
                               <span className="text-xs font-mono">SGS Examination</span>
                             </div>
                           )}
@@ -571,7 +566,7 @@ const OfficialQuizList = () => {
                       {/* Card Content */}
                       <div className="px-5 py-2">
                         {/* Domain Tag */}
-                        <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-semibold uppercase tracking-wider mb-2">
+                        <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 font-semibold uppercase tracking-wider mb-2">
                           <Code className="w-3.5 h-3.5 text-emerald-400" />
                           <span>{quiz.language || "General Computer Science"}</span>
                         </div>
@@ -582,14 +577,14 @@ const OfficialQuizList = () => {
                         </h2>
 
                         {/* Exam Specifications */}
-                        <div className="mt-3 flex items-center gap-3 text-xs text-slate-400">
+                        <div className="mt-3 flex items-center gap-3 text-xs text-neutral-400">
                           <span className="flex items-center gap-1">
-                            <Layers className="w-3.5 h-3.5 text-slate-500" />
+                            <Layers className="w-3.5 h-3.5 text-neutral-500" />
                             {questionCount} Questions
                           </span>
-                          <span className="text-slate-700">•</span>
+                          <span className="text-neutral-700">•</span>
                           <span className="flex items-center gap-1">
-                            <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />
+                            <ShieldCheck className="w-3.5 h-3.5 text-neutral-500" />
                             Anti-Cheat Monitored
                           </span>
                         </div>
@@ -597,7 +592,7 @@ const OfficialQuizList = () => {
                     </div>
 
                     {/* Card Actions Footer */}
-                    <div className="p-5 pt-4 border-t border-slate-800/80 space-y-2 mt-4 bg-slate-950/40">
+                    <div className="p-5 pt-4 border-t border-neutral-800/80 space-y-2 mt-4 bg-neutral-950/40">
                       {isActive ? (
                         <button
                           type="button"
@@ -617,7 +612,7 @@ const OfficialQuizList = () => {
                         <button
                           type="button"
                           disabled
-                          className="w-full flex items-center justify-center gap-2 bg-slate-800 text-slate-500 font-medium rounded-xl py-2.5 text-xs cursor-not-allowed border border-slate-700/60"
+                          className="w-full flex items-center justify-center gap-2 bg-neutral-800 text-neutral-500 font-medium rounded-xl py-2.5 text-xs cursor-not-allowed border border-neutral-700/60"
                         >
                           Assessment Concluded
                         </button>
@@ -625,7 +620,7 @@ const OfficialQuizList = () => {
                         <button
                           type="button"
                           onClick={() => navigate(`/ExamDetails/${quiz.id}`)}
-                          className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-sky-400 font-medium rounded-xl py-2.5 text-xs border border-slate-700 transition-colors"
+                          className="w-full flex items-center justify-center gap-2 bg-neutral-800 hover:bg-neutral-700 text-sky-400 font-medium rounded-xl py-2.5 text-xs border border-neutral-700 transition-colors"
                         >
                           <Clock className="w-3.5 h-3.5" />
                           <span>View Schedule & Countdown</span>
@@ -635,9 +630,9 @@ const OfficialQuizList = () => {
                       <button
                         type="button"
                         onClick={() => navigate(`/ExamDetails/${quiz.id}`)}
-                        className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-slate-300 font-medium rounded-xl py-2.5 text-xs border border-slate-800 transition-colors"
+                        className="w-full flex items-center justify-center gap-2 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 font-medium rounded-xl py-2.5 text-xs border border-neutral-800 transition-colors"
                       >
-                        <Info className="w-3.5 h-3.5 text-slate-400" />
+                        <Info className="w-3.5 h-3.5 text-neutral-400" />
                         <span>Exam Rules & Syllabus</span>
                       </button>
                     </div>
@@ -649,7 +644,7 @@ const OfficialQuizList = () => {
         </section>
 
         {/* Informational Guidance Section: Optimizes for Google AI Overviews and Candidate Understanding */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 pt-12 border-t border-slate-800">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 pt-12 border-t border-neutral-800">
           <div className="max-w-3xl mb-8">
             <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider block mb-1">
               Examination Governance
@@ -657,7 +652,7 @@ const OfficialQuizList = () => {
             <h2 className="text-2xl font-bold text-white tracking-tight">
               Assessment Standards & Candidate Integrity
             </h2>
-            <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+            <p className="text-sm text-neutral-400 mt-2 leading-relaxed">
               Soft Game Studio administers standardized evaluations designed to validate real-world
               software engineering competency. Review the operational protocols governing all active
               sessions.
@@ -665,34 +660,34 @@ const OfficialQuizList = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
-              <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-emerald-400 mb-4">
+            <div className="p-6 rounded-2xl bg-neutral-900/60 border border-neutral-800">
+              <div className="w-10 h-10 rounded-xl bg-neutral-800 flex items-center justify-center text-emerald-400 mb-4">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <h3 className="text-sm font-bold text-white mb-2">Automated Proctoring Engine</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-neutral-400 leading-relaxed">
                 Exam sessions enforce full-screen integrity checks, background tab monitoring, and keystroke
                 restrictions. Unapproved tab switches trigger immediate disqualification to preserve meritocracy.
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
-              <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-sky-400 mb-4">
+            <div className="p-6 rounded-2xl bg-neutral-900/60 border border-neutral-800">
+              <div className="w-10 h-10 rounded-xl bg-neutral-800 flex items-center justify-center text-sky-400 mb-4">
                 <Layers className="w-5 h-5" />
               </div>
               <h3 className="text-sm font-bold text-white mb-2">Randomized Question Matrices</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-neutral-400 leading-relaxed">
                 Every candidate receives a distinct, randomized permutation of questions and option sequences
                 generated dynamically from verified domain question pools.
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
-              <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-amber-400 mb-4">
+            <div className="p-6 rounded-2xl bg-neutral-900/60 border border-neutral-800">
+              <div className="w-10 h-10 rounded-xl bg-neutral-800 flex items-center justify-center text-amber-400 mb-4">
                 <Award className="w-5 h-5" />
               </div>
               <h3 className="text-sm font-bold text-white mb-2">Tamper-Proof Digital Credentials</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-neutral-400 leading-relaxed">
                 Candidates scoring 50% or above earn cryptographic certificates with unique roll identifiers
                 verifiable on public resumes, LinkedIn credentials, and the central registry.
               </p>
@@ -700,7 +695,7 @@ const OfficialQuizList = () => {
           </div>
         </section>
       </main>
-    </Layout>
+    </LayoutExam>
   );
 };
 

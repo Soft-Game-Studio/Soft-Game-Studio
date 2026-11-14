@@ -351,7 +351,7 @@ const ContactPage = () => {
     "description": "Get in touch with Soft Game Studio for game development services, project source code, education, and support.",
     "mainEntity": {
       "@type": "LocalBusiness",
-      "name": "Soft Game Studio Pvt. Ltd.",
+      "name": "Soft Game Studio",
       "telephone": ["+91 9914267704", "+91 6283400770"],
       "email": "sgs.web.app@gmail.com",
       "address": {

@@ -18,7 +18,7 @@ export const HeroParallax = ({
   const springConfig = { stiffness: 300, damping: 30, bounce: 100 };
 
   const translateX = useSpring(useTransform(scrollYProgress, [0, 1], [0, 1000]), springConfig);
-  const translateXReverse = useSpring(useTransform(scrollYProgress, [0,1], [0, -1000]), springConfig);
+  const translateXReverse = useSpring(useTransform(scrollYProgress, [0, 1], [0, -1000]), springConfig);
   const rotateX = useSpring(useTransform(scrollYProgress, [0, 0.2], [15, 0]), springConfig);
   const opacity = useSpring(useTransform(scrollYProgress, [0, 0.7], [0.7, 1]), springConfig);
   const rotateZ = useSpring(useTransform(scrollYProgress, [0, 0.2], [20, 0]), springConfig);
@@ -27,7 +27,7 @@ export const HeroParallax = ({
     <div
       ref={ref}
       className="h-[430vh] py-0 overflow-hidden  antialiased relative flex flex-col self-auto [perspective:1000px] [transform-style:preserve-3d]">
-     <div className=" top-20 left-0 z-50 w-full">
+      <div className=" top-20 left-0 z-50 w-full">
         <Header />
       </div>
       <motion.div
@@ -62,13 +62,13 @@ export const Header = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 w-full py-20 md:py-40 relative">
       <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-10">
-        
+
         {/* Left Content */}
         <div className="md:w-1/2">
-          <h1 className="text-3xl md:text-7xl font-extrabold leading-tight text-slate-900 dark:text-slate-50">
+          <h1 className="text-3xl md:text-7xl font-extrabold leading-tight text-neutral-900 dark:text-neutral-50">
             Welcome to <br /> Soft Game Studio
           </h1>
-          <p className="max-w-2xl text-base md:text-xl mt-6 text-slate-800 dark:text-slate-200">
+          <p className="max-w-2xl text-base md:text-xl mt-6 text-neutral-800 dark:text-neutral-200">
             SOFT GAME STUDIO is your hub for programming education, offering clear notes, source code, projects, and video tutorials to help students and developers learn and grow.
           </p>
         </div>

@@ -21,10 +21,10 @@ import { signOut } from "firebase/auth";
 
 const navItems = [
   { name: "Home", link: "/" },
+  { name: "Projects", link: "/Projects" },
   { name: "Notes", link: "/DownloadNotes" },
-  { name: "Course", link: "/OurCourse" },
-  { name: "E-Books", link: "/E-Books" },
-  { name: "Games", link: "/Game" },
+  { name: "Events", link: "/event" },
+ 
 ];
 
 export function NavbarMenu() {
@@ -72,7 +72,7 @@ export function NavbarMenu() {
   }, []);
 
   return (
-    <Navbar className="m-0 p-0 border-b border-gray-200 dark:border-neutral-800 transition-colors duration-300">
+    <Navbar className="m-0 p-0">
       <NavBody>
         <NavbarLogo aria-label="Company Logo Home" />
         <NavItems items={navItems} />
@@ -118,9 +118,10 @@ export function NavbarMenu() {
                         className="flex items-center px-4 py-2.5 text-xs font-semibold text-neutral-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
                       >
                         <RiAccountCircleFill className="w-4 h-4 mr-2.5 text-neutral-500 dark:text-neutral-400" aria-hidden="true" />
-                        Account Profile
+                        Account & Portfolio
                       </Link>
                     </li>
+                  
                     <li className="border-t border-gray-100 dark:border-neutral-800 mt-1 pt-1">
                       <button
                         type="button"

@@ -261,7 +261,7 @@ export default function FeedbackSection() {
     "description": "Share your experience and browse authentic customer feedback for Soft Game Studio.",
     "publisher": {
       "@type": "Organization",
-      "name": "Soft Game Studio Pvt. Ltd.",
+      "name": "Soft Game Studio",
       "url": "https://softgamestudios.web.app",
       "logo": {
         "@type": "ImageObject",
