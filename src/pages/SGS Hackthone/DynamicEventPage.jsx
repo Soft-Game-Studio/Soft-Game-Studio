@@ -648,7 +648,7 @@ export default function DynamicEventPage() {
                       <img
                         src={basic.coverImage}
                         alt={basic.title}
-                        className="w-full h-full object-cover grayscale opacity-80"
+                        className="w-full h-full object-cover opacity-80"
                       />
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-neutral-900 text-white">
@@ -824,8 +824,15 @@ export default function DynamicEventPage() {
                     </h3>
 
                     <p className="text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed line-clamp-4">
-                      {track.description}
-                    </p>
+  <a
+    href={track.description}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-blue-600 dark:text-blue-400 font-medium hover:underline"
+  >
+    View Syllabus →
+  </a>
+</p>
                   </div>
 
                   <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs font-mono text-neutral-500">

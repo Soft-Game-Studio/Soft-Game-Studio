@@ -1099,7 +1099,7 @@ export default function EventsListing() {
                               src={b.coverImage}
                               alt={b.title}
                               loading="lazy"
-                              className="absolute inset-0 w-full h-full object-cover grayscale opacity-75 group-hover:scale-105 group-hover:opacity-90 transition-all duration-500"
+                              className="absolute inset-0 w-full h-full object-cover  opacity-75 group-hover:scale-105 group-hover:opacity-90 transition-all duration-500"
                             />
                           ) : (
                             <CardMonochromeCover event={arena} isConcluded={isConcluded} />
